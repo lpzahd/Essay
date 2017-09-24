@@ -1,0 +1,104 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_essay_add"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior" >
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:fillViewport="true"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/title_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/s20"
+                android:text="@string/title"/>
+
+            <android.support.v7.widget.AppCompatEditText
+                android:id="@+id/title_edt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/s16"
+                android:textColor="@color/color_txt_edit_enable"/>
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/content_tv"
+                android:layout_marginTop="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/s20"
+                android:text="@string/essay"/>
+
+            <android.support.v7.widget.AppCompatEditText
+                android:id="@+id/content_edt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/s16"
+                android:textColor="@color/color_txt_edit_enable"/>
+
+            <com.lpzahd.view.DraweeForm
+                android:id="@+id/drawee_form_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <com.lpzahd.view.Divider
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/line_divider" />
+
+    <RelativeLayout
+        android:id="@+id/bottom_layout"
+        android:layout_width="match_parent"
+        android:layout_height="48dp">
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/pic_drawee_view"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerVertical="true"
+            app:placeholderImage="@drawable/ic_photo_size_select_actual_black_24dp"/>
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/media_drawee_view"
+            android:layout_toRightOf="@+id/pic_drawee_view"
+            android:layout_toEndOf="@+id/pic_drawee_view"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerVertical="true"
+            app:placeholderImage="@drawable/ic_music_video_black_24dp"/>
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/add_essay_btn"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerVertical="true"
+            app:placeholderImage="@drawable/ic_check_black_24dp"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

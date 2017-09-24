@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.lpzahd.animview.AnimView
+        android:id="@+id/search_anim_view"
+        android:layout_width="match_parent"
+        android:layout_height="40dp" />
+
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/search_tv"
+        android:layout_width="42dp"
+        android:layout_height="32dp"
+        android:text="@string/txt_search"
+        android:textSize="13sp"
+        android:gravity="center"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="6dp"
+        android:background="@drawable/bg_shape_circle"/>
+
+</RelativeLayout>

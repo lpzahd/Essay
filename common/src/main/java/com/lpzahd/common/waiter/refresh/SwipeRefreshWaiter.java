@@ -1,0 +1,231 @@
+package com.lpzahd.common.waiter.refresh;
+
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
+
+import com.lpzahd.atool.ui.L;
+import com.lpzahd.common.tone.adapter.ToneAdapter;
+import com.lpzahd.waiter.agency.WindowWaiter;
+
+import java.util.List;
+
+import io.reactivex.Flowable;
+
+/**
+ * Author : Lpzahd
+ * Date : 三月
+ * Desction : swiperefreshlayout + recyclerview 刷新处理器
+ */
+public abstract class SwipeRefreshWaiter extends WindowWaiter {
+
+    private SwipeRefreshProcessor processor;
+
+    public SwipeRefreshWaiter(SwipeRefreshLayout swipeRefreshLayout,final RecyclerView recyclerView) {
+        processor = new SwipeRefreshProcessor(swipeRefreshLayout, recyclerView) {
+            @Override
+            public Flowable<? extends List> doRefresh(int page) {
+                return SwipeRefreshWaiter.this.doRefresh(page);
+            }
+
+            @Override
+            public void onPtrSuccess(@LoadState int state) {
+                super.onPtrSuccess(state);
+                if(state == RefreshProcessor.STATE_NO_MORE || state == RefreshProcessor.STATE_HAS_MORE) {
+                    ToneAdapter adapter = (ToneAdapter) recyclerView.getAdapter();
+                    adapter.setData(getData());
+                }
+            }
+
+            @Override
+            public void onLoadingSuccess(@LoadState int state) {
+                super.onLoadingSuccess(state);
+                if(state == RefreshProcessor.STATE_NO_MORE || state == RefreshProcessor.STATE_HAS_MORE) {
+                    ToneAdapter adapter = (ToneAdapter) recyclerView.getAdapter();
+                    adapter.addAll(getData());
+                }
+            }
+        };
+        processor.attach();
+    }
+
+    public abstract Flowable<? extends List> doRefresh(int page);
+
+    public SwipeRefreshProcessor getProcessor() {
+        return processor;
+    }
+
+    public void autoRefresh() {
+        processor.onRefresh();
+    }
+
+    @Override
+    protected void destroy() {
+        super.destroy();
+
+        if (processor != null)
+            processor.dispose();
+    }
+
+    private abstract static class SwipeRefreshProcessor extends RxRefreshProcessor implements SwipeRefreshLayout.OnRefreshListener, LoadMoreCallBack {
+
+        private SwipeRefreshLayout swipeRefreshLayout;
+
+        private RecyclerView recyclerView;
+
+        private SwipeRefreshProcessor(SwipeRefreshLayout swipeRefreshLayout, RecyclerView recyclerView) {
+            this.swipeRefreshLayout = swipeRefreshLayout;
+            this.recyclerView = recyclerView;
+        }
+
+        private void attach() {
+            swipeRefreshLayout.setOnRefreshListener(this);
+            recyclerView.addOnScrollListener(new RecyclerViewOnScroll(recyclerView, this));
+        }
+
+        @Override
+        public void onStartPtr() {
+            super.onStartPtr();
+            swipeRefreshLayout.setRefreshing(true);
+        }
+
+        @Override
+        public void onPtrComplete() {
+            super.onPtrComplete();
+            swipeRefreshLayout.setRefreshing(false);
+        }
+
+        @Override
+        public void onStartLoad() {
+            super.onStartLoad();
+            swipeRefreshLayout.setRefreshing(true);
+        }
+
+        @Override
+        public void onLoadComplete() {
+            super.onLoadComplete();
+            swipeRefreshLayout.setRefreshing(false);
+        }
+
+        @Override
+        public void onRefresh() {
+            onStartPtr();
+            refresh(doRefresh(getAdv()), true);
+        }
+
+        @Override
+        public void onLoadMore() {
+            if (getLoadState() == RefreshProcessor.STATE_HAS_MORE) {
+                onStartLoad();
+                refresh(doRefresh(getAdv()), false);
+            }
+        }
+
+        /**
+         * 数据观察者
+         *
+         * @param page 操作页码
+         */
+        public abstract Flowable<? extends List> doRefresh(int page);
+
+    }
+
+    /**
+     * 加载更多回调
+     */
+    private interface LoadMoreCallBack {
+        void onLoadMore();
+    }
+
+    private static class RecyclerViewOnScroll extends RecyclerView.OnScrollListener {
+
+        private static final long MIN_DURATION_TIME = 1000;
+
+        RecyclerView mRecyclerView;
+
+        LoadMoreCallBack mLoadMoreCallBack;
+
+        int lastVisibleItem = 0;
+
+        int firstVisibleItem = 0;
+
+        long loadmoreTime;
+
+        private RecyclerViewOnScroll(RecyclerView recyclerView, LoadMoreCallBack loadMoreCallBack) {
+            this.mRecyclerView = recyclerView;
+            this.mLoadMoreCallBack = loadMoreCallBack;
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+
+            RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+
+            if (layoutManager instanceof LinearLayoutManager) {
+                LinearLayoutManager manager = ((LinearLayoutManager) layoutManager);
+                lastVisibleItem = manager.findLastVisibleItemPosition();
+                firstVisibleItem = manager.findFirstCompletelyVisibleItemPosition();
+                return;
+            }
+
+            if (layoutManager instanceof StaggeredGridLayoutManager) {
+                StaggeredGridLayoutManager manager = ((StaggeredGridLayoutManager) layoutManager);
+                int[] pos = new int[manager.getSpanCount()];
+                //因为StaggeredGridLayoutManager的特殊性可能导致最后显示的item存在多个，所以这里取到的是一个数组
+                //得到这个数组后再取到数组中position值最大的那个就是最后显示的position值了
+                manager.findLastVisibleItemPositions(pos);
+                lastVisibleItem = findMax(pos);
+                firstVisibleItem = manager.findFirstVisibleItemPositions(pos)[0];
+            }
+
+        }
+
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+
+            RecyclerView.Adapter adapter = mRecyclerView.getAdapter();
+
+            //这个就是判断当前滑动停止了，并且获取当前屏幕最后一个可见的条目是第几个，当前屏幕数据已经显示完毕的时候就去加载数据
+            if (newState == RecyclerView.SCROLL_STATE_IDLE && lastVisibleItem + 1 == adapter.getItemCount()) {
+
+                // 说明查询的数量有点少了，都没有回收
+                if (firstVisibleItem == 0) {
+                    L.e("最好检查一下是不是查询的数量太少了[SwipeRefreshWaiter.RecyclerViewOnScroll.onScrollStateChanged]");
+                    return;
+                }
+
+                // 验证是否能铺满屏幕
+
+                // 区域高度
+                final int scrollExtent = recyclerView.computeVerticalScrollExtent();
+                // recyclerView 的高度
+                final int scrollRange = recyclerView.computeVerticalScrollRange();
+                if (scrollRange > scrollExtent) {
+
+                    // 延时加载
+                    long time = System.currentTimeMillis() - loadmoreTime;
+                    if (time > MIN_DURATION_TIME) {
+                        //回调加载更多
+                        mLoadMoreCallBack.onLoadMore();
+                        loadmoreTime = System.currentTimeMillis();
+                    }
+                }
+            }
+        }
+
+        //找到数组中的最大值
+        private int findMax(int[] lastPositions) {
+
+            int max = lastPositions[0];
+            for (int value : lastPositions) {
+                if (value > max) {
+                    max = value;
+                }
+            }
+            return max;
+        }
+    }
+}

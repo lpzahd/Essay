@@ -1,0 +1,56 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.jakewharton.butterknife'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+    // For animated GIF support
+    // For WebP support, including animated WebP
+    // For WebP support, without animations
+    // Provide the Android support library (you might already have this or a similar dependency)
+    // compile 'com.android.support:support-core-utils:24.2.1'
+    compile project(':atool')
+    compile project(':jtool')
+    compile project(':config')
+    compile project(':common')
+
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:design:25.3.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    testCompile 'junit:junit:4.12'
+    compile 'com.facebook.fresco:fresco:1.5.0'
+    compile 'com.facebook.fresco:animated-gif:1.5.0'
+    compile 'com.facebook.fresco:animated-webp:1.5.0'
+    compile 'com.facebook.fresco:webpsupport:1.5.0'
+    provided 'com.facebook.fresco:imagepipeline-okhttp3:1.5.0'
+
+    compile 'com.squareup.okhttp3:okhttp:3.8.0'
+    annotationProcessor  "com.jakewharton:butterknife-compiler:8.8.1"
+}
+repositories {
+    mavenCentral()
+}

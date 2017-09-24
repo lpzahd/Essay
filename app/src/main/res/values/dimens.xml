@@ -1,0 +1,31 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="line_divider">1dp</dimen>
+
+    <!-- size -->
+    <!--常用字号：-->
+
+    <!--12sp 小字提示-->
+    <!--14sp（桌面端13sp） 正文/按钮文字-->
+    <!--16sp（桌面端15sp） 小标题-->
+    <!--20sp Appbar文字-->
+    <!--24sp 大标题-->
+    <!--34sp/45sp/56sp/112sp 超大号文字-->
+
+    <dimen name="s12">12sp</dimen>
+    <dimen name="s14">14sp</dimen>
+    <dimen name="s16">16sp</dimen>
+    <dimen name="s20">20sp</dimen>
+    <dimen name="s24">24sp</dimen>
+    <dimen name="s34">34sp</dimen>
+    <dimen name="s45">45sp</dimen>
+    <dimen name="s56">56sp</dimen>
+    <dimen name="s112">112sp</dimen>
+
+    <dimen name="corner_radius_d4">4dp</dimen>
+
+</resources>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="148dp"
+    android:layout_marginBottom="4dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:layout_marginTop="4dp"
+    android:background="@drawable/bg_essay_item">
+
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/content_tv"
+        android:layout_width="160dp"
+        android:layout_height="match_parent"
+        android:maxLines="6"
+        android:layout_centerVertical="true"
+        android:layout_gravity="start"
+        android:textSize="@dimen/s16"
+        android:gravity="center_vertical"
+        tools:text="content" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@+id/content_tv">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/illustrated_iv"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_centerInParent="true"/>
+
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/date_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/illustrated_iv"
+            android:layout_marginTop="8dp"
+            android:layout_centerHorizontal="true"
+            android:textSize="@dimen/s12"
+            tools:text="2000/12/12" />
+
+    </RelativeLayout>
+
+
+</RelativeLayout>

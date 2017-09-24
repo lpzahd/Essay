@@ -1,0 +1,1 @@
+include ':app', ':heart', ':config', ':waiter', ':buildsrc', ':aop', ':jtool', ':atool', ':derive', ':animview', ':view', ':gallery', ':common'

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="guides">
+        <item>畅谈随笔</item>
+        <item>秀色可餐</item>
+        <item>饱暖思淫欲</item>
+        <item>因缺思厅</item>
+        <item>饿了么账单</item>
+        <item>固执</item>
+    </string-array>
+
+</resources>

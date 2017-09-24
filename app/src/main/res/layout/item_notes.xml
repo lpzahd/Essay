@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="8dp"
+    tools:context="com.lpzahd.essay.context.note.NoteActivity">
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/note_drawee_view"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        app:placeholderImageScaleType="fitCenter"
+        app:actualImageScaleType="fitCenter"/>
+
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/note_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_horizontal"
+        android:maxWidth="64dp"
+        android:singleLine="true"
+        android:lines="1"
+        tools:text="note"/>
+
+</android.support.v7.widget.LinearLayoutCompat>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+    <com.lpzahd.circualreveal.widget.RevealFrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@android:color/white">
+
+        <LinearLayout
+            android:id="@+id/essay_layout"
+            android:orientation="vertical"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:layout_gravity="center"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/title_input_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="12dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp">
+
+                <android.support.v7.widget.AppCompatEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="标题"
+                    android:lines="1"
+                    android:ellipsize="end"
+                    android:textSize="@dimen/s20"/>
+
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/content_input_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="12dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp">
+
+                <android.support.v7.widget.AppCompatEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="随笔"
+                    android:maxLines="12"
+                    android:textSize="@dimen/s16"/>
+
+            </android.support.design.widget.TextInputLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <android.support.v7.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/positive"
+                    android:textSize="@dimen/s14"
+                    android:textColor="@color/colorAccent"
+                    android:lines="1"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:stateListAnimator="@animator/btn_selector_animtor"
+                    android:background="@null"
+                    android:minWidth="72dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:paddingLeft="1dp"
+                    android:paddingRight="1dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"/>
+
+                <android.support.v7.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/negative"
+                    android:textSize="@dimen/s14"
+                    android:textColor="@color/colorAccent"
+                    android:lines="1"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:stateListAnimator="@animator/btn_selector_animtor"
+                    android:background="@null"
+                    android:minWidth="72dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:paddingLeft="1dp"
+                    android:paddingRight="1dp"
+                    android:layout_toLeftOf="@+id/positive"
+                    android:layout_toStartOf="@+id/positive"/>
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </com.lpzahd.circualreveal.widget.RevealFrameLayout>
+

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/refresh_abnormal_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center">
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/drawee_view"
+        android:layout_width="240dp"
+        android:layout_height="240dp"
+        app:actualImageScaleType="centerInside"
+        android:layout_centerHorizontal="true"/>
+
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/desc_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/drawee_view"
+        android:layout_marginTop="8dp"
+        android:layout_centerHorizontal="true"
+        tools:text="异常状态"/>
+
+</RelativeLayout>

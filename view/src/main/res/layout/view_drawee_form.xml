@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp">
+
+    <GridLayout
+        android:id="@+id/grid_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:rowCount="2"
+        android:columnCount="2">
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/one_drawee_view"
+            android:layout_column="0"
+            android:layout_row="0"/>
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/two_drawee_view"
+            android:layout_column="0"
+            android:layout_row="1"/>
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/three_drawee_view"
+            android:layout_column="1"
+            android:layout_row="0"/>
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/four_drawee_view"
+            android:layout_column="1"
+            android:layout_row="1"/>
+
+    </GridLayout>
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/more_drawee_view"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="bottom|end"
+        android:visibility="gone"
+        app:placeholderImage="@android:drawable/ic_input_add"/>
+
+</FrameLayout>

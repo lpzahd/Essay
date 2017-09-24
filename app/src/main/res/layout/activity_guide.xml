@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_guide"
+    android:fitsSystemWindows="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.lpzahd.essay.context.guide.GuideActivity">
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/top_bg_drawee_view"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        app:placeholderImageScaleType="fitXY"
+        app:placeholderImage="@mipmap/bg_guide_top_two_part"/>
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/middle_bg_drawee_view"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_below="@+id/top_bg_drawee_view"
+        app:placeholderImageScaleType="fitXY"
+        app:placeholderImage="@mipmap/bg_guide_middle_rise"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/middle_bg_drawee_view"
+        android:padding="16dp"
+        android:layout_marginTop="-100dp">
+
+        <RelativeLayout
+            android:id="@+id/title_layout"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="48dp"
+            android:background="@mipmap/bg_guide_head_info"
+            android:elevation="1dip" >
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/title_tv"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="52dp"
+                android:text="有格萨隆"
+                android:gravity="center"
+                android:textSize="@dimen/s16"
+                android:textColor="@android:color/white"/>
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/desc_tv"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@+id/title_tv"
+                android:layout_marginTop="8dp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:text="人之初，性本善，性相近，习相远。苟不教，日你妈"
+                android:gravity="center"
+                android:textSize="@dimen/s14"
+                android:textColor="@android:color/white"/>
+
+        </RelativeLayout>
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/head_drawee_view"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_centerHorizontal="true"
+            app:roundAsCircle="true"
+            app:roundingBorderWidth="4dp"
+            app:roundingBorderColor="@android:color/white"
+            android:elevation="2dip"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/title_layout"
+            android:overScrollMode="never"
+            android:scrollbars="none"
+            android:layout_marginTop="10dp"/>
+        
+    </RelativeLayout>
+
+
+</RelativeLayout>

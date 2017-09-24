@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@android:color/white"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    tools:context="com.lpzahd.essay.context.guide.GuideActivity">
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/pic_drawee_view"
+        android:layout_width="68dp"
+        android:layout_height="50dp"
+        android:layout_centerVertical="true"
+        app:actualImageScaleType="fitXY"/>
+
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/title_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/pic_drawee_view"
+        android:layout_toEndOf="@+id/pic_drawee_view"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_alignTop="@+id/pic_drawee_view"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textSize="@dimen/s16"
+        android:textColor="#444244"
+        tools:text="随笔"/>
+
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/desc_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/pic_drawee_view"
+        android:layout_toEndOf="@+id/pic_drawee_view"
+        android:layout_alignBottom="@+id/pic_drawee_view"
+        android:maxLines="2"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
+        android:textSize="@dimen/s12"
+        android:textColor="#B9B9B9"
+        android:ellipsize="end"
+        tools:text="畅所欲言"/>
+
+</RelativeLayout>
+

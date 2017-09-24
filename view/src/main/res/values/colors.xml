@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--ripple-->
+    <color name="ripple">#9E9E9E</color>
+
+    <!-- edit -->
+    <color name="color_txt_edit_enable">#212121</color>
+    <color name="color_txt_edit_disable">#757575</color>
+
+    <!--divider-->
+    <color name="divider">#BDBDBD</color>
+
+</resources>
