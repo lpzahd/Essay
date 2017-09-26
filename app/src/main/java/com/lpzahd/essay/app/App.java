@@ -5,18 +5,15 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.multidex.MultiDex;
-import android.support.multidex.MultiDexApplication;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.imagepipeline.backends.okhttp3.OkHttpImagePipelineConfigFactory;
 import com.facebook.imagepipeline.core.ImagePipelineConfig;
 import com.jakewharton.threetenabp.AndroidThreeTen;
-import com.lpzahd.Config;
 import com.lpzahd.atool.constant.Constance;
 import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.derive.container.MiniCup;
-import com.lpzahd.essay.exotic.Realmer;
 
 import okhttp3.OkHttpClient;
 

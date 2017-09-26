@@ -6,9 +6,8 @@ import android.view.ViewGroup;
 import com.lpzahd.common.waiter.permission.PermissionsWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.guide.waiter.GuideStyleIWaiter;
-import com.lpzahd.essay.context.guide.waiter.GuideWaiter;
 import com.lpzahd.common.tone.activity.RxActivity;
-import com.lpzahd.essay.exotic.Realmer;
+import com.lpzahd.essay.exotic.realm.Realmer;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

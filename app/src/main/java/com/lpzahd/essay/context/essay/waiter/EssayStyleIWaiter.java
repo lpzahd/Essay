@@ -203,14 +203,14 @@ public class EssayStyleIWaiter extends ToneActivityWaiter<EssayActivity> impleme
             Bitmap bm = BitmapFactory
                     .decodeResource(context.getResources(), R.mipmap.ic_failure_image);
             Drawable[] array = new Drawable[3];
-            array[0] = new PaintDrawable(Color.BLACK); // 黑色
+            array[0] = new PaintDrawable(Color.GRAY); // 黑色
             array[1] = new PaintDrawable(Color.GREEN); // 白色
             array[2] = new PaintDrawable(Color.RED);
 //            array[2] = new BitmapDrawable(bm); // 位图资源
             LayerDrawable layerDrawable = new LayerDrawable(array); // 参数为上面的Drawable数组
             layerDrawable.setLayerInset(0,0,0,0,0);
-            layerDrawable.setLayerInset(1,20,20,20,20);
-            layerDrawable.setLayerInset(2,30,30,30,30);
+            layerDrawable.setLayerInset(1,20,20,60,60);
+            layerDrawable.setLayerInset(2,20,30,60,60);
 
             holder.illustratedIv.setImageDrawable(layerDrawable);
         }

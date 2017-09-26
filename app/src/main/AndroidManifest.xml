@@ -47,6 +47,7 @@
 
         <activity android:name=".context.essay.EssayActivity"/>
         <activity android:name=".context.essay_.EssayAddActivity"/>
+        <activity android:name=".context.leisure.LeisureActivity"/>
 
 
     </application>
