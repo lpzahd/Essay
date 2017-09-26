@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.context.essay.waiter.EssayStyleIIWaiter;
 import com.lpzahd.essay.context.essay.waiter.EssayStyleIWaiter;
 import com.lpzahd.essay.context.essay.waiter.RecyclerWaiter;
 import com.lpzahd.common.tone.activity.RxActivity;
@@ -33,7 +34,8 @@ public class EssayActivity extends RxActivity {
     public void init() {
         super.init();
 //        addActivityWaiter(new RecyclerWaiter(this));
-        addActivityWaiter(new EssayStyleIWaiter(this));
+//        addActivityWaiter(new EssayStyleIWaiter(this));
+        addActivityWaiter(new EssayStyleIIWaiter(this));
     }
 
     @Override

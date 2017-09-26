@@ -28,4 +28,10 @@
 
     <dimen name="corner_radius_d4">4dp</dimen>
 
+
+    <!-- 字号 -->
+    <dimen name="s11">11sp</dimen>
+    <dimen name="s13">13sp</dimen>
+    <dimen name="s15">15sp</dimen>
+
 </resources>

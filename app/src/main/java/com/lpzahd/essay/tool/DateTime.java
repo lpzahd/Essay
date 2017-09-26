@@ -32,4 +32,9 @@ public class DateTime extends NoInstance {
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         return DateTimeFormatter.ofPattern(pattern).format(dateTime);
     }
+
+    public static long now() {
+        return Instant.now().toEpochMilli();
+    }
+
 }
