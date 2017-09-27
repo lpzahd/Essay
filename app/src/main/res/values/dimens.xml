@@ -33,5 +33,6 @@
     <dimen name="s11">11sp</dimen>
     <dimen name="s13">13sp</dimen>
     <dimen name="s15">15sp</dimen>
+    <dimen name="s18">18sp</dimen>
 
 </resources>

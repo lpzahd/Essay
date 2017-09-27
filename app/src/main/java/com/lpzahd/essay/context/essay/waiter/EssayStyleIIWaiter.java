@@ -1,5 +1,6 @@
 package com.lpzahd.essay.context.essay.waiter;
 
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -29,11 +30,13 @@ import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.data.DataFactory;
+import com.lpzahd.common.tone.fragment.ToneDialogFragment;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.essay.EssayActivity;
 import com.lpzahd.essay.context.essay.EssayAddDialog;
+import com.lpzahd.essay.context.essay.EssayStyleIIAddDialog;
 import com.lpzahd.essay.db.essay.Essay;
 import com.lpzahd.essay.db.file.Image;
 import com.lpzahd.essay.tool.DateTime;
@@ -60,7 +63,7 @@ import io.realm.Sort;
  * Date : 九月
  * Desction : (•ิ_•ิ)
  */
-public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implements DataFactory.DataProcess<Essay, EssayStyleIIWaiter.EssayModel> {
+public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implements DataFactory.DataProcess<Essay, EssayStyleIIWaiter.EssayModel>,EssayStyleIIAddDialog.InputCallback {
 
     @BindView(R.id.swipe_refresh_layout)
     SwipeRefreshLayout swipeRefreshLayout;
@@ -77,8 +80,6 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
     private EssayAdapter mAdapter;
 
     private SwipeRefreshWaiter mRefreshWaiter;
-
-    private EssayAddDialog mEssayAddDialog;
 
     public EssayStyleIIWaiter(EssayActivity essayActivity) {
         super(essayActivity);
@@ -120,32 +121,14 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
 
         mRefreshWaiter.autoRefresh();
 
-        mEssayAddDialog = new EssayAddDialog();
-        mEssayAddDialog.setInputCallback(new EssayAddDialog.InputCallback() {
-            @Override
-            public void onInput(EssayAddDialog dialog, CharSequence title, CharSequence content) {
-                final Essay essay = new Essay();
-                essay.setTitle(title.toString());
-                essay.setContent(content.toString());
-                mRealm.executeTransactionAsync(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        realm.copyToRealm(essay);
-                    }
-                }, new Realm.Transaction.OnSuccess() {
-                    @Override
-                    public void onSuccess() {
-                        recyclerView.scrollToPosition(0);
-                        mAdapter.addFirst(mFactoty.process(essay));
-                    }
-                });
-            }
-        });
+
     }
 
     @OnClick(R.id.fab)
     void showEssayAddDialog() {
-        mEssayAddDialog.show(context);
+        EssayStyleIIAddDialog dialog = new EssayStyleIIAddDialog();
+        dialog.setInputCallback(this);
+        dialog.show(context);
     }
 
     @Override
@@ -182,6 +165,25 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
             }
         }
         return isPoet ? GRAVITY_CENTER : GRAVITY_LEFT;
+    }
+
+    @Override
+    public void onInput(EssayStyleIIAddDialog dialog, CharSequence title, CharSequence content) {
+        final Essay essay = new Essay();
+        essay.setTitle(title.toString());
+        essay.setContent(content.toString());
+        mRealm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.copyToRealm(essay);
+            }
+        }, new Realm.Transaction.OnSuccess() {
+            @Override
+            public void onSuccess() {
+                recyclerView.scrollToPosition(0);
+                mAdapter.addFirst(mFactoty.process(essay));
+            }
+        });
     }
 
     static class EssayModel {
