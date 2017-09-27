@@ -2,6 +2,7 @@ package com.lpzahd.gallery.presenter;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.design.widget.AppBarLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatTextView;
@@ -14,14 +15,15 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
+import com.facebook.common.internal.ImmutableList;
 import com.facebook.drawee.backends.pipeline.Fresco;
-import com.facebook.drawee.backends.pipeline.PipelineDraweeController;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.lpzahd.atool.enmu.Image;
+import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
@@ -31,7 +33,6 @@ import com.lpzahd.gallery.R2;
 import com.lpzahd.gallery.context.GalleryActivity;
 import com.lpzahd.gallery.tool.MediaTool;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +58,12 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
 
     private final int LIMIT = 30;
 
+    @BindView(R2.id.app_bar_layout)
+    public AppBarLayout appBarLayout;
+
+    @BindView(R2.id.tool_bar)
+    public Toolbar toolBar;
+
     @BindView(R2.id.swipe_refresh_layout)
     SwipeRefreshLayout swipeRefershLayout;
 
@@ -77,23 +84,29 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
 
     private int mode = MODE_SINGLE;
 
-    private int select = 1;
+    private int maxSize = 1;
 
-    private MultiAdapter adapter;
+    private MultiAdapter mAdapter;
 
     private SwipeRefreshWaiter mRefreshWaiter;
 
-    public MultiSelectPresenter(GalleryActivity activity, int select) {
+    private List<MediaTool.MediaBean> mSelected;
+
+    public MultiSelectPresenter(GalleryActivity activity, int maxSize) {
         super(activity);
 
-        if (select < 0) {
+        if (maxSize < 0) {
             throw new IllegalArgumentException("二逼不解释！");
         }
 
-        if (select == 1)
+        this.maxSize = maxSize;
+        mSelected = new ArrayList<>(maxSize);
+
+        if (maxSize == 1)
             mode = MODE_SINGLE;
         else
             mode = MODE_MULTI;
+
     }
 
     @Override
@@ -109,8 +122,8 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
 
         recyclerView.setHasFixedSize(true);
 
-        adapter = new MultiAdapter(context, getScreenSize(context).widthPixels / 3);
-        recyclerView.setAdapter(adapter);
+        mAdapter = new MultiAdapter(context, getScreenSize(context).widthPixels / 3);
+        recyclerView.setAdapter(mAdapter);
 
     }
 
@@ -158,25 +171,57 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
 
     private static class MultiBean {
         public Uri uri;
+        public boolean checked;
     }
 
     private class MultiAdapter extends ToneAdapter<MultiBean, MultiHolder> {
 
         private int size = 200;
+        private List<Integer> slects;
 
         private MultiAdapter(Context context, int size) {
             super(context);
             this.size = size;
+            slects = new ArrayList<>();
+        }
+
+        public List<Integer> getSlects() {
+            return slects;
+        }
+
+        public void setSlects(List<Integer> slects) {
+            this.slects = slects;
         }
 
         @Override
         public MultiHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new MultiHolder(inflateItemView(R.layout.item_media_select_grid, parent));
+            final MultiHolder holder = new MultiHolder(inflateItemView(R.layout.item_media_select_grid, parent));
+            holder.setCheckBoxClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = holder.getAdapterPosition();
+                    MultiBean bean = getItem(position);
+                    if(bean.checked) {
+                        bean.checked = false;
+                        slects.remove(Integer.valueOf(position));
+                    } else {
+                        if(slects.size() >= maxSize) {
+                            T.t("你最多只能选择" + maxSize + "张照片");
+                            holder.checkBox.setChecked(false);
+                        } else {
+                            bean.checked = true;
+                            slects.add(position);
+                        }
+                    }
+                }
+            });
+            return holder;
         }
 
         @Override
         public void onBindViewHolder(MultiHolder holder, int position) {
             MultiBean bean = getItem(position);
+            holder.checkBox.setChecked(bean.checked);
             ImageRequest request = ImageRequestBuilder.newBuilderWithSource(bean.uri)
                     .setResizeOptions(new ResizeOptions(size, size))
                     .build();
@@ -201,5 +246,11 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
+
+        public void setCheckBoxClickListener(View.OnClickListener listener) {
+            if(listener != null)
+                checkBox.setOnClickListener(listener);
+        }
+
     }
 }

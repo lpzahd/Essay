@@ -116,6 +116,14 @@ public class RefreshProcessor implements IPullToRefresh, ILoadMore {
      */
     public void setStart(int start) {
         this.start = start;
+        this.adv = start;
+    }
+
+    /**
+     * 获取起始页码
+     */
+    public int getStart() {
+        return start;
     }
 
     /**

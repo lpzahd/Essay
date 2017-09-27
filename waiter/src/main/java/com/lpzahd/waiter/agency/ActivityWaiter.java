@@ -29,6 +29,10 @@ public class ActivityWaiter<E extends AppCompatActivity, T extends ActivityWaite
         this.context = context;
     }
 
+    final public E getContext() {
+        return context;
+    }
+
     protected void init() {
     }
 

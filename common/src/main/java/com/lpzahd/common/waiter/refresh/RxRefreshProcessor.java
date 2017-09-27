@@ -19,7 +19,7 @@ import io.reactivex.functions.Consumer;
  */
 public class RxRefreshProcessor extends RefreshProcessor {
 
-    private static final int QUERY_EACH_MAX_COUNT = 20;
+    public static final int QUERY_EACH_MAX_COUNT = 20;
 
     /**
      * 是否开启下拉刷新
@@ -46,6 +46,14 @@ public class RxRefreshProcessor extends RefreshProcessor {
     private List<?> data;
 
     private Disposable refreshDispose;
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public int getCount() {
+        return count;
+    }
 
     public void setRefreshEnable(boolean enable) {
         this.refreshEnable = enable;

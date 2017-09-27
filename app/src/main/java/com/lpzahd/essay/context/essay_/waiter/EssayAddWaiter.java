@@ -30,8 +30,8 @@ public class EssayAddWaiter extends ToneActivityWaiter<EssayAddActivity> impleme
     @BindView(R.id.content_edt)
     AppCompatEditText contentEdt;
 
-    @BindView(R.id.drawee_form_view)
-    DraweeForm draweeFormView;
+//    @BindView(R.id.drawee_form_view)
+//    DraweeForm draweeFormView;
 
     private Realm realm;
 
@@ -53,7 +53,7 @@ public class EssayAddWaiter extends ToneActivityWaiter<EssayAddActivity> impleme
     protected void setContentView() {
         realm = Realm.getDefaultInstance();
         setupToolbar();
-        draweeFormView.setDraweeClickListener(this);
+//        draweeFormView.setDraweeClickListener(this);
     }
 
     private void setupToolbar() {

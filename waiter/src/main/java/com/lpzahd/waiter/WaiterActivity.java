@@ -12,6 +12,8 @@ import com.lpzahd.waiter.agency.ActivityWaiter;
 import com.lpzahd.waiter.agency.WindowWaiter;
 import com.lpzahd.waiter.consumer.State;
 
+import java.util.ArrayList;
+
 /**
  * Author : Lpzahd
  * Date : 16:50
@@ -29,6 +31,12 @@ public abstract class WaiterActivity extends AppCompatActivity {
 
     public ActivityWaiter getActivityWaiter() {
         return activityWaiter;
+    }
+
+    private ArrayList<LifecleCallBack<WaiterActivity>> callBacks = new ArrayList<>();
+
+    public void addLifecleCallBack(LifecleCallBack<WaiterActivity> callBack) {
+        callBacks.add(callBack);
     }
 
     public void addWindowWaiter(WindowWaiter windowWaiter) {
@@ -54,6 +62,10 @@ public abstract class WaiterActivity extends AppCompatActivity {
         inflaterView(savedInstanceState);
         activityWaiter.onCreate(savedInstanceState);
         windowWaiter.onCreate(getWindow().getDecorView());
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).created(this);
+        }
     }
 
     @Override
@@ -61,6 +73,10 @@ public abstract class WaiterActivity extends AppCompatActivity {
         super.onStart();
         activityWaiter.onStart();
         windowWaiter.onStart();
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).started(this);
+        }
     }
 
     @Override
@@ -68,6 +84,10 @@ public abstract class WaiterActivity extends AppCompatActivity {
         super.onResume();
         activityWaiter.onResume();
         windowWaiter.onResume();
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).resumed(this);
+        }
     }
 
     @Override
@@ -75,6 +95,10 @@ public abstract class WaiterActivity extends AppCompatActivity {
         super.onPause();
         activityWaiter.onPause();
         windowWaiter.onPause();
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).paused(this);
+        }
     }
 
     @Override
@@ -82,16 +106,24 @@ public abstract class WaiterActivity extends AppCompatActivity {
         activityWaiter.onStop();
         windowWaiter.onStop();
         super.onStop();
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).stopped(this);
+        }
     }
 
     @Override
     public void onDestroy() {
         activityWaiter.onDestroy();
         windowWaiter.onDestroy();
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).destroyed(this);
+        }
         super.onDestroy();
 
         activityWaiter.clear();
         windowWaiter.clear();
+        callBacks.clear();
     }
 
     @Override
@@ -99,6 +131,10 @@ public abstract class WaiterActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         activityWaiter.onSaveInstanceState(outState);
         windowWaiter.onSaveInstanceState(outState);
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).saveInstanceState(this);
+        }
     }
 
     @Override

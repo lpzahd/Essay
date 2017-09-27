@@ -55,6 +55,7 @@ public abstract class ToneActivityWaiter<E extends AppCompatActivity> extends Aw
 
         unbinder = ButterKnife.bind(this, getRootView());
 
+        initToolBar();
         initView();
         initData();
 
@@ -68,6 +69,10 @@ public abstract class ToneActivityWaiter<E extends AppCompatActivity> extends Aw
     }
 
     protected void setContentView() {
+
+    }
+
+    protected void initToolBar() {
 
     }
 

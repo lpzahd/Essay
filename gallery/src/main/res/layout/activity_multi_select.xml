@@ -7,35 +7,18 @@
               android:orientation="vertical"
               tools:context="com.lpzahd.gallery.context.GalleryActivity">
 
-    <RelativeLayout
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@mipmap/bg_tool_bar">
+        android:layout_height="wrap_content">
 
-        <com.facebook.drawee.view.SimpleDraweeView
-            android:layout_width="48dp"
-            android:layout_height="48dp"/>
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary" />
 
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/title_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:textSize="18sp"
-            android:textColor="@android:color/white"
-            android:text="图片"/>
-
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/right_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="8dp"
-            android:textSize="14sp"
-            android:text="保存"/>
-
-    </RelativeLayout>
+    </android.support.design.widget.AppBarLayout>
 
     <RelativeLayout
         android:id="@+id/root_view_layout"

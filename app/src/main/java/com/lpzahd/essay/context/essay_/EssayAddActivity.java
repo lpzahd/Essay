@@ -3,11 +3,9 @@ package com.lpzahd.essay.context.essay_;
 import android.content.Context;
 import android.content.Intent;
 
-import com.lpzahd.essay.R;
-import com.lpzahd.essay.context.essay_.waiter.EssayAddWaiter;
 import com.lpzahd.common.tone.activity.RxActivity;
-
-import butterknife.ButterKnife;
+import com.lpzahd.essay.R;
+import com.lpzahd.essay.context.essay_.waiter.EssayAddStyleIWaiter;
 
 /**
  * Author : Lpzahd
@@ -26,14 +24,14 @@ public class EssayAddActivity extends RxActivity {
     @Override
     public void init() {
         super.init();
-        addActivityWaiter(new EssayAddWaiter(this));
+        addActivityWaiter(new EssayAddStyleIWaiter(this));
+//        addActivityWaiter(new EssayAddWaiter(this));
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
         setContentView(R.layout.activity_essay_add);
-        ButterKnife.bind(this);
     }
 
 }

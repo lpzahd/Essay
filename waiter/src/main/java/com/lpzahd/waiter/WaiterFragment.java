@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import com.lpzahd.waiter.agency.FragmentWaiter;
 import com.lpzahd.waiter.agency.WindowWaiter;
 
+import java.util.ArrayList;
+
 /**
  * Author : Lpzahd
  * Date : 16:51
@@ -31,6 +33,12 @@ public abstract class WaiterFragment extends Fragment {
 
     public FragmentWaiter getFragmentWaiter() {
         return fragmentWaiter;
+    }
+
+    private ArrayList<LifecleCallBack<WaiterFragment>> callBacks = new ArrayList<>();
+
+    public void addLifecleCallBack(LifecleCallBack<WaiterFragment> callBack) {
+        callBacks.add(callBack);
     }
 
     public void init() {
@@ -72,6 +80,10 @@ public abstract class WaiterFragment extends Fragment {
         fragmentWaiter.onCreateView(rootView);
         windowWaiter.onCreate(rootView);
 
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).created(this);
+        }
+
         return rootView;
     }
 
@@ -86,6 +98,10 @@ public abstract class WaiterFragment extends Fragment {
         super.onStart();
         fragmentWaiter.onStart();
         windowWaiter.onStart();
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).started(this);
+        }
     }
 
     @Override
@@ -93,6 +109,10 @@ public abstract class WaiterFragment extends Fragment {
         super.onResume();
         fragmentWaiter.onResume();
         windowWaiter.onResume();
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).resumed(this);
+        }
     }
 
     @Override
@@ -100,6 +120,10 @@ public abstract class WaiterFragment extends Fragment {
         fragmentWaiter.onPause();
         windowWaiter.onPause();
         super.onPause();
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).paused(this);
+        }
     }
 
     @Override
@@ -107,6 +131,10 @@ public abstract class WaiterFragment extends Fragment {
         fragmentWaiter.onStop();
         windowWaiter.onStop();
         super.onStop();
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).stopped(this);
+        }
     }
 
     @Override
@@ -119,6 +147,9 @@ public abstract class WaiterFragment extends Fragment {
     public void onDestroy() {
         fragmentWaiter.onDestroy();
         windowWaiter.onDestroy();
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).destroyed(this);
+        }
         super.onDestroy();
     }
 
@@ -136,6 +167,10 @@ public abstract class WaiterFragment extends Fragment {
         super.onSaveInstanceState(outState);
         fragmentWaiter.onSaveInstanceState(outState);
         windowWaiter.onSaveInstanceState(outState);
+
+        for (int i = callBacks.size() - 1; i >= 0; i--) {
+            callBacks.get(i).saveInstanceState(this);
+        }
     }
 
     @Override

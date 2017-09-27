@@ -15,14 +15,15 @@
         android:hint="@string/title"
         android:textColorHint="#999999"
         android:textColor="#666666"
-        android:lines="1"
+        android:singleLine="true"
+        android:maxLines="1"
+        android:imeOptions="actionNext"
         android:textSize="@dimen/s20"
         android:paddingLeft="6dp"
         android:paddingRight="6dp"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
         android:background="@drawable/bg_rect_radius_gray_p8"/>
-
 
     <android.support.v7.widget.AppCompatEditText
         android:id="@+id/content_edt"

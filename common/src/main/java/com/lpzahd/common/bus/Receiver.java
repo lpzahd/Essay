@@ -1,4 +1,4 @@
-package com.lpzahd.essay.tool.bus;
+package com.lpzahd.common.bus;
 
 import io.reactivex.Flowable;
 

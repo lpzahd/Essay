@@ -11,6 +11,7 @@ import com.lpzahd.essay.context.essay.waiter.EssayStyleIIWaiter;
 import com.lpzahd.essay.context.essay.waiter.EssayStyleIWaiter;
 import com.lpzahd.essay.context.essay.waiter.RecyclerWaiter;
 import com.lpzahd.common.tone.activity.RxActivity;
+import com.lpzahd.essay.context.essay_.EssayAddActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,6 +44,7 @@ public class EssayActivity extends RxActivity {
         super.onCreate();
         setContentView(R.layout.activity_essay);
         ButterKnife.bind(this);
+        toolBar.setTitle("随笔");
         setSupportActionBar(toolBar);
     }
 
@@ -58,7 +60,7 @@ public class EssayActivity extends RxActivity {
         int id = item.getItemId();
 
         if(id == R.id.action_add) {
-//            EssayAddActivity.startActivity(context);
+            EssayAddActivity.startActivity(context);
             return true;
         }
 

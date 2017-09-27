@@ -1,5 +1,6 @@
 package com.lpzahd.gallery.context;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -39,6 +40,11 @@ public class GalleryActivity extends WaiterActivity {
         context.startActivity(intent);
     }
 
+    public static void startActivity(Fragment fragment) {
+        Intent intent = new Intent(fragment.getActivity(), GalleryActivity.class);
+        fragment.startActivity(intent);
+    }
+
     @Override
     public void init() {
         super.init();
@@ -49,7 +55,11 @@ public class GalleryActivity extends WaiterActivity {
             @Gallery.Configuration.MODE int mode = configuration.getMode();
             switch (mode) {
                 case Gallery.Configuration.MODE_SELECT:
-                    addActivityWaiter(new MultiSelectPresenter(this, 3));
+                    MultiSelectPresenter presenter = new MultiSelectPresenter(this, configuration.getMaxSize());
+                    addActivityWaiter(presenter);
+                    if(configuration.getAction() != null) {
+                        configuration.getAction().action(presenter);
+                    }
                     break;
                 case Gallery.Configuration.MODE_GALLERY:
                 default:

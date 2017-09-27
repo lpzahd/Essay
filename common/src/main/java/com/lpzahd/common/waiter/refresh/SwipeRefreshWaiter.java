@@ -29,6 +29,7 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
                 return SwipeRefreshWaiter.this.doRefresh(page);
             }
 
+            @SuppressWarnings("unchecked")
             @Override
             public void onPtrSuccess(@LoadState int state) {
                 super.onPtrSuccess(state);
@@ -38,6 +39,7 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
                 }
             }
 
+            @SuppressWarnings("unchecked")
             @Override
             public void onLoadingSuccess(@LoadState int state) {
                 super.onLoadingSuccess(state);
@@ -48,6 +50,26 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
             }
         };
         processor.attach();
+    }
+
+    public void setSwipeRefreshCallBack(SwipeRefreshCallBack callback) {
+        processor.setSwipeRefreshCallBack(callback);
+    }
+
+    public void setStart(int start) {
+        processor.setStart(start);
+    }
+
+    public void setCount(int count) {
+        processor.setCount(count);
+    }
+
+    public int getCount() {
+        return processor.getCount();
+    }
+
+    public int getPage() {
+        return processor.getPage();
     }
 
     public abstract Flowable<? extends List> doRefresh(int page);
@@ -74,6 +96,12 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
 
         private RecyclerView recyclerView;
 
+        private SwipeRefreshCallBack callback;
+
+        public void setSwipeRefreshCallBack(SwipeRefreshCallBack callback) {
+            this.callback = callback;
+        }
+
         private SwipeRefreshProcessor(SwipeRefreshLayout swipeRefreshLayout, RecyclerView recyclerView) {
             this.swipeRefreshLayout = swipeRefreshLayout;
             this.recyclerView = recyclerView;
@@ -88,30 +116,40 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
         public void onStartPtr() {
             super.onStartPtr();
             swipeRefreshLayout.setRefreshing(true);
+            if(callback != null)
+                callback.onStartPtr(getStart(), getAdv(), getLoadState());
         }
 
         @Override
         public void onPtrComplete() {
             super.onPtrComplete();
             swipeRefreshLayout.setRefreshing(false);
+            if(callback != null)
+                callback.onPtrComplete(getStart(), getAdv(), getLoadState());
         }
 
         @Override
         public void onStartLoad() {
             super.onStartLoad();
             swipeRefreshLayout.setRefreshing(true);
+            if(callback != null)
+                callback.onStartLoad(getStart(), getAdv(), getLoadState());
         }
 
         @Override
         public void onLoadComplete() {
             super.onLoadComplete();
             swipeRefreshLayout.setRefreshing(false);
+            if(callback != null)
+                callback.onLoadComplete(getStart(), getAdv(), getLoadState());
         }
 
         @Override
         public void onRefresh() {
             onStartPtr();
             refresh(doRefresh(getAdv()), true);
+            if(callback != null)
+                callback.onRefresh(getStart(), getAdv(), getLoadState());
         }
 
         @Override
@@ -119,6 +157,9 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
             if (getLoadState() == RefreshProcessor.STATE_HAS_MORE) {
                 onStartLoad();
                 refresh(doRefresh(getAdv()), false);
+
+                if(callback != null)
+                    callback.onRefresh(getStart(), getAdv(), getLoadState());
             }
         }
 
@@ -129,6 +170,42 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
          */
         public abstract Flowable<? extends List> doRefresh(int page);
 
+    }
+
+    public interface SwipeRefreshCallBack {
+        void onStartPtr(int start, int page, @RefreshProcessor.LoadState int loadState);
+        void onPtrComplete(int start, int page, @RefreshProcessor.LoadState int loadState);
+        void onStartLoad(int start, int page, @RefreshProcessor.LoadState int loadState);
+        void onLoadComplete(int start, int page, @RefreshProcessor.LoadState int loadState);
+        void onRefresh(int start, int page, @RefreshProcessor.LoadState int loadState);
+    }
+
+    public static class SimpleCallBack implements SwipeRefreshCallBack {
+
+        @Override
+        public void onStartPtr(int start, int page, @RefreshProcessor.LoadState int loadState) {
+
+        }
+
+        @Override
+        public void onPtrComplete(int start, int page, @RefreshProcessor.LoadState int loadState) {
+
+        }
+
+        @Override
+        public void onStartLoad(int start, int page, @RefreshProcessor.LoadState int loadState) {
+
+        }
+
+        @Override
+        public void onLoadComplete(int start, int page, @RefreshProcessor.LoadState int loadState) {
+
+        }
+
+        @Override
+        public void onRefresh(int start, int page, @RefreshProcessor.LoadState int loadState) {
+
+        }
     }
 
     /**
