@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.andexert.library.RippleView;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.AbstractDraweeController;
@@ -25,10 +26,12 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.Image;
+import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
+import com.lpzahd.common.waiter.refresh.RefreshProcessor;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.leisure.LeisureActivity;
@@ -41,6 +44,7 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -97,7 +101,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
     private LeisureAdapter mAdapter;
 
     // 查询关键字
-    String word = "萝莉";
+    private String mWord = "萝莉";
 
     private Realm mRealm;
 
@@ -127,16 +131,16 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                 toggleShowModel();
                 break;
             case R.id.random_wordquery_fab:
-//                searchRandomWordQuery();
+                searchRandomWordQuery();
                 break;
             case R.id.page_fab:
-//                searchSkipPage();
+                searchSkipPage();
                 break;
             case R.id.random_word_fab:
-//                searchRandomWord();
+                searchRandomWord();
                 break;
             case R.id.random_page_fab:
-//                searchRandomPage();
+                searchRandomPage();
                 break;
         }
     }
@@ -165,20 +169,84 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         }
     }
 
+    private void searchRandomWordQuery() {
+        RealmResults<WordQuery> queries = mRealm.where(WordQuery.class)
+                .findAll();
+
+        if (Lists.empty(queries)) {
+            T.t("搜索库暂无内容");
+            return;
+        }
+
+        Random random = new Random();
+        mWord = queries.get(random.nextInt(queries.size())).word;
+        toolBar.setTitle(mWord);
+        mRefreshWaiter.autoRefresh();
+    }
+
+    private void searchSkipPage() {
+        new MaterialDialog.Builder(context)
+                .title("指定页码搜索")
+                .inputRange(0, QUERY_COUNT)
+                .autoDismiss(false)
+                .input("跳转页码", "", new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@android.support.annotation.NonNull MaterialDialog dialog, CharSequence input) {
+                        try {
+                            int page = Integer.parseInt(input.toString());
+                            if(page < 0) {
+                                page = -page;
+                            } else if(page == 0) {
+                                page = 1;
+                            }
+
+                            if(page > 30) {
+                                page = page % 30;
+                            }
+                            mRefreshWaiter.setStart(page - 1);
+                            mRefreshWaiter.autoRefresh();
+                            recyclerView.getLayoutManager().scrollToPosition(0);
+                            dialog.dismiss();
+                        } catch (NumberFormatException ex) {
+                            T.t("请输入正确的数字");
+                        }
+                    }
+                })
+                .show();
+    }
+
+    private void searchRandomWord() {
+        Random random = new Random();
+        char[] captcha = new char[random.nextInt(4) + 1];
+        for (int i = 0; i < captcha.length; i++) {
+            captcha[i] = (char) (random.nextInt(0x53E3) + 0x559D);
+        }
+        mWord = new String(captcha);
+
+        toolBar.setTitle(mWord);
+        mRefreshWaiter.autoRefresh();
+    }
+
+    private void searchRandomPage() {
+        Random random = new Random();
+        mRefreshWaiter.setStart(random.nextInt(QUERY_COUNT));
+        mRefreshWaiter.autoRefresh();
+        recyclerView.getLayoutManager().scrollToPosition(0);
+    }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (Strings.empty(query))
             return false;
 
-        word = query;
-        toolBar.setTitle(word);
+        mWord = query;
+        toolBar.setTitle(mWord);
 
         // 下拉刷新
         mRefreshWaiter.autoRefresh();
 
         final WordQuery findWord = mRealm.where(WordQuery.class)
-                .equalTo("word", word)
+                .equalTo("word", mWord)
                 .findFirst();
 
         if (findWord == null) {
@@ -229,6 +297,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
     @Override
     protected void initView() {
         super.initView();
+        setupView();
 
         toggleFab.setOnClickListener(this);
         pageFab.setOnClickListener(this);
@@ -249,7 +318,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
             @Override
             public Flowable<? extends List> doRefresh(final int page) {
-                return Net.get().baiduImg(word, page, getCount())
+                return Net.get().baiduImg(mWord, page, getCount())
                         .toFlowable(BackpressureStrategy.BUFFER)
                         .map(new Function<BaiduPic, List>() {
                             @Override
@@ -274,13 +343,27 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
         });
 
-        mRefreshWaiter.setCount(30);
+        mRefreshWaiter.setCount(QUERY_COUNT);
+
+        mRefreshWaiter.setSwipeRefreshCallBack(new SwipeRefreshWaiter.SimpleCallBack() {
+            @Override
+            public void onPtrComplete(int start, int page, @RefreshProcessor.LoadState int loadState) {
+                refreshPageFab(page + 1, page - start + 1);
+            }
+
+            @Override
+            public void onLoadComplete(int start, int page, @RefreshProcessor.LoadState int loadState) {
+                refreshPageFab(page + 1, page - start + 1);
+            }
+        });
+
+        refreshPageFab(0, 0);
         mRefreshWaiter.autoRefresh();
+    }
 
-        currentPageFab.setTitle("当前是第" + (mRefreshWaiter.getPage() + 1) + "页");
-        totalPageFab.setTitle("当前一共看了" + (mRefreshWaiter.getPage() + 1) + "页");
-
-        setupView();
+    private void refreshPageFab(int page, int total) {
+        currentPageFab.setTitle("当前是第" + page + "页");
+        totalPageFab.setTitle("当前一共看了" + total + "页");
     }
 
     private void setupView() {
@@ -295,11 +378,20 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
             searchView.setSuggestions(suggestions);
 
-            word = query.first().word;
+            mWord = query.first().word;
         }
 
-        toolBar.setTitle(word);
+        toolBar.setTitle(mWord);
         context.setSupportActionBar(toolBar);
+    }
+
+    @Override
+    protected void destroy() {
+        super.destroy();
+
+        if (!mRealm.isClosed())
+            mRealm.close();
+
     }
 
     static class LeisureHolder extends ToneAdapter.ToneHolder {
