@@ -23,6 +23,8 @@ public abstract class ToneActivityWaiter<E extends AppCompatActivity> extends Aw
 
     protected View rootView;
 
+    public ToneActivityWaiter() {super();}
+
     public ToneActivityWaiter(E e) {
         super(e);
     }

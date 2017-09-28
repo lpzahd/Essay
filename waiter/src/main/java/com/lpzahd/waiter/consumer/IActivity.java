@@ -5,6 +5,8 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 
 /**
  * Author : Lpzahd
@@ -50,4 +52,8 @@ public interface IActivity {
     void onConfigurationChanged(Configuration newConfig);
 
     void onLowMemory();
+
+    @State.InnerState int onCreateOptionsMenu(Menu menu);
+
+    @State.InnerState int onOptionsItemSelected(MenuItem item);
 }

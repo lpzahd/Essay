@@ -25,6 +25,8 @@ public class AwcWaiter<E extends AppCompatActivity, T extends ActivityWaiter> ex
         this.windowWaiter.addWaiter(windowWaiter);
     }
 
+    public AwcWaiter() {super();}
+
     public AwcWaiter(E e) {
         super(e);
     }

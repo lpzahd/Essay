@@ -20,8 +20,6 @@ public class ToneActivity extends WaiterActivity {
 
     protected AppCompatActivity context;
 
-    Unbinder unbinder;
-
     {
         context = this;
     }

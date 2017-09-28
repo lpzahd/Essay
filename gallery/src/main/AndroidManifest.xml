@@ -36,8 +36,7 @@
             android:clearTaskOnLaunch="true"
             android:configChanges="keyboardHidden|orientation"
             android:noHistory="false"
-            android:stateNotNeeded="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:stateNotNeeded="true">
             <intent-filter>
                 <action android:name="android.intent.action.GET_CONTENT"/>
                 <category android:name="android.intent.category.OPENABLE"/>

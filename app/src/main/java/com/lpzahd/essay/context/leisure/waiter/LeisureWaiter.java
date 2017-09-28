@@ -115,13 +115,14 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         mRealm = Realm.getDefaultInstance();
     }
 
-    public boolean onCreateOptionsMenu(Menu menu) {
+    @Override
+    public int createOptionsMenu(Menu menu) {
         context.getMenuInflater().inflate(R.menu.menu_leisure, menu);
 
         MenuItem item = menu.findItem(R.id.action_search);
         searchView.setMenuItem(item);
 
-        return true;
+        return super.createOptionsMenu(menu);
     }
 
     @Override

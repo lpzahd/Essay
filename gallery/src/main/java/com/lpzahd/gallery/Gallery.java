@@ -3,9 +3,11 @@ package com.lpzahd.gallery;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 
 import com.lpzahd.common.bus.Receiver;
 import com.lpzahd.common.bus.RxBus;
+import com.lpzahd.gallery.context.GalleryActivity;
 import com.lpzahd.gallery.presenter.MultiSelectPresenter;
 import com.lpzahd.waiter.LifecleCallBack;
 import com.lpzahd.waiter.WaiterActivity;
@@ -50,10 +52,6 @@ public class Gallery extends InnerGallery {
         return new ImageGallery(sGallery.mConfiguration);
     }
 
-    public interface ActionWaiter<T extends ActivityWaiter> {
-         void action(T waiter);
-    }
-
     public static class ImageGallery extends InnerGallery {
 
         private ImageGallery(Configuration configuration) {
@@ -64,13 +62,13 @@ public class Gallery extends InnerGallery {
             mConfiguration = configuration;
         }
 
-        public ImageGallery action(ActionWaiter<MultiSelectPresenter> action) {
-            mConfiguration.setAction(action);
+        public ImageGallery maxSize(@IntRange(from = 1) int maxSize) {
+            mConfiguration.setMaxSize(maxSize);
             return this;
         }
 
-        public ImageGallery maxSize(@IntRange(from = 1) int maxSize) {
-            mConfiguration.setMaxSize(maxSize);
+        public ImageGallery addWaiter(ActivityWaiter<GalleryActivity, ActivityWaiter> waiter) {
+            mConfiguration.addWaiter(waiter);
             return this;
         }
 
@@ -125,7 +123,7 @@ public class Gallery extends InnerGallery {
 
         public Configuration(){}
 
-        private List<ActivityWaiter> waiters;
+        private List<ActivityWaiter<GalleryActivity, ? extends ActivityWaiter>> waiters;
         private boolean replace = false;
 
         private @MODE int mode = MODE_GALLERY;
@@ -137,9 +135,7 @@ public class Gallery extends InnerGallery {
 
         private RxBus.BusService busService;
 
-        private ActionWaiter action;
-
-        public List<ActivityWaiter> getWaiters() {
+        public List<ActivityWaiter<GalleryActivity, ? extends ActivityWaiter>> getWaiters() {
             return waiters != null ? waiters : (waiters = new ArrayList<>());
         }
 
@@ -169,19 +165,11 @@ public class Gallery extends InnerGallery {
             this.busService = busService;
         }
 
-        public ActionWaiter getAction() {
-            return action;
-        }
-
-        public void setAction(ActionWaiter action) {
-            this.action = action;
-        }
-
-        public void setWaiters(List<ActivityWaiter> waiters) {
+        public void setWaiters(List<ActivityWaiter<GalleryActivity, ? extends ActivityWaiter>> waiters) {
             this.waiters = waiters;
         }
 
-        public void addWaiter(ActivityWaiter waiter) {
+        public void addWaiter(ActivityWaiter<GalleryActivity, ? extends ActivityWaiter> waiter) {
             getWaiters().add(waiter);
         }
 

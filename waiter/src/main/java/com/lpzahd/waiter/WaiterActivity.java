@@ -7,6 +7,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 
 import com.lpzahd.waiter.agency.ActivityWaiter;
 import com.lpzahd.waiter.agency.WindowWaiter;
@@ -200,7 +203,7 @@ public abstract class WaiterActivity extends AppCompatActivity {
         if(state == State.STATE_IGNORE)
             return super.onKeyDown(keyCode, event);
         else
-            return state != State.STATE_PREVENT;
+            return state == State.STATE_TRUE || state != State.STATE_FALSE && state != State.STATE_PREVENT;
     }
 
     @Override
@@ -213,5 +216,23 @@ public abstract class WaiterActivity extends AppCompatActivity {
     public void onLowMemory() {
         super.onLowMemory();
         activityWaiter.onLowMemory();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        int state = activityWaiter.onCreateOptionsMenu(menu);
+        if(state == State.STATE_IGNORE)
+            return super.onCreateOptionsMenu(menu);
+        else
+            return state == State.STATE_TRUE || state != State.STATE_FALSE && state != State.STATE_PREVENT;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int state = activityWaiter.onOptionsItemSelected(item);
+        if(state == State.STATE_IGNORE)
+            return super.onOptionsItemSelected(item);
+        else
+            return state == State.STATE_TRUE || state != State.STATE_FALSE && state != State.STATE_PREVENT;
     }
 }

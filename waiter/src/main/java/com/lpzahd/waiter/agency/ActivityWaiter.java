@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.lpzahd.waiter.consumer.IActivity;
 import com.lpzahd.waiter.consumer.State;
@@ -20,12 +22,18 @@ public class ActivityWaiter<E extends AppCompatActivity, T extends ActivityWaite
 
     protected E context;
 
+    public ActivityWaiter() {}
+
     public ActivityWaiter(E e) {
         context = e;
     }
 
     public ActivityWaiter(int gradation, E context) {
         super(gradation);
+        this.context = context;
+    }
+
+    final public void setContext(E context) {
         this.context = context;
     }
 
@@ -96,6 +104,15 @@ public class ActivityWaiter<E extends AppCompatActivity, T extends ActivityWaite
 
     protected void lowMemory() {
 
+    }
+
+
+    protected @State.InnerState int createOptionsMenu(Menu menu) {
+        return State.STATE_IGNORE;
+    }
+
+    protected @State.InnerState int optionsItemSelected(MenuItem item) {
+        return State.STATE_IGNORE;
     }
 
     @Override
@@ -290,5 +307,39 @@ public class ActivityWaiter<E extends AppCompatActivity, T extends ActivityWaite
             waiterTeam.get(i).onLowMemory();
         }
     }
+
+    @Override
+    final public int onCreateOptionsMenu(Menu menu) {
+        @State.InnerState int state = createOptionsMenu(menu);
+        if(state != State.STATE_IGNORE) {
+            return state;
+        }
+
+        for (int i = 0, size = waiterTeam.size(); i < size; i++) {
+            @State.InnerState int teamState = waiterTeam.get(i).onCreateOptionsMenu(menu);
+            if(teamState != State.STATE_IGNORE) {
+                return teamState;
+            }
+        }
+        return State.STATE_IGNORE;
+    }
+
+
+    @Override
+    final public int onOptionsItemSelected(MenuItem item) {
+        @State.InnerState int state = optionsItemSelected(item);
+        if(state != State.STATE_IGNORE) {
+            return state;
+        }
+
+        for (int i = 0, size = waiterTeam.size(); i < size; i++) {
+            @State.InnerState int teamState = waiterTeam.get(i).onOptionsItemSelected(item);
+            if(teamState != State.STATE_IGNORE) {
+                return teamState;
+            }
+        }
+        return State.STATE_IGNORE;
+    }
+
 
 }

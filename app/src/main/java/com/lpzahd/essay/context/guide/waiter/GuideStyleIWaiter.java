@@ -41,7 +41,7 @@ public class GuideStyleIWaiter extends ToneActivityWaiter<GuideActivity> {
     @Override
     protected void init() {
         super.init();
-        addWaiter(new TintBarWaiter(context));
+//        addWaiter(new TintBarWaiter(context));
     }
 
     public GuideStyleIWaiter(GuideActivity guideActivity) {

@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.view.KeyEvent;
+import android.view.Menu;
 
+import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.gallery.Gallery;
 import com.lpzahd.gallery.presenter.MediaPresenter;
 import com.lpzahd.gallery.presenter.MultiSelectPresenter;
@@ -52,24 +54,30 @@ public class GalleryActivity extends WaiterActivity {
         Gallery.Configuration configuration = Gallery.it().getConfig();
 
         if(!configuration.isReplace()) {
+            ActivityWaiter parent;
             @Gallery.Configuration.MODE int mode = configuration.getMode();
             switch (mode) {
                 case Gallery.Configuration.MODE_SELECT:
-                    MultiSelectPresenter presenter = new MultiSelectPresenter(this, configuration.getMaxSize());
-                    addActivityWaiter(presenter);
-                    if(configuration.getAction() != null) {
-                        configuration.getAction().action(presenter);
-                    }
+                    parent = new MultiSelectPresenter(this, configuration.getMaxSize());
+                    addActivityWaiter(parent);
                     break;
                 case Gallery.Configuration.MODE_GALLERY:
                 default:
                     addActivityWaiter(mMediaPresenter = new MediaPresenter(this));
+                    parent = mMediaPresenter;
                     break;
+            }
+            for (ActivityWaiter waiter : configuration.getWaiters()) {
+                waiter.setContext(this);
+                parent.addWaiter(waiter);
+            }
+        } else {
+            for (ActivityWaiter waiter : configuration.getWaiters()) {
+                waiter.setContext(this);
+                addActivityWaiter(waiter);
             }
         }
 
-        for (ActivityWaiter waiter : configuration.getWaiters())
-            addActivityWaiter(waiter);
     }
 
     @Override
@@ -86,5 +94,10 @@ public class GalleryActivity extends WaiterActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return super.onCreateOptionsMenu(menu);
     }
 }

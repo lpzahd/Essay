@@ -35,8 +35,4 @@ public class LeisureActivity extends ToneActivity {
         setContentView(R.layout.activity_leisure);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return mLeisureWaiter.onCreateOptionsMenu(menu);
-    }
 }

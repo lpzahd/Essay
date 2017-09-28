@@ -4,8 +4,9 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:fitsSystemWindows="true"
               android:orientation="vertical"
-              tools:context="com.lpzahd.gallery.context.GalleryActivity">
+              tools:context=".context.GalleryActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar_layout"
@@ -15,8 +16,7 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/tool_bar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary" />
+            android:layout_height="?attr/actionBarSize"/>
 
     </android.support.design.widget.AppBarLayout>
 
@@ -24,8 +24,8 @@
         android:id="@+id/root_view_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="#22C594C3">
+        android:background="#22C594C3"
+        android:orientation="vertical">
 
         <android.support.v4.widget.SwipeRefreshLayout
             android:id="@+id/swipe_refresh_layout"

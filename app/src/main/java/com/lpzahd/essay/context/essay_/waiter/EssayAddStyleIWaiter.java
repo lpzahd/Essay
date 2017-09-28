@@ -1,14 +1,31 @@
 package com.lpzahd.essay.context.essay_.waiter;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.view.menu.MenuItemImpl;
+import android.support.v7.view.menu.MenuPopupHelper;
+import android.support.v7.view.menu.MenuPresenter;
+import android.support.v7.view.menu.MenuView;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatImageView;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.AttributeSet;
+import android.view.InflateException;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 
 import com.lpzahd.aop.api.ThrottleFirst;
+import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.bus.Receiver;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
@@ -17,6 +34,9 @@ import com.lpzahd.gallery.Gallery;
 import com.lpzahd.gallery.context.GalleryActivity;
 import com.lpzahd.gallery.presenter.MultiSelectPresenter;
 import com.lpzahd.waiter.agency.ActivityWaiter;
+import com.lpzahd.waiter.consumer.State;
+
+import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -79,22 +99,48 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> {
     public void openGallery(View view) {
         Gallery.with(context)
                 .image()
-                .action(new Gallery.ActionWaiter<MultiSelectPresenter>() {
-                    @Override
-                    public void action(final MultiSelectPresenter waiter) {
-                        ToneActivityWaiter<GalleryActivity> simpleWaiter = new ToneActivityWaiter(waiter.getContext()) {
-                            @Override
-                            protected void initView() {
-                                super.initView();
-                                waiter.toolBar.setTitle("哈哈哈");
-                                waiter.getContext().setSupportActionBar(waiter.toolBar);
+                .maxSize(4)
+                .addWaiter(new ActivityWaiter<GalleryActivity, ActivityWaiter>() {
 
-                            }
-                        };
-                        waiter.addWaiter(simpleWaiter);
+                    @Override
+                    protected void init() {
+                        context.setTheme(R.style.AppTheme_AppBarOverlay);
+                    }
+
+                    @Override
+                    protected void create(Bundle savedInstanceState) {
+                        MultiSelectPresenter waiter = (MultiSelectPresenter) getBoss();
+                        waiter.toolBar.setPopupTheme(R.style.AppTheme_PopupOverlay);
+                        waiter.toolBar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
+                        waiter.toolBar.setTitle("图片");
+//                        waiter.toolBar.inflateMenu(R.menu.menu_gallery_multi_select);
+//                        waiter.toolBar.setMenuCallbacks();
+                        context.setSupportActionBar(waiter.toolBar);
+//                        R.layout.abc_action_menu_layout,
+//                                R.layout.abc_action_menu_item_layout,
+//                        android.support.v7.view.menu.ActionMenuItemView view1 = null;
+//                        createOptionsMenu(waiter.toolBar.getMenu());
+                    }
+
+                    @Override
+                    protected int createOptionsMenu(Menu menu) {
+                        context.getMenuInflater().inflate(R.menu.menu_gallery_multi_select, menu);
+                        return State.STATE_TRUE;
+                    }
+
+                    @Override
+                    protected int optionsItemSelected(MenuItem item) {
+                        int id = item.getItemId();
+
+                        if(id == R.id.action_select) {
+                            T.t("-,-");
+                            Random random = new Random();
+                            item.setTitle("" + random.nextInt(20));
+                        }
+
+                        return super.optionsItemSelected(item);
                     }
                 })
-                .maxSize(4)
                 .subscribe(new Receiver() {
                     @Override
                     public <T> void receive(Flowable<T> flowable) {

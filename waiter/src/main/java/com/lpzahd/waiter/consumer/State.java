@@ -27,7 +27,17 @@ public interface State {
      */
     int STATE_ALLOW = 2;
 
-    @IntDef({STATE_IGNORE, STATE_PREVENT, STATE_ALLOW})
+    /**
+     * 拦截子waiter操作，并且只返回true
+     */
+    int STATE_TRUE = 3;
+
+    /**
+     * 拦截子waiter操作，false
+     */
+    int STATE_FALSE = 4;
+
+    @IntDef({STATE_IGNORE, STATE_PREVENT, STATE_ALLOW, STATE_TRUE, STATE_FALSE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface InnerState {
     }
