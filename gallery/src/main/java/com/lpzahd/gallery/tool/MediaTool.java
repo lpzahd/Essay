@@ -25,29 +25,41 @@ import java.util.List;
  */
 public class MediaTool extends NoInstance {
 
+    public static List<MediaBean> getImageFromContext(Context context) {
+        return getImageFromContext(context, String.valueOf(Integer.MIN_VALUE), 1, Integer.MAX_VALUE);
+    }
+
+    public static List<MediaBean> getImageFromContext(Context context, String bucketId) {
+        return getImageFromContext(context, bucketId, 1, Integer.MAX_VALUE);
+    }
+
+    public static List<MediaBean> getImageFromContext(Context context, int page, int limit) {
+        return getImageFromContext(context, String.valueOf(Integer.MIN_VALUE), page, limit);
+    }
+
     /**
      * 获取
      * @param context 上下文
      * @param bucketId  当bucketId = Integer.MIN_VALUE 时，全查
      * @param page  页码
-     * @param limit 数量
+     * @param limit 数量 limit = Integer.MAX_VALUE 时，全查
      */
-    public static List<MediaBean> getMediaFromContext(Context context, String bucketId, int page, int limit) {
+    public static List<MediaBean> getImageFromContext(Context context, String bucketId, int page, int limit) {
         int offset = page * limit;
         ContentResolver resolver = context.getContentResolver();
 
         List<String> projection = new ArrayList<>();
-        projection.add(MediaStore.Video.Media._ID);
-        projection.add(MediaStore.Video.Media.TITLE);
-        projection.add(MediaStore.Video.Media.DATA);
-        projection.add(MediaStore.Video.Media.BUCKET_ID);
-        projection.add(MediaStore.Video.Media.BUCKET_DISPLAY_NAME);
-        projection.add(MediaStore.Video.Media.MIME_TYPE);
-        projection.add(MediaStore.Video.Media.DATE_ADDED);
-        projection.add(MediaStore.Video.Media.DATE_MODIFIED);
-        projection.add(MediaStore.Video.Media.LATITUDE);
-        projection.add(MediaStore.Video.Media.LONGITUDE);
-        projection.add(MediaStore.Video.Media.SIZE);
+        projection.add(MediaStore.Images.Media._ID);
+        projection.add(MediaStore.Images.Media.TITLE);
+        projection.add(MediaStore.Images.Media.DATA);
+        projection.add(MediaStore.Images.Media.BUCKET_ID);
+        projection.add(MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
+        projection.add(MediaStore.Images.Media.MIME_TYPE);
+        projection.add(MediaStore.Images.Media.DATE_ADDED);
+        projection.add(MediaStore.Images.Media.DATE_MODIFIED);
+        projection.add(MediaStore.Images.Media.LATITUDE);
+        projection.add(MediaStore.Images.Media.LONGITUDE);
+        projection.add(MediaStore.Images.Media.SIZE);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             projection.add(MediaStore.Video.Media.WIDTH);
             projection.add(MediaStore.Video.Media.HEIGHT);
@@ -60,12 +72,19 @@ public class MediaTool extends NoInstance {
             selectionArgs = new String[]{bucketId};
         }
 
+        String sortOrder;
+        if(limit == Integer.MAX_VALUE) {
+            sortOrder = MediaStore.Images.Media.DATE_ADDED +" DESC";
+        } else {
+            sortOrder =  MediaStore.Images.Media.DATE_ADDED +" DESC LIMIT " + limit +" OFFSET " + offset;
+        }
+
         Cursor cursor = ContentResolverCompat.query(resolver,
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 projection.toArray(new String[projection.size()]),
                 selection,
                 selectionArgs,
-                MediaStore.Images.Media.DATE_ADDED +" DESC LIMIT " + limit +" OFFSET " + offset,
+                sortOrder,
                 new CancellationSignal());
 
         List<MediaBean> mediaBeanList = new ArrayList<>();

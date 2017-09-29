@@ -63,7 +63,6 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.8.1'
     //    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 
-    compile 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
     compile 'com.jakewharton.threetenabp:threetenabp:1.0.5'
     // 处理方法数溢出
     compile 'com.android.support:multidex:1.0.1'

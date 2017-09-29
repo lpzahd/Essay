@@ -2,7 +2,13 @@ package com.lpzahd.atool.ui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
@@ -87,5 +93,37 @@ public class Ui extends NoInstance {
     public static int px2dip(Context context, float pxValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (pxValue / scale + 0.5f);
+    }
+
+    public static int getColor(Context context, @ColorRes int id) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return context.getColor(id);
+        } else {
+            return context.getResources().getColor(id);
+        }
+    }
+
+    public static ColorStateList getColorStateList(Context context, @ColorRes int id) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return context.getColorStateList(id);
+        } else {
+            return context.getResources().getColorStateList(id);
+        }
+    }
+
+    public static Drawable getDrawable(Context context, @DrawableRes int id) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return context.getDrawable(id);
+        } else {
+            return context.getResources().getDrawable(id);
+        }
+    }
+
+    public static void setBackground(@NonNull View v, Drawable drawable) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            v.setBackground(drawable);
+        } else {
+            v.setBackgroundDrawable(drawable);
+        }
     }
 }

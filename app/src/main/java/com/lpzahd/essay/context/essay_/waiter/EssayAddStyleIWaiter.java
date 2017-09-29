@@ -104,42 +104,42 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> {
 
                     @Override
                     protected void init() {
-                        context.setTheme(R.style.AppTheme_AppBarOverlay);
+//                        context.setTheme(R.style.AppTheme_AppBarOverlay);
                     }
 
                     @Override
                     protected void create(Bundle savedInstanceState) {
-                        MultiSelectPresenter waiter = (MultiSelectPresenter) getBoss();
-                        waiter.toolBar.setPopupTheme(R.style.AppTheme_PopupOverlay);
-                        waiter.toolBar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
-                        waiter.toolBar.setTitle("图片");
+//                        MultiSelectPresenter waiter = (MultiSelectPresenter) getBoss();
+//                        waiter.toolBar.setPopupTheme(R.style.AppTheme_PopupOverlay);
+//                        waiter.toolBar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
+//                        waiter.toolBar.setTitle("图片");
 //                        waiter.toolBar.inflateMenu(R.menu.menu_gallery_multi_select);
 //                        waiter.toolBar.setMenuCallbacks();
-                        context.setSupportActionBar(waiter.toolBar);
+//                        context.setSupportActionBar(waiter.toolBar);
 //                        R.layout.abc_action_menu_layout,
 //                                R.layout.abc_action_menu_item_layout,
 //                        android.support.v7.view.menu.ActionMenuItemView view1 = null;
 //                        createOptionsMenu(waiter.toolBar.getMenu());
                     }
 
-                    @Override
-                    protected int createOptionsMenu(Menu menu) {
-                        context.getMenuInflater().inflate(R.menu.menu_gallery_multi_select, menu);
-                        return State.STATE_TRUE;
-                    }
-
-                    @Override
-                    protected int optionsItemSelected(MenuItem item) {
-                        int id = item.getItemId();
-
-                        if(id == R.id.action_select) {
-                            T.t("-,-");
-                            Random random = new Random();
-                            item.setTitle("" + random.nextInt(20));
-                        }
-
-                        return super.optionsItemSelected(item);
-                    }
+//                    @Override
+//                    protected int createOptionsMenu(Menu menu) {
+//                        context.getMenuInflater().inflate(R.menu.menu_gallery_multi_select, menu);
+//                        return State.STATE_TRUE;
+//                    }
+//
+//                    @Override
+//                    protected int optionsItemSelected(MenuItem item) {
+//                        int id = item.getItemId();
+//
+//                        if(id == R.id.action_select) {
+//                            T.t("-,-");
+//                            Random random = new Random();
+//                            item.setTitle("" + random.nextInt(20));
+//                        }
+//
+//                        return super.optionsItemSelected(item);
+//                    }
                 })
                 .subscribe(new Receiver() {
                     @Override
