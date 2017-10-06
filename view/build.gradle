@@ -41,6 +41,8 @@ dependencies {
     compile project(':atool')
     compile project(':jtool')
     compile project(':config')
+
+    compile 'me.relex:photodraweeview:1.1.3'
 }
 repositories {
     mavenCentral()

@@ -23,11 +23,10 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
     // For animated GIF support
     // For WebP support, including animated WebP
     // For WebP support, without animations
@@ -37,19 +36,18 @@ dependencies {
     compile project(':jtool')
     compile project(':config')
     compile project(':common')
-
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    testCompile 'junit:junit:4.12'
     compile 'com.facebook.fresco:fresco:1.5.0'
     compile 'com.facebook.fresco:animated-gif:1.5.0'
     compile 'com.facebook.fresco:animated-webp:1.5.0'
     compile 'com.facebook.fresco:webpsupport:1.5.0'
-    provided 'com.facebook.fresco:imagepipeline-okhttp3:1.5.0'
-
     compile 'com.squareup.okhttp3:okhttp:3.8.0'
-    annotationProcessor  "com.jakewharton:butterknife-compiler:8.8.1"
+    testCompile 'junit:junit:4.12'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    provided 'com.facebook.fresco:imagepipeline-okhttp3:1.5.0'
+    compile project(':view')
 }
 repositories {
     mavenCentral()

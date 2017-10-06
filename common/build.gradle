@@ -46,4 +46,6 @@ dependencies {
     compile ('com.afollestad.material-dialogs:commons:0.9.4.2'){
         exclude group: 'com.android.support' //exclude 可以解决 lib冲突的问题。
     }
+
+    compile 'jp.wasabeef:fresco-processors:2.0.0'
 }

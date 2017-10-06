@@ -27,10 +27,12 @@ import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.jakewharton.rxbinding2.view.RxView;
+import com.lpzahd.Arrays;
 import com.lpzahd.Lists;
 import com.lpzahd.atool.enmu.Image;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
+import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
@@ -71,7 +73,7 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
     private static int MODE_SINGLE = 0;
     private static int MODE_MULTI = 1;
 
-    private final int LIMIT = 30;
+//    private final int LIMIT = 30;
 
     @BindView(R2.id.app_bar_layout)
     public AppBarLayout appBarLayout;
@@ -192,6 +194,28 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
 
         mAdapter = new MultiAdapter(context, getScreenSize(context).widthPixels / 3);
         recyclerView.setAdapter(mAdapter);
+
+        recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<MultiHolder>(recyclerView) {
+            @Override
+            public void onClick(RecyclerView rv, MultiHolder multiHolder) {
+                PreviewWaiter.startActivity(context,multiHolder.getAdapterPosition(),
+                        convertToPreview(mAdapter.getData()));
+            }
+
+            private ArrayList<PreviewWaiter.PreviewBean> convertToPreview(List<MultiBean> source) {
+                ArrayList<PreviewWaiter.PreviewBean> result = new ArrayList<>();
+                if(Lists.empty(source)) return result;
+
+                for (int i = 0, size = source.size(); i < size; i++) {
+                    MultiBean multi = source.get(i);
+                    PreviewWaiter.PreviewBean preview = new PreviewWaiter.PreviewBean();
+                    preview.uri = multi.uri;
+                    preview.checked = multi.checked;
+                    result.add(preview);
+                }
+                return result;
+            }
+        });
     }
 
     private ArrayList<BucketPresenter.BucketBean> getBuckets() {
@@ -383,7 +407,7 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
             ButterKnife.bind(this, itemView);
         }
 
-        public void setCheckBoxClickListener(View.OnClickListener listener) {
+        private void setCheckBoxClickListener(View.OnClickListener listener) {
             if (listener != null)
                 checkBox.setOnClickListener(listener);
         }
