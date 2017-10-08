@@ -2,80 +2,99 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.lpzahd.view.FlipView
-        android:id="@+id/flip_view"
+    <me.relex.photodraweeview.PhotoDraweeView
+        android:id="@+id/photo_drawee_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="8dp">
+        android:padding="16dp"
+        app:actualImageScaleType="focusCrop"/>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="8dp">
+    <android.support.v7.widget.AppCompatCheckBox
+        android:id="@+id/check_box"
+        style="@style/Widget.AppCompat.CompoundButton.CheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="2dp"/>
 
-            <me.relex.photodraweeview.PhotoDraweeView
-                android:id="@+id/photo_drawee_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="16dp" />
+    <!--<com.lpzahd.view.FlipView-->
+        <!--android:id="@+id/flip_view"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_marginBottom="8dp"-->
+        <!--android:layout_marginLeft="16dp"-->
+        <!--android:layout_marginRight="16dp"-->
+        <!--android:layout_marginTop="8dp">-->
 
-            <android.support.v7.widget.AppCompatCheckBox
-                android:id="@+id/check_box"
-                style="@style/Widget.AppCompat.CompoundButton.CheckBox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true"
-                android:layout_margin="2dp"/>
+        <!--<RelativeLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_margin="8dp">-->
 
-        </RelativeLayout>
+            <!--<me.relex.photodraweeview.PhotoDraweeView-->
+                <!--android:id="@+id/photo_drawee_view"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:padding="16dp"-->
+                <!--app:actualImageScaleType="focusCrop"/>-->
+
+            <!--<android.support.v7.widget.AppCompatCheckBox-->
+                <!--android:id="@+id/check_box"-->
+                <!--style="@style/Widget.AppCompat.CompoundButton.CheckBox"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_alignParentEnd="true"-->
+                <!--android:layout_alignParentRight="true"-->
+                <!--android:layout_alignParentTop="true"-->
+                <!--android:layout_margin="2dp"/>-->
+
+        <!--</RelativeLayout>-->
 
 
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="8dp"
-            android:padding="16dp">
+        <!--<FrameLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_margin="8dp"-->
+            <!--android:padding="16dp">-->
 
-            <com.facebook.drawee.view.SimpleDraweeView
-                android:id="@+id/bg_drawee_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+            <!--<com.facebook.drawee.view.SimpleDraweeView-->
+                <!--android:id="@+id/bg_drawee_view"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent" />-->
 
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fillViewport="true"
-                android:background="#66000000">
+            <!--<ScrollView-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:fillViewport="true"-->
+                <!--android:background="#66000000">-->
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                <!--<LinearLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:orientation="vertical">-->
 
-                    <android.support.v7.widget.AppCompatTextView
-                        android:id="@+id/story"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:lines="1"
-                        android:ellipsize="marquee"
-                        android:textSize="20sp"
-                        android:textColor="#ffffff"
-                        tools:text="许你一个故事"/>
+                    <!--<android.support.v7.widget.AppCompatTextView-->
+                        <!--android:id="@+id/story"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:lines="1"-->
+                        <!--android:ellipsize="marquee"-->
+                        <!--android:textSize="20sp"-->
+                        <!--android:textColor="#ffffff"-->
+                        <!--tools:text="许你一个故事"/>-->
 
-                </LinearLayout>
+                <!--</LinearLayout>-->
 
-            </ScrollView>
+            <!--</ScrollView>-->
 
-        </FrameLayout>
+        <!--</FrameLayout>-->
 
-    </com.lpzahd.view.FlipView>
+    <!--</com.lpzahd.view.FlipView>-->
 
 </RelativeLayout>

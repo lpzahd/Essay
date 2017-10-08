@@ -6,6 +6,7 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.net.Uri;
+import android.os.Build;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -14,9 +15,11 @@ import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.transition.Explode;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
@@ -27,7 +30,6 @@ import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.jakewharton.rxbinding2.view.RxView;
-import com.lpzahd.Arrays;
 import com.lpzahd.Lists;
 import com.lpzahd.atool.enmu.Image;
 import com.lpzahd.atool.ui.T;
@@ -144,6 +146,10 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
     protected void init() {
         super.init();
         addWaiter(mBucketPresenter = new BucketPresenter(context));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            context.getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+            context.getWindow().setExitTransition(new Explode());
+        }
     }
 
     @Override
@@ -198,7 +204,7 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
         recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<MultiHolder>(recyclerView) {
             @Override
             public void onClick(RecyclerView rv, MultiHolder multiHolder) {
-                PreviewWaiter.startActivity(context,multiHolder.getAdapterPosition(),
+                PreviewWaiter.startActivity(context, multiHolder.getAdapterPosition(),
                         convertToPreview(mAdapter.getData()));
             }
 

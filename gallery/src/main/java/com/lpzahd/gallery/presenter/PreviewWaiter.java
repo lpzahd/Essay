@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.design.widget.AppBarLayout;
@@ -14,26 +15,25 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.transition.Explode;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.backends.pipeline.PipelineDraweeController;
 import com.facebook.drawee.controller.BaseControllerListener;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
-import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
-import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.gallery.R;
 import com.lpzahd.gallery.R2;
 import com.lpzahd.gallery.context.PreviewActivity;
-import com.lpzahd.gallery.tool.MediaTool;
 import com.lpzahd.view.FlipView;
 
 import java.util.ArrayList;
@@ -73,12 +73,39 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
         context.startActivity(intent);
     }
 
+    // 保留
+//    public static void startActivity(Activity activity, View v1, View v2,int currIndex, ArrayList<PreviewBean> medias) {
+//        Intent intent = new Intent(activity, PreviewActivity.class);
+//        intent.putExtra(EXTRA_DATA_CURR_INDEX, currIndex);
+//        intent.putParcelableArrayListExtra(EXTRA_DATA_MEDIA, medias);
+//        ActivityCompat.setExitSharedElementCallback(activity, new SharedElementCallback() {
+//            @Override
+//            public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+//                super.onMapSharedElements(names, sharedElements);
+//            }
+//        });
+//        ActivityOptionsCompat opt = ActivityOptionsCompat.makeSceneTransitionAnimation(activity,
+//                new Pair<>(v1, ViewCompat.getTransitionName(v1)),
+//                new Pair<>(v2, ViewCompat.getTransitionName(v2)));
+//        ActivityCompat.startActivity(activity, intent, opt.toBundle());
+//        shareView.setDrawingCacheEnabled(false);
+//    }
+
     private int currIndex;
     private ArrayList<PreviewBean> mMedias;
     private PreviewAdapter mAdapter;
 
     public PreviewWaiter(PreviewActivity previewActivity) {
         super(previewActivity);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            context.getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+            context.getWindow().setExitTransition(new Explode());
+        }
     }
 
     @Override
@@ -118,6 +145,7 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
         mAdapter.setData(mMedias);
         recyclerView.setAdapter(mAdapter);
         recyclerView.scrollToPosition(currIndex);
+
     }
 
     public static class PreviewBean implements Parcelable {
@@ -159,7 +187,7 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
     private class PreviewAdapter extends ToneAdapter<PreviewBean, PreviewHolder> {
 
         private int size = 200;
-        private List<Integer> slects;
+        private List<Integer> slects = new ArrayList<>();
 
         private PreviewAdapter(Context context) {
             super(context);
@@ -212,10 +240,10 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
             holder.checkBox.setChecked(bean.checked);
 
             showPhoto(holder.photoDraweeView, bean);
-            showBlurImg(holder.bgDraweeView, bean);
-
-            holder.flipView.reset();
-            holder.story.setText("" + position);
+//            showBlurImg(holder.bgDraweeView, bean);
+//
+//            holder.flipView.reset();
+//            holder.story.setText("" + position);
         }
 
         private void showPhoto(final PhotoDraweeView photoDraweeView, PreviewBean bean) {
@@ -238,7 +266,7 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
         }
 
         private void showBlurImg(SimpleDraweeView bgDraweeView, PreviewBean bean) {
-            ImageRequest request =ImageRequestBuilder.newBuilderWithSource(bean.uri)
+            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(bean.uri)
                     .setPostprocessor(new BlurPostprocessor(context))
                     .build();
 
@@ -259,19 +287,20 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
 
         @BindView(R2.id.photo_drawee_view)
         PhotoDraweeView photoDraweeView;
-
-        @BindView(R2.id.bg_drawee_view)
-        SimpleDraweeView bgDraweeView;
-
-        @BindView(R2.id.story)
-        AppCompatTextView story;
-
-        @BindView(R2.id.flip_view)
-        FlipView flipView;
+//
+//        @BindView(R2.id.bg_drawee_view)
+//        SimpleDraweeView bgDraweeView;
+//
+//        @BindView(R2.id.story)
+//        AppCompatTextView story;
+//
+//        @BindView(R2.id.flip_view)
+//        FlipView flipView;
 
         PreviewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+
         }
 
         void setCheckBoxClickListener(View.OnClickListener listener) {
