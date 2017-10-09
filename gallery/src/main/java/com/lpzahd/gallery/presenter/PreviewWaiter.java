@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatTextView;
@@ -28,12 +29,18 @@ import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.lpzahd.Lists;
+import com.lpzahd.atool.enmu.Image;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
+import com.lpzahd.common.tone.data.DataFactory;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
+import com.lpzahd.common.util.fresco.Frescoer;
+import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.gallery.R;
 import com.lpzahd.gallery.R2;
 import com.lpzahd.gallery.context.PreviewActivity;
+import com.lpzahd.gallery.tool.MediaTool;
 import com.lpzahd.view.FlipView;
 
 import java.util.ArrayList;
@@ -41,6 +48,14 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
+import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 import jp.wasabeef.fresco.processors.BlurPostprocessor;
 import me.relex.photodraweeview.PhotoDraweeView;
 
@@ -49,10 +64,15 @@ import me.relex.photodraweeview.PhotoDraweeView;
  * 时间 : 2017/10/6.
  * 描述 ： 命里有时终须有，命里无时莫强求
  */
-public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
+public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> implements DataFactory.DataProcess<MediaTool.MediaBean,PreviewWaiter.PreviewBean> {
 
-    private static final String EXTRA_DATA_MEDIA = "extra_data_media";
+    private static final String EXTRA_DATA_MODE = "extra_data_mode";
     private static final String EXTRA_DATA_CURR_INDEX = "extra_data_curr_index";
+    private static final String EXTRA_DATA_MEDIA = "extra_data_media";
+    private static final String EXTRA_DATA_BUCKET_ID = "extra_data_bucket_id";
+
+    private static final int MODE_QUERY_SOURCE = 0;
+    private static final int MODE_QUERY_DB = 1;
 
     @BindView(R2.id.tool_bar)
     Toolbar toolBar;
@@ -60,11 +80,17 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
     @BindView(R2.id.app_bar_layout)
     AppBarLayout appBarLayout;
 
+    @BindView(R2.id.swipe_refresh_layout)
+    SwipeRefreshLayout swipeRefershLayout;
+
     @BindView(R2.id.recycler_view)
     RecyclerView recyclerView;
 
+    private int mode = MODE_QUERY_DB;
+
     private int maxSize = 1;
     private int selectSize = 0;
+    private String bucketId = MediaTool.MEDIA_NO_BUCKET;
 
     /**
      * 会溢出
@@ -73,6 +99,17 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
         Intent intent = new Intent(context, PreviewActivity.class);
         intent.putExtra(EXTRA_DATA_CURR_INDEX, currIndex);
         intent.putParcelableArrayListExtra(EXTRA_DATA_MEDIA, medias);
+        context.startActivity(intent);
+    }
+
+    public static void startActivity(Context context, String bucketId) {
+        startActivity(context, 0, bucketId);
+    }
+
+    public static void startActivity(Context context, int currIndex, String bucketId) {
+        Intent intent = new Intent(context, PreviewActivity.class);
+        intent.putExtra(EXTRA_DATA_CURR_INDEX, currIndex);
+        intent.putExtra(EXTRA_DATA_BUCKET_ID, bucketId);
         context.startActivity(intent);
     }
 
@@ -98,6 +135,9 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
     private ArrayList<PreviewBean> mMedias;
     private PreviewAdapter mAdapter;
 
+    private SwipeRefreshWaiter mRefreshWaiter;
+    private DataFactory<MediaTool.MediaBean, PreviewBean> mDataFactory;
+
     public PreviewWaiter(PreviewActivity previewActivity) {
         super(previewActivity);
     }
@@ -109,6 +149,7 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
             context.getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
             context.getWindow().setExitTransition(new Explode());
         }
+        mDataFactory = DataFactory.of(this);
     }
 
     @Override
@@ -118,8 +159,16 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
 
     @Override
     protected boolean checkArgus(Intent intent) {
-        currIndex = intent.getIntExtra(EXTRA_DATA_CURR_INDEX, 0);
-        mMedias = intent.getParcelableArrayListExtra(EXTRA_DATA_MEDIA);
+        mode = intent.getIntExtra(EXTRA_DATA_MODE, MODE_QUERY_DB);
+
+        if(mode == MODE_QUERY_DB) {
+            currIndex = intent.getIntExtra(EXTRA_DATA_CURR_INDEX, 0);
+            bucketId = intent.getStringExtra(EXTRA_DATA_BUCKET_ID);
+        } else if(mode == MODE_QUERY_SOURCE) {
+            currIndex = intent.getIntExtra(EXTRA_DATA_CURR_INDEX, 0);
+            mMedias = intent.getParcelableArrayListExtra(EXTRA_DATA_MEDIA);
+        }
+
         return super.checkArgus(intent);
     }
 
@@ -145,9 +194,65 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
         PagerSnapHelper snapHelper = new PagerSnapHelper();
         snapHelper.attachToRecyclerView(recyclerView);
         mAdapter = new PreviewAdapter(context);
-        mAdapter.setData(mMedias);
         recyclerView.setAdapter(mAdapter);
-        recyclerView.scrollToPosition(currIndex);
+    }
+
+    @Override
+    protected void initData() {
+        if(mode == MODE_QUERY_SOURCE) {
+            swipeRefershLayout.setEnabled(false);
+            mAdapter.setData(mMedias);
+            recyclerView.scrollToPosition(currIndex);
+        } else if(mode == MODE_QUERY_DB) {
+            addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefershLayout, recyclerView) {
+
+                @Override
+                public Flowable<? extends List> doRefresh(final int page) {
+                    return Flowable.create(new FlowableOnSubscribe<List<MediaTool.MediaBean>>() {
+                        @Override
+                        public void subscribe(@NonNull FlowableEmitter<List<MediaTool.MediaBean>> e) throws Exception {
+                            List<MediaTool.MediaBean> mediaBeanList = MediaTool.getImageFromContext(context, bucketId);
+                            e.onNext(mediaBeanList);
+                        }
+                    }, BackpressureStrategy.BUFFER)
+                            .filter(new Predicate<List<MediaTool.MediaBean>>() {
+                                @Override
+                                public boolean test(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
+                                    return !Lists.empty(mediaBeen);
+                                }
+                            })
+                            .map(new Function<List<MediaTool.MediaBean>, List<PreviewBean>>() {
+                                @Override
+                                public List<PreviewBean> apply(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
+                                    return mDataFactory.processArray(mediaBeen);
+                                }
+                            })
+                            .subscribeOn(Schedulers.io());
+                }
+
+            });
+
+            mRefreshWaiter.setCount(Integer.MAX_VALUE);
+            mRefreshWaiter.autoRefresh();
+
+            mAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+
+                @Override
+                public void onChanged() {
+                    super.onChanged();
+                    recyclerView.scrollToPosition(currIndex);
+                    mAdapter.unregisterAdapterDataObserver(this);
+                }
+
+            });
+        }
+    }
+
+    @Override
+    public PreviewBean process(MediaTool.MediaBean mediaBean) {
+        PreviewBean bean = new PreviewBean();
+        bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), Image.SOURCE_FILE);
+        return bean;
     }
 
     public static class PreviewBean implements Parcelable {

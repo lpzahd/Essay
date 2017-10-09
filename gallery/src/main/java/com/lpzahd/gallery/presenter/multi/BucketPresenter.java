@@ -1,6 +1,5 @@
 package com.lpzahd.gallery.presenter.multi;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,9 +8,7 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +21,7 @@ import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.lpzahd.atool.ui.Ui;
+import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.fragment.ToneDialogFragment;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
@@ -32,7 +30,6 @@ import com.lpzahd.gallery.R2;
 import com.lpzahd.gallery.context.GalleryActivity;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -49,12 +46,23 @@ public class BucketPresenter extends ToneActivityWaiter<GalleryActivity> {
         super(context);
     }
 
-    public void showDialog(ArrayList<BucketBean> data) {
-        BucketDialog.newInstance(data).show(context);
+    public void showDialog(String title, ArrayList<BucketBean> data) {
+        showDialog(title, data, null);
+    }
+
+    public void showDialog(String title, ArrayList<BucketBean> data, OnBucketClickListener listener) {
+        BucketDialog dialog = BucketDialog.newInstance(title, data);
+        dialog.setOnBucketClickListener(listener);
+        dialog.show(context);
+    }
+
+    public interface OnBucketClickListener {
+        void click(BucketDialog dialog, int position, BucketBean bucket);
     }
 
     public static class BucketDialog extends ToneDialogFragment {
 
+        private static String BUNDLE_EXTRA_TITLE = "bundle_extra_title";
         private static String BUNDLE_EXTRA_BUCKETS = "bundle_extra_buckets";
         public static String TAG = "com.lpzahd.gallery.presenter.multi.BucketPresenter.BucketDialog.TAG";
 
@@ -66,10 +74,18 @@ public class BucketPresenter extends ToneActivityWaiter<GalleryActivity> {
         @BindView(R2.id.recycler_view)
         RecyclerView recyclerView;
 
-        public static BucketDialog newInstance(ArrayList<BucketBean> data) {
+        private BucketAdapter mAdapter;
+        private OnBucketClickListener mListener;
+
+        public void setOnBucketClickListener(OnBucketClickListener listener) {
+            mListener = listener;
+        }
+
+        public static BucketDialog newInstance(String title, ArrayList<BucketBean> buckets) {
             BucketDialog dialog = new BucketDialog();
             Bundle bundle = new Bundle();
-            bundle.putParcelableArrayList(BUNDLE_EXTRA_BUCKETS, data);
+            bundle.putString(BUNDLE_EXTRA_TITLE, title);
+            bundle.putParcelableArrayList(BUNDLE_EXTRA_BUCKETS, buckets);
             dialog.setArguments(bundle);
             return dialog;
         }
@@ -83,14 +99,25 @@ public class BucketPresenter extends ToneActivityWaiter<GalleryActivity> {
 
             final Context context = getContext();
             recyclerView.setLayoutManager(new GridLayoutManager(context, 3, GridLayoutManager.HORIZONTAL, false));
-//            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<BucketHolder>(recyclerView) {
+                @Override
+                public void onClick(RecyclerView rv, BucketHolder bucketHolder) {
+                    if(mListener != null) {
+                        final int position = bucketHolder.getAdapterPosition();
+                        mListener.click(BucketDialog.this, position, mAdapter.getItem(position));
+                    }
+                }
+            });
 
-            BucketAdapter adapter = new BucketAdapter(context);
-            recyclerView.setAdapter(adapter);
+            mAdapter = new BucketAdapter(context);
+            recyclerView.setAdapter(mAdapter);
 
             Bundle bundle = getArguments();
+            String title = bundle.getString(BUNDLE_EXTRA_TITLE, "所有图片");
+            titleTv.setText(title);
+
             ArrayList<BucketBean> data = bundle.getParcelableArrayList(BUNDLE_EXTRA_BUCKETS);
-            adapter.setData(data);
+            mAdapter.setData(data);
 
             return rootView;
         }

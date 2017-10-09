@@ -31,11 +31,13 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.lpzahd.Lists;
+import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.Image;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
+import com.lpzahd.common.tone.data.DataFactory;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
@@ -46,7 +48,6 @@ import com.lpzahd.gallery.presenter.multi.BucketPresenter;
 import com.lpzahd.gallery.tool.MediaTool;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -70,7 +71,7 @@ import io.reactivex.schedulers.Schedulers;
  * Date : 九月
  * Desction : (•ิ_•ิ)
  */
-public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
+public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> implements BucketPresenter.OnBucketClickListener, DataFactory.DataProcess<MediaTool.MediaBean,MultiSelectPresenter.MultiBean> {
 
     private static int MODE_SINGLE = 0;
     private static int MODE_MULTI = 1;
@@ -114,12 +115,14 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
 
     private int maxSize = 1;
     private int selectSize = 0;
+    private String bucketId = MediaTool.MEDIA_NO_BUCKET;
 
     private List<MediaTool.MediaBean> mOriginalSource;
     private Map<String, BucketPresenter.BucketBean> mBucketMap;
 
     private MultiAdapter mAdapter;
 
+    private DataFactory<MediaTool.MediaBean, MultiBean> mDataFactory;
     private SwipeRefreshWaiter mRefreshWaiter;
 
     private List<MediaTool.MediaBean> mSelected;
@@ -150,6 +153,8 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
             context.getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
             context.getWindow().setExitTransition(new Explode());
         }
+
+        mDataFactory = DataFactory.of(this);
     }
 
     @Override
@@ -189,7 +194,7 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(Object o) throws Exception {
-                        mBucketPresenter.showDialog(getBuckets());
+                        mBucketPresenter.showDialog(folderNameTv.getText().toString(), getBuckets(), MultiSelectPresenter.this);
                     }
                 });
 
@@ -204,19 +209,19 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
         recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<MultiHolder>(recyclerView) {
             @Override
             public void onClick(RecyclerView rv, MultiHolder multiHolder) {
-                PreviewWaiter.startActivity(context, multiHolder.getAdapterPosition(),
-                        convertToPreview(mAdapter.getData()));
+//                PreviewWaiter.startActivity(context, multiHolder.getAdapterPosition(),
+//                        convertToPreview(mAdapter.getData()));
+                PreviewWaiter.startActivity(context, multiHolder.getAdapterPosition(), bucketId);
             }
 
             private ArrayList<PreviewWaiter.PreviewBean> convertToPreview(List<MultiBean> source) {
                 ArrayList<PreviewWaiter.PreviewBean> result = new ArrayList<>();
-                if(Lists.empty(source)) return result;
+                if (Lists.empty(source)) return result;
 
                 for (int i = 0, size = source.size(); i < size; i++) {
-                    MultiBean multi = source.get(i);
+                    MultiBean media = source.get(i);
                     PreviewWaiter.PreviewBean preview = new PreviewWaiter.PreviewBean();
-                    preview.uri = multi.uri;
-                    preview.checked = multi.checked;
+                    preview.uri = media.uri;
                     result.add(preview);
                 }
                 return result;
@@ -283,34 +288,29 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
                 return Flowable.create(new FlowableOnSubscribe<List<MediaTool.MediaBean>>() {
                     @Override
                     public void subscribe(@NonNull FlowableEmitter<List<MediaTool.MediaBean>> e) throws Exception {
-                        List<MediaTool.MediaBean> mediaBeanList = MediaTool.getImageFromContext(context);
+                        List<MediaTool.MediaBean> mediaBeanList = MediaTool.getImageFromContext(context, bucketId);
                         e.onNext(mediaBeanList);
                     }
                 }, BackpressureStrategy.BUFFER)
                         .filter(new Predicate<List<MediaTool.MediaBean>>() {
                             @Override
                             public boolean test(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
-                                mOriginalSource = mediaBeen;
+                                if(Lists.empty(mOriginalSource)) {
+                                    mOriginalSource = mediaBeen;
+                                    mBucketMap = pick(mediaBeen);
+                                } else {
+                                    if(!Lists.empty(mediaBeen) && mediaBeen.size() > mOriginalSource.size()) {
+                                        mOriginalSource = mediaBeen;
+                                        mBucketMap = pick(mediaBeen);
+                                    }
+                                }
                                 return !Lists.empty(mediaBeen);
-                            }
-                        })
-                        .filter(new Predicate<List<MediaTool.MediaBean>>() {
-                            @Override
-                            public boolean test(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
-                                mBucketMap = pick(mediaBeen);
-                                return mBucketMap != null && !mBucketMap.isEmpty();
                             }
                         })
                         .map(new Function<List<MediaTool.MediaBean>, List<MultiBean>>() {
                             @Override
                             public List<MultiBean> apply(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
-                                List<MultiBean> res = new ArrayList<>();
-                                for (int i = 0, size = mediaBeen.size(); i < size; i++) {
-                                    MultiBean bean = new MultiBean();
-                                    bean.uri = Frescoer.uri(mediaBeen.get(i).getOriginalPath(), Image.SOURCE_FILE);
-                                    res.add(bean);
-                                }
-                                return res;
+                                return mDataFactory.processArray(mediaBeen);
                             }
                         })
                         .subscribeOn(Schedulers.io());
@@ -331,7 +331,32 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> {
         return displaysMetrics;
     }
 
-    private static class MultiBean {
+    @Override
+    public void click(BucketPresenter.BucketDialog dialog, int position, BucketPresenter.BucketBean bucket) {
+        toolBar.setTitle(bucket.getName());
+
+        bucketId = bucket.getId();
+        List<MediaTool.MediaBean> adapterData = new ArrayList<>();
+        for (int i = 0, size = mOriginalSource.size(); i < size; i++) {
+            MediaTool.MediaBean bean = mOriginalSource.get(i);
+            if(Strings.equals(bucketId, bean.getBucketId())) {
+                adapterData.add(bean);
+            }
+        }
+        mAdapter.setData(mDataFactory.processArray(adapterData));
+        recyclerView.scrollToPosition(0);
+
+        dialog.dismiss();
+    }
+
+    @Override
+    public MultiBean process(MediaTool.MediaBean mediaBean) {
+        MultiBean bean = new MultiBean();
+        bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), Image.SOURCE_FILE);
+        return bean;
+    }
+
+    public static class MultiBean {
         public Uri uri;
         public boolean checked;
     }

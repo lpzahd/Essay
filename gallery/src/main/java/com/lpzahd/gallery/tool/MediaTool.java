@@ -25,8 +25,10 @@ import java.util.List;
  */
 public class MediaTool extends NoInstance {
 
+    public static final String MEDIA_NO_BUCKET = String.valueOf(Integer.MIN_VALUE);
+
     public static List<MediaBean> getImageFromContext(Context context) {
-        return getImageFromContext(context, String.valueOf(Integer.MIN_VALUE), 1, Integer.MAX_VALUE);
+        return getImageFromContext(context, MEDIA_NO_BUCKET, 1, Integer.MAX_VALUE);
     }
 
     public static List<MediaBean> getImageFromContext(Context context, String bucketId) {
@@ -34,7 +36,7 @@ public class MediaTool extends NoInstance {
     }
 
     public static List<MediaBean> getImageFromContext(Context context, int page, int limit) {
-        return getImageFromContext(context, String.valueOf(Integer.MIN_VALUE), page, limit);
+        return getImageFromContext(context, MEDIA_NO_BUCKET, page, limit);
     }
 
     /**
