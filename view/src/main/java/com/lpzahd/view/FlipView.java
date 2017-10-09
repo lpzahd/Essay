@@ -11,15 +11,14 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
-
 
 /**
  * Created by Administrator on 2016/11/9 0009.
- *
+ * <p>
  * 无限翻转 cardview
- *
- * 已知问题，photoview 请求拦截了事件分发，操蛋子，找不到解决方案，也不想重写photoview， 就缩放会响应了
+ * <p>
  */
 
 public class FlipView extends FrameLayout {
@@ -66,32 +65,28 @@ public class FlipView extends FrameLayout {
 
     private void init() {
         gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-
             @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
-                startFlip(FlipView.this);
+            public boolean onSingleTapUp(MotionEvent e) {
+                startFlip();
                 return true;
             }
-
         });
-
         this.setClickable(true);
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
+//      if(ViewGroup.mGroupFlags |= ViewGroup.FLAG_DISALLOW_INTERCEPT) {};
         return super.dispatchTouchEvent(event);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        gestureDetector.onTouchEvent(event);
-        return super.onTouchEvent(event);
+        return gestureDetector.onTouchEvent(event);
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        this.onTouchEvent(event);
         return super.onInterceptTouchEvent(event);
     }
 
@@ -111,7 +106,7 @@ public class FlipView extends FrameLayout {
      * 如果子view有动态添加，则先调用此方法prepare
      */
     public void prepare() {
-       prepare(showChildIndex);
+        prepare(showChildIndex);
     }
 
     /**
@@ -119,13 +114,29 @@ public class FlipView extends FrameLayout {
      */
     public void prepare(int showIndex) {
         showChildIndex = showIndex;
-        getChildAt(showChildIndex).setAlpha(1);
+        final View showView = getChildAt(showIndex);
+        showView.setVisibility(View.VISIBLE);
+        showView.setAlpha(1);
+        enableAll(showView, true);
 
         float scale = getResources().getDisplayMetrics().density * 10000;
-        for (int i = 0; i< getChildCount(); i++) {
-            getChildAt(i).setCameraDistance(scale);
-            if(showChildIndex != i) {
-                getChildAt(i).setAlpha(0);
+        for (int i = 0; i < getChildCount(); i++) {
+            final View hideView = getChildAt(i);
+            hideView.setCameraDistance(scale);
+            if (showChildIndex != i) {
+                hideView.setAlpha(0);
+                hideView.setVisibility(View.INVISIBLE);
+                enableAll(hideView, false);
+            }
+        }
+    }
+
+    private void enableAll(View v, boolean enbale) {
+        v.setEnabled(enbale);
+        if (v instanceof ViewGroup) {
+            ViewGroup parent = (ViewGroup) v;
+            for (int i = 0, size = parent.getChildCount(); i < size; i++) {
+                enableAll(parent.getChildAt(i), enbale);
             }
         }
     }
@@ -137,20 +148,20 @@ public class FlipView extends FrameLayout {
     /**
      * 开始翻转
      */
-    public void startFlip(View v) {
-        if(!isFlip)
-            return ;
+    public void startFlip() {
+        if (!isFlip)
+            return;
 
-        if(getChildCount() < 2)
-            return ;
+        if (getChildCount() < 2)
+            return;
 
         View fontView = getChildAt(showChildIndex);
 
         View backView = getChildAt(getBackIndex());
 
-        if(animSet != null && animSet.isRunning() ) {
+        if (animSet != null && animSet.isRunning()) {
             // 动画没停止拒绝再次开启动画
-            return ;
+            return;
         }
         // 这个效果不好
 //        // 快速翻过
@@ -168,32 +179,29 @@ public class FlipView extends FrameLayout {
     }
 
     /**
-     * 获取后面的view的角标
+     * 获取nextview的角标
      */
     private int getBackIndex() {
-        if(showChildIndex + 1 >= getChildCount())
-            return 0;
-        else
-           return showChildIndex + 1;
+        return (showChildIndex + 1 >= getChildCount()) ? 0 : showChildIndex + 1;
     }
 
     /**
      * 初始化动画
      */
     private void initAnim() {
-        if(fontAnim == null) {
+        if (fontAnim == null) {
             fontAnim = new ObjectAnimator();
             fontAnim.setFloatValues(0, 90);
             fontAnim.setPropertyName(propertyName);
         }
 
-        if(backAnim == null) {
+        if (backAnim == null) {
             backAnim = new ObjectAnimator();
             backAnim.setFloatValues(-90, 0);
             backAnim.setPropertyName(propertyName);
         }
 
-        if(animSet == null) {
+        if (animSet == null) {
             animSet = new AnimatorSet();
             animSet.play(backAnim).after(fontAnim);
             animSet.setDuration(animDuration);
@@ -218,6 +226,7 @@ public class FlipView extends FrameLayout {
                 super.onAnimationEnd(animation);
                 fontView.setAlpha(0);
                 fontView.setRotationY(0);
+                fontView.setVisibility(View.INVISIBLE);
                 animation.removeListener(this);
             }
 
@@ -232,6 +241,7 @@ public class FlipView extends FrameLayout {
             @Override
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
+                backView.setVisibility(View.VISIBLE);
                 backView.setAlpha(1);
             }
 
@@ -253,10 +263,13 @@ public class FlipView extends FrameLayout {
             @Override
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
-                fontView.setClickable(false);
-                backView.setClickable(false);
+//                fontView.setClickable(false);
+//                backView.setClickable(false);
 
-                if(listener != null) {
+                enableAll(fontView, false);
+                enableAll(backView, false);
+
+                if (listener != null) {
                     listener.onStart(FlipView.this, showChildIndex, getBackIndex());
                 }
             }
@@ -264,9 +277,11 @@ public class FlipView extends FrameLayout {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                backView.setClickable(true);
+//                backView.setClickable(true);
 
-                if(listener != null) {
+                enableAll(backView, true);
+
+                if (listener != null) {
                     listener.onEnd(FlipView.this, showChildIndex, getBackIndex());
                 }
 
@@ -278,7 +293,7 @@ public class FlipView extends FrameLayout {
             public void onAnimationCancel(Animator animation) {
                 super.onAnimationCancel(animation);
 
-                if(listener != null) {
+                if (listener != null) {
                     listener.onCancel(FlipView.this);
                 }
                 animation.removeListener(this);
@@ -302,10 +317,10 @@ public class FlipView extends FrameLayout {
         Bundle bundle = (Bundle) state;
         showChildIndex = bundle.getInt("index");
 
-        try{
+        try {
             // 由于view id 有一致的情况，也会报错
             super.onRestoreInstanceState(state);
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -337,7 +352,7 @@ public class FlipView extends FrameLayout {
      * 释放动画资源
      */
     private void clearAnim(Animator anim) {
-        if(anim != null && anim.isRunning()) {
+        if (anim != null && anim.isRunning()) {
             anim.cancel();
             anim.removeAllListeners();
         }
@@ -345,7 +360,9 @@ public class FlipView extends FrameLayout {
 
     public interface FlipListener {
         void onStart(View v, int sIndex, int eIndex);
+
         void onEnd(View v, int sIndex, int eIndex);
+
         void onCancel(View v);
     }
 

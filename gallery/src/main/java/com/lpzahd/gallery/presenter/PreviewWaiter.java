@@ -66,6 +66,9 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
     private int maxSize = 1;
     private int selectSize = 0;
 
+    /**
+     * 会溢出
+     */
     public static void startActivity(Context context, int currIndex, ArrayList<PreviewBean> medias) {
         Intent intent = new Intent(context, PreviewActivity.class);
         intent.putExtra(EXTRA_DATA_CURR_INDEX, currIndex);
@@ -137,15 +140,14 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
 
     @Override
     protected void initView() {
-       recyclerView.setLayoutManager(new LinearLayoutManager(context,
-               LinearLayoutManager.HORIZONTAL, false));
+        recyclerView.setLayoutManager(new LinearLayoutManager(context,
+                LinearLayoutManager.HORIZONTAL, false));
         PagerSnapHelper snapHelper = new PagerSnapHelper();
         snapHelper.attachToRecyclerView(recyclerView);
         mAdapter = new PreviewAdapter(context);
         mAdapter.setData(mMedias);
         recyclerView.setAdapter(mAdapter);
         recyclerView.scrollToPosition(currIndex);
-
     }
 
     public static class PreviewBean implements Parcelable {
@@ -240,10 +242,10 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
             holder.checkBox.setChecked(bean.checked);
 
             showPhoto(holder.photoDraweeView, bean);
-//            showBlurImg(holder.bgDraweeView, bean);
-//
-//            holder.flipView.reset();
-//            holder.story.setText("" + position);
+            showBlurImg(holder.bgDraweeView, bean);
+
+            holder.flipView.reset();
+            holder.story.setText("" + position);
         }
 
         private void showPhoto(final PhotoDraweeView photoDraweeView, PreviewBean bean) {
@@ -287,25 +289,40 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> {
 
         @BindView(R2.id.photo_drawee_view)
         PhotoDraweeView photoDraweeView;
-//
-//        @BindView(R2.id.bg_drawee_view)
-//        SimpleDraweeView bgDraweeView;
-//
-//        @BindView(R2.id.story)
-//        AppCompatTextView story;
-//
-//        @BindView(R2.id.flip_view)
-//        FlipView flipView;
+
+        @BindView(R2.id.bg_layout)
+        ViewGroup bgLayout;
+
+        @BindView(R2.id.bg_drawee_view)
+        SimpleDraweeView bgDraweeView;
+
+        @BindView(R2.id.story)
+        AppCompatTextView story;
+
+        @BindView(R2.id.flip_view)
+        FlipView flipView;
 
         PreviewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
 
+            longClickToFlip(photoDraweeView);
+            longClickToFlip(bgLayout);
         }
 
         void setCheckBoxClickListener(View.OnClickListener listener) {
             if (listener != null)
                 checkBox.setOnClickListener(listener);
+        }
+
+        void longClickToFlip(View v) {
+            v.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    flipView.startFlip();
+                    return false;
+                }
+            });
         }
 
     }

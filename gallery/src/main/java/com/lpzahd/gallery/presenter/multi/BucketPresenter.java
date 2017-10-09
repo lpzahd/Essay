@@ -17,7 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.common.ResizeOptions;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.fragment.ToneDialogFragment;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
@@ -197,8 +203,11 @@ public class BucketPresenter extends ToneActivityWaiter<GalleryActivity> {
 
     private static class BucketAdapter extends ToneAdapter<BucketBean, BucketHolder> {
 
+        private int size;
+
         public BucketAdapter(Context context) {
             super(context);
+            size = Ui.dip2px(context, 56);
         }
 
         @Override
@@ -209,9 +218,18 @@ public class BucketPresenter extends ToneActivityWaiter<GalleryActivity> {
         @Override
         public void onBindViewHolder(BucketHolder holder, int position) {
             BucketBean bean = getItem(position);
-            holder.imageDraweeView.setImageURI(bean.uri);
             holder.numTv.setText(String.valueOf(bean.num));
             holder.nameTv.setText(bean.name);
+
+            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(bean.uri)
+                    .setResizeOptions(new ResizeOptions(size, size))
+                    .build();
+            DraweeController controller = Fresco.newDraweeControllerBuilder()
+                    .setOldController(holder.imageDraweeView.getController())
+                    .setImageRequest(request)
+                    .setAutoPlayAnimations(true)
+                    .build();
+            holder.imageDraweeView.setController(controller);
         }
     }
 }
