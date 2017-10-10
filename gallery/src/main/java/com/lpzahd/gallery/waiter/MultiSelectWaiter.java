@@ -202,6 +202,9 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
                                 results.add(source.get(select));
                             }
                             bus.post(results);
+                            context.onBackPressed();
+                        } else {
+                            T.t("数据发送失败，请关闭页面重试！");
                         }
                     }
                 });
@@ -224,28 +227,6 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
 
         mAdapter = new MultiAdapter(context, getScreenSize(context).widthPixels / 3);
         recyclerView.setAdapter(mAdapter);
-
-//        recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<MultiHolder>(recyclerView) {
-//            @Override
-//            public void onClick(RecyclerView rv, MultiHolder multiHolder) {
-////                PreviewWaiter.startActivity(context, multiHolder.getAdapterPosition(),
-////                        convertToPreview(mAdapter.getData()));
-//                PreviewWaiter.startActivity(context, multiHolder.getAdapterPosition(), bucketId);
-//            }
-//
-//            private ArrayList<PreviewWaiter.PreviewBean> convertToPreview(List<MultiBean> source) {
-//                ArrayList<PreviewWaiter.PreviewBean> result = new ArrayList<>();
-//                if (Lists.empty(source)) return result;
-//
-//                for (int i = 0, size = source.size(); i < size; i++) {
-//                    MultiBean media = source.get(i);
-//                    PreviewWaiter.PreviewBean preview = new PreviewWaiter.PreviewBean();
-//                    preview.uri = media.uri;
-//                    result.add(preview);
-//                }
-//                return result;
-//            }
-//        });
 
         recyclerView.addOnItemTouchListener(new OnItemChildTouchListener<MultiHolder>(recyclerView) {
             @Override
@@ -363,42 +344,6 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
                 return bean;
             }
         });
-//        addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefershLayout, recyclerView) {
-//
-//            @Override
-//            public Flowable<? extends List> doRefresh(final int page) {
-//                return Flowable.create(new FlowableOnSubscribe<List<MediaTool.MediaBean>>() {
-//                    @Override
-//                    public void subscribe(@NonNull FlowableEmitter<List<MediaTool.MediaBean>> e) throws Exception {
-//                        List<MediaTool.MediaBean> mediaBeanList = MediaTool.getImageFromContext(context, bucketId);
-//                        e.onNext(mediaBeanList);
-//                    }
-//                }, BackpressureStrategy.BUFFER)
-//                        .filter(new Predicate<List<MediaTool.MediaBean>>() {
-//                            @Override
-//                            public boolean test(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
-//                                if(Lists.empty(mOriginalSource)) {
-//                                    mOriginalSource = mediaBeen;
-//                                    mBucketMap = pick(mediaBeen);
-//                                } else {
-//                                    if(!Lists.empty(mediaBeen) && mediaBeen.size() > mOriginalSource.size()) {
-//                                        mOriginalSource = mediaBeen;
-//                                        mBucketMap = pick(mediaBeen);
-//                                    }
-//                                }
-//                                return !Lists.empty(mediaBeen);
-//                            }
-//                        })
-//                        .map(new Function<List<MediaTool.MediaBean>, List<MultiBean>>() {
-//                            @Override
-//                            public List<MultiBean> apply(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
-//                                return mDataFactory.processArray(mediaBeen);
-//                            }
-//                        })
-//                        .subscribeOn(Schedulers.io());
-//            }
-//
-//        });
 
         mRefreshWaiter.setCount(Integer.MAX_VALUE);
         mRefreshWaiter.autoRefresh();

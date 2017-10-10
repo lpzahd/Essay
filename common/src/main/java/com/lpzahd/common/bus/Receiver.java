@@ -7,8 +7,8 @@ import io.reactivex.Flowable;
  * Date : 九月
  * Desction : (•ิ_•ิ)
  */
-public interface Receiver {
+public interface Receiver<T> {
 
-    <T> void receive(Flowable<T> flowable);
+    void receive(Flowable<T> flowable);
 
 }

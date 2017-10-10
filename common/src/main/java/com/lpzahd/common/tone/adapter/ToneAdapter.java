@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ import java.util.List;
  * Date : 三月
  * Desction : (•ิ_•ิ)
  */
-public abstract class ToneAdapter<T, VH extends ToneAdapter.ToneHolder> extends RecyclerView.Adapter<VH>  {
+public abstract class ToneAdapter<T, VH extends ToneAdapter.ToneHolder> extends RecyclerView.Adapter<VH> implements ToneItemTouchHelperCallback.ItemTouchAdapter {
 
     private Context mContext;
     private LayoutInflater mInflater;
@@ -112,6 +113,29 @@ public abstract class ToneAdapter<T, VH extends ToneAdapter.ToneHolder> extends 
     public void remove(int index, boolean auto) {
         mData.remove(index);
         if(auto) notifyItemRemoved(index);
+    }
+
+    @Override
+    public boolean onMove(int fromPosition, int toPosition) {
+        if (null == mData || mData.size() == 0 || mData.size() == 1) return false;
+        if (fromPosition < toPosition) {
+            for (int i = fromPosition; i < toPosition; i++) {
+                Collections.swap(mData, i, i + 1);
+            }
+        } else {
+            for (int i = fromPosition; i > toPosition; i--) {
+                Collections.swap(mData, i, i - 1);
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition);
+        return true;
+    }
+
+    @Override
+    public void onSwiped(int position) {
+        if (null == mData || mData.size() == 0) return;
+        mData.remove(position);
+        notifyItemRemoved(position);
     }
 
     public static class ToneHolder extends RecyclerView.ViewHolder {
