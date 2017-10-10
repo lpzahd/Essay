@@ -1,6 +1,6 @@
 package com.lpzahd.gallery.a3d;
 
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.util.HashMap;
 
@@ -18,26 +18,26 @@ public final class DisplaySlot {
 
     static {
         CAPTION_STYLE.sizeMode = StringTexture.Config.SIZE_TEXT_TO_BOUNDS;
-        CAPTION_STYLE.fontSize = 16 * MediaPresenter.PIXEL_DENSITY;
+        CAPTION_STYLE.fontSize = 16 * MediaWaiter.PIXEL_DENSITY;
         CAPTION_STYLE.bold = true;
-        CAPTION_STYLE.width = (MediaPresenter.PIXEL_DENSITY < 1.5f) ? 128 : 256;
-        CAPTION_STYLE.height = (MediaPresenter.PIXEL_DENSITY < 1.5f) ? 32 : 64;
+        CAPTION_STYLE.width = (MediaWaiter.PIXEL_DENSITY < 1.5f) ? 128 : 256;
+        CAPTION_STYLE.height = (MediaWaiter.PIXEL_DENSITY < 1.5f) ? 32 : 64;
         CAPTION_STYLE.yalignment = StringTexture.Config.ALIGN_TOP;
         CAPTION_STYLE.xalignment = StringTexture.Config.ALIGN_HCENTER;
 
         CLUSTER_STYLE.sizeMode = StringTexture.Config.SIZE_TEXT_TO_BOUNDS;
-        CLUSTER_STYLE.width = (MediaPresenter.PIXEL_DENSITY < 1.5f) ? 128 : 256;
-        CLUSTER_STYLE.height = (MediaPresenter.PIXEL_DENSITY < 1.5f) ? 32 : 64;
+        CLUSTER_STYLE.width = (MediaWaiter.PIXEL_DENSITY < 1.5f) ? 128 : 256;
+        CLUSTER_STYLE.height = (MediaWaiter.PIXEL_DENSITY < 1.5f) ? 32 : 64;
         CLUSTER_STYLE.yalignment = StringTexture.Config.ALIGN_TOP;
-        CLUSTER_STYLE.fontSize = 16 * MediaPresenter.PIXEL_DENSITY;
+        CLUSTER_STYLE.fontSize = 16 * MediaWaiter.PIXEL_DENSITY;
         CLUSTER_STYLE.bold = true;
         CLUSTER_STYLE.xalignment = StringTexture.Config.ALIGN_HCENTER;
 
         LOCATION_STYLE.sizeMode = StringTexture.Config.SIZE_TEXT_TO_BOUNDS;
-        LOCATION_STYLE.fontSize = 12 * MediaPresenter.PIXEL_DENSITY;
-        LOCATION_STYLE.width = (MediaPresenter.PIXEL_DENSITY < 1.5f) ? 128 : 256;
-        LOCATION_STYLE.height = (MediaPresenter.PIXEL_DENSITY < 1.5f) ? 32 : 64;
-        LOCATION_STYLE.fontSize = 12 * MediaPresenter.PIXEL_DENSITY;
+        LOCATION_STYLE.fontSize = 12 * MediaWaiter.PIXEL_DENSITY;
+        LOCATION_STYLE.width = (MediaWaiter.PIXEL_DENSITY < 1.5f) ? 128 : 256;
+        LOCATION_STYLE.height = (MediaWaiter.PIXEL_DENSITY < 1.5f) ? 32 : 64;
+        LOCATION_STYLE.fontSize = 12 * MediaWaiter.PIXEL_DENSITY;
         LOCATION_STYLE.xalignment = StringTexture.Config.ALIGN_HCENTER;
     }
 

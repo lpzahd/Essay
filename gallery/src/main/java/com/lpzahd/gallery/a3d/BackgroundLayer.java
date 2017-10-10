@@ -3,7 +3,7 @@ package com.lpzahd.gallery.a3d;
 import android.util.Log;
 
 import com.lpzahd.gallery.R;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.util.HashMap;
 
@@ -25,9 +25,9 @@ public class BackgroundLayer extends Layer {
     private static final int ADAPTIVE_BACKGROUND_WIDTH = 256;
     private static final int ADAPTIVE_BACKGROUND_HEIGHT = 128;
 
-    private MediaPresenter mPresenter;
+    private MediaWaiter mPresenter;
 
-    public BackgroundLayer(GridLayer layer, MediaPresenter presenter) {
+    public BackgroundLayer(GridLayer layer, MediaWaiter presenter) {
         mGridLayer = layer;
         mPresenter = presenter;
     }

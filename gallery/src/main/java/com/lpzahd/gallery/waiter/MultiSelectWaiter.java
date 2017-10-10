@@ -1,4 +1,4 @@
-package com.lpzahd.gallery.presenter;
+package com.lpzahd.gallery.waiter;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -35,23 +35,27 @@ import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.Image;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
-import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
+import com.lpzahd.common.bus.RxBus;
+import com.lpzahd.common.tone.adapter.OnItemChildTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.data.DataFactory;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
-import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
+import com.lpzahd.common.waiter.refresh.DspRefreshWaiter;
+import com.lpzahd.gallery.Gallery;
 import com.lpzahd.gallery.R;
 import com.lpzahd.gallery.R2;
 import com.lpzahd.gallery.context.GalleryActivity;
-import com.lpzahd.gallery.presenter.multi.BucketPresenter;
+import com.lpzahd.gallery.waiter.multi.BucketPresenter;
 import com.lpzahd.gallery.tool.MediaTool;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -62,16 +66,14 @@ import io.reactivex.FlowableEmitter;
 import io.reactivex.FlowableOnSubscribe;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
-import io.reactivex.schedulers.Schedulers;
 
 /**
  * Author : Lpzahd
  * Date : 九月
  * Desction : (•ิ_•ิ)
  */
-public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> implements BucketPresenter.OnBucketClickListener, DataFactory.DataProcess<MediaTool.MediaBean,MultiSelectPresenter.MultiBean> {
+public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> implements BucketPresenter.OnBucketClickListener, DataFactory.DataProcess<MediaTool.MediaBean,MultiSelectWaiter.MultiBean> {
 
     private static int MODE_SINGLE = 0;
     private static int MODE_MULTI = 1;
@@ -117,18 +119,20 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> im
     private int selectSize = 0;
     private String bucketId = MediaTool.MEDIA_NO_BUCKET;
 
+    private Queue<Integer> slects;
+
     private List<MediaTool.MediaBean> mOriginalSource;
     private Map<String, BucketPresenter.BucketBean> mBucketMap;
 
     private MultiAdapter mAdapter;
 
     private DataFactory<MediaTool.MediaBean, MultiBean> mDataFactory;
-    private SwipeRefreshWaiter mRefreshWaiter;
+    private DspRefreshWaiter<MediaTool.MediaBean, MultiBean> mRefreshWaiter;
 
     private List<MediaTool.MediaBean> mSelected;
     private BucketPresenter mBucketPresenter;
 
-    public MultiSelectPresenter(GalleryActivity activity, int maxSize) {
+    public MultiSelectWaiter(GalleryActivity activity, int maxSize) {
         super(activity);
 
         if (maxSize < 0) {
@@ -155,6 +159,8 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> im
         }
 
         mDataFactory = DataFactory.of(this);
+
+        slects = new LinkedList<>();
     }
 
     @Override
@@ -184,6 +190,19 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> im
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(Object o) throws Exception {
+                        if(Lists.empty(slects)) {
+                            T.t("没有选择一张图片");
+                            return ;
+                        }
+                        RxBus.BusService bus = Gallery.it().getConfig().getBusService();
+                        if(bus != null && !Lists.empty(mRefreshWaiter.getSource())) {
+                            final List<MediaTool.MediaBean> source = mRefreshWaiter.getSource();
+                            List<MediaTool.MediaBean> results = new ArrayList<>();
+                            for (Integer select : slects) {
+                                results.add(source.get(select));
+                            }
+                            bus.post(results);
+                        }
                     }
                 });
 
@@ -194,7 +213,7 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> im
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(Object o) throws Exception {
-                        mBucketPresenter.showDialog(folderNameTv.getText().toString(), getBuckets(), MultiSelectPresenter.this);
+                        mBucketPresenter.showDialog(folderNameTv.getText().toString(), getBuckets(), MultiSelectWaiter.this);
                     }
                 });
 
@@ -206,25 +225,53 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> im
         mAdapter = new MultiAdapter(context, getScreenSize(context).widthPixels / 3);
         recyclerView.setAdapter(mAdapter);
 
-        recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<MultiHolder>(recyclerView) {
+//        recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<MultiHolder>(recyclerView) {
+//            @Override
+//            public void onClick(RecyclerView rv, MultiHolder multiHolder) {
+////                PreviewWaiter.startActivity(context, multiHolder.getAdapterPosition(),
+////                        convertToPreview(mAdapter.getData()));
+//                PreviewWaiter.startActivity(context, multiHolder.getAdapterPosition(), bucketId);
+//            }
+//
+//            private ArrayList<PreviewWaiter.PreviewBean> convertToPreview(List<MultiBean> source) {
+//                ArrayList<PreviewWaiter.PreviewBean> result = new ArrayList<>();
+//                if (Lists.empty(source)) return result;
+//
+//                for (int i = 0, size = source.size(); i < size; i++) {
+//                    MultiBean media = source.get(i);
+//                    PreviewWaiter.PreviewBean preview = new PreviewWaiter.PreviewBean();
+//                    preview.uri = media.uri;
+//                    result.add(preview);
+//                }
+//                return result;
+//            }
+//        });
+
+        recyclerView.addOnItemTouchListener(new OnItemChildTouchListener<MultiHolder>(recyclerView) {
             @Override
-            public void onClick(RecyclerView rv, MultiHolder multiHolder) {
-//                PreviewWaiter.startActivity(context, multiHolder.getAdapterPosition(),
-//                        convertToPreview(mAdapter.getData()));
-                PreviewWaiter.startActivity(context, multiHolder.getAdapterPosition(), bucketId);
-            }
-
-            private ArrayList<PreviewWaiter.PreviewBean> convertToPreview(List<MultiBean> source) {
-                ArrayList<PreviewWaiter.PreviewBean> result = new ArrayList<>();
-                if (Lists.empty(source)) return result;
-
-                for (int i = 0, size = source.size(); i < size; i++) {
-                    MultiBean media = source.get(i);
-                    PreviewWaiter.PreviewBean preview = new PreviewWaiter.PreviewBean();
-                    preview.uri = media.uri;
-                    result.add(preview);
+            public void onClick(RecyclerView rv, MultiHolder holder, View child) {
+                if(child == holder.checkBox) {
+                    int position = holder.getAdapterPosition();
+                    MultiBean bean = mAdapter.getItem(position);
+                    if (bean.checked) {
+                        bean.checked = false;
+                        slects.remove(position);
+                        selectSize = slects.size();
+                        changeRightTxt();
+                    } else {
+                        if (slects.size() >= maxSize) {
+                            T.t("你最多只能选择" + maxSize + "张照片");
+                            holder.checkBox.setChecked(false);
+                        } else {
+                            bean.checked = true;
+                            slects.add(position);
+                            selectSize = slects.size();
+                            changeRightTxt();
+                        }
+                    }
+                } else if(child == holder.imageDraweeView){
+                    PreviewWaiter.startActivity(context, holder.getAdapterPosition(), bucketId);
                 }
-                return result;
             }
         });
     }
@@ -281,10 +328,10 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> im
 
     @Override
     protected void initData() {
-        addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefershLayout, recyclerView) {
+        addWindowWaiter(mRefreshWaiter = new DspRefreshWaiter<MediaTool.MediaBean, MultiBean>(swipeRefershLayout, recyclerView) {
 
             @Override
-            public Flowable<? extends List> doRefresh(final int page) {
+            public Flowable<List<MediaTool.MediaBean>> doRefresh(int page) {
                 return Flowable.create(new FlowableOnSubscribe<List<MediaTool.MediaBean>>() {
                     @Override
                     public void subscribe(@NonNull FlowableEmitter<List<MediaTool.MediaBean>> e) throws Exception {
@@ -306,17 +353,52 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> im
                                 }
                                 return !Lists.empty(mediaBeen);
                             }
-                        })
-                        .map(new Function<List<MediaTool.MediaBean>, List<MultiBean>>() {
-                            @Override
-                            public List<MultiBean> apply(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
-                                return mDataFactory.processArray(mediaBeen);
-                            }
-                        })
-                        .subscribeOn(Schedulers.io());
+                        });
             }
 
+            @Override
+            public MultiBean process(MediaTool.MediaBean mediaBean) {
+                MultiBean bean = new MultiBean();
+                bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), Image.SOURCE_FILE);
+                return bean;
+            }
         });
+//        addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefershLayout, recyclerView) {
+//
+//            @Override
+//            public Flowable<? extends List> doRefresh(final int page) {
+//                return Flowable.create(new FlowableOnSubscribe<List<MediaTool.MediaBean>>() {
+//                    @Override
+//                    public void subscribe(@NonNull FlowableEmitter<List<MediaTool.MediaBean>> e) throws Exception {
+//                        List<MediaTool.MediaBean> mediaBeanList = MediaTool.getImageFromContext(context, bucketId);
+//                        e.onNext(mediaBeanList);
+//                    }
+//                }, BackpressureStrategy.BUFFER)
+//                        .filter(new Predicate<List<MediaTool.MediaBean>>() {
+//                            @Override
+//                            public boolean test(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
+//                                if(Lists.empty(mOriginalSource)) {
+//                                    mOriginalSource = mediaBeen;
+//                                    mBucketMap = pick(mediaBeen);
+//                                } else {
+//                                    if(!Lists.empty(mediaBeen) && mediaBeen.size() > mOriginalSource.size()) {
+//                                        mOriginalSource = mediaBeen;
+//                                        mBucketMap = pick(mediaBeen);
+//                                    }
+//                                }
+//                                return !Lists.empty(mediaBeen);
+//                            }
+//                        })
+//                        .map(new Function<List<MediaTool.MediaBean>, List<MultiBean>>() {
+//                            @Override
+//                            public List<MultiBean> apply(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
+//                                return mDataFactory.processArray(mediaBeen);
+//                            }
+//                        })
+//                        .subscribeOn(Schedulers.io());
+//            }
+//
+//        });
 
         mRefreshWaiter.setCount(Integer.MAX_VALUE);
         mRefreshWaiter.autoRefresh();
@@ -364,26 +446,22 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> im
     private class MultiAdapter extends ToneAdapter<MultiBean, MultiHolder> {
 
         private int size = 200;
-        private List<Integer> slects;
 
         private MultiAdapter(Context context, int size) {
             super(context);
             this.size = size;
-            slects = new ArrayList<>();
-        }
-
-        public List<Integer> getSlects() {
-            return slects;
-        }
-
-        public void setSlects(List<Integer> slects) {
-            this.slects = slects;
         }
 
         @Override
         public MultiHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             final MultiHolder holder = new MultiHolder(inflateItemView(R.layout.item_media_select_grid, parent));
-            holder.setCheckBoxClickListener(new View.OnClickListener() {
+//            holder.setCheckBoxClickListener(clickBox(holder));
+            return holder;
+        }
+
+        @android.support.annotation.NonNull
+        private View.OnClickListener clickBox(final MultiHolder holder) {
+            return new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int position = holder.getAdapterPosition();
@@ -405,8 +483,7 @@ public class MultiSelectPresenter extends ToneActivityWaiter<GalleryActivity> im
                         }
                     }
                 }
-            });
-            return holder;
+            };
         }
 
         @Override

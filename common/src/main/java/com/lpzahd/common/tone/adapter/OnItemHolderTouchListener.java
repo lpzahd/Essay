@@ -19,7 +19,7 @@ public class OnItemHolderTouchListener<T extends RecyclerView.ViewHolder> implem
 
     private View itemView;
 
-    GestureDetector.OnGestureListener gesListner = new GestureDetector.SimpleOnGestureListener() {
+    private GestureDetector.OnGestureListener gesListner = new GestureDetector.SimpleOnGestureListener() {
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {

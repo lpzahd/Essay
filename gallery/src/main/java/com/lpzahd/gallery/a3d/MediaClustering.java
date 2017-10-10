@@ -6,7 +6,7 @@ import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 
 import com.lpzahd.gallery.R;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.util.ArrayList;
 
@@ -276,8 +276,8 @@ public final class MediaClustering {
 
                 if (minTimestamp != -1L) {
                     if (mIsPicassaAlbum) {
-                        minTimestamp -= MediaPresenter.CURRENT_TIME_ZONE.getOffset(minTimestamp);
-                        maxTimestamp -= MediaPresenter.CURRENT_TIME_ZONE.getOffset(maxTimestamp);
+                        minTimestamp -= MediaWaiter.CURRENT_TIME_ZONE.getOffset(minTimestamp);
+                        maxTimestamp -= MediaWaiter.CURRENT_TIME_ZONE.getOffset(maxTimestamp);
                     }
                     String minDay = DateFormat.format(MMDDYY_FORMAT, minTimestamp).toString();
                     String maxDay = DateFormat.format(MMDDYY_FORMAT, maxTimestamp).toString();

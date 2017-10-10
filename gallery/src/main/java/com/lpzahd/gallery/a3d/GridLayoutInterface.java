@@ -1,6 +1,6 @@
 package com.lpzahd.gallery.a3d;
 
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 public final class GridLayoutInterface extends LayoutInterface {
 
@@ -10,8 +10,8 @@ public final class GridLayoutInterface extends LayoutInterface {
 
     public GridLayoutInterface(int numRows) {
         mNumRows = numRows;
-        mSpacingX = (int) (20 * MediaPresenter.PIXEL_DENSITY);
-        mSpacingY = (int) (40 * MediaPresenter.PIXEL_DENSITY);
+        mSpacingX = (int) (20 * MediaWaiter.PIXEL_DENSITY);
+        mSpacingY = (int) (40 * MediaWaiter.PIXEL_DENSITY);
     }
 
     public void getPositionForSlotIndex(int slotIndex, int itemWidth, int itemHeight, Vector3f outPosition) {

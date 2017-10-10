@@ -7,7 +7,7 @@ import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 public final class GridInputProcessor implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener,
         ScaleGestureDetector.OnScaleGestureListener {
@@ -33,7 +33,7 @@ public final class GridInputProcessor implements GestureDetector.OnGestureListen
     private float mDpadIgnoreTime = 0.0f;
     private GridCamera mCamera;
     private GridLayer mLayer;
-    private MediaPresenter mPresenter;
+    private MediaWaiter mPresenter;
     private Pool<Vector3f> mPool;
     private DisplayItem[] mDisplayItems;
     private boolean mPrevHitEdge;
@@ -42,7 +42,7 @@ public final class GridInputProcessor implements GestureDetector.OnGestureListen
     private ScaleGestureDetector mScaleGestureDetector;
     private boolean mZoomGesture;
 
-    public GridInputProcessor(MediaPresenter presenter, GridCamera camera, GridLayer layer, RenderView view, Pool<Vector3f> pool,
+    public GridInputProcessor(MediaWaiter presenter, GridCamera camera, GridLayer layer, RenderView view, Pool<Vector3f> pool,
                               DisplayItem[] displayItems) {
         mPool = pool;
         mCamera = camera;

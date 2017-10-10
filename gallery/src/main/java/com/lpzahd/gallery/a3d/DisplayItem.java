@@ -2,7 +2,7 @@ package com.lpzahd.gallery.a3d;
 
 import android.content.Context;
 
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.util.Random;
 
@@ -80,8 +80,8 @@ public final class DisplayItem {
                 mTargetTheta = 30.0f * (0.5f - (float) Math.random());
                 mJitteredPosition.x = sign * 12.0f * seed + (0.5f - random.nextFloat()) * 4 * seed;
                 mJitteredPosition.y = sign * 4 + ((sign == 1) ? -8.0f : sign * (random.nextFloat()) * 16.0f);
-                mJitteredPosition.x *= MediaPresenter.PIXEL_DENSITY;
-                mJitteredPosition.y *= MediaPresenter.PIXEL_DENSITY;
+                mJitteredPosition.x *= MediaWaiter.PIXEL_DENSITY;
+                mJitteredPosition.y *= MediaWaiter.PIXEL_DENSITY;
                 mJitteredPosition.z = seed * STACK_SPACING;
             }
         }
@@ -93,7 +93,7 @@ public final class DisplayItem {
         return mStackId;
     }
 
-    public Texture getThumbnailImage(MediaPresenter presenter, MediaItemTexture.Config config) {
+    public Texture getThumbnailImage(MediaWaiter presenter, MediaItemTexture.Config config) {
         MediaItemTexture texture = mThumbnailImage;
         if (texture == null && config != null) {
             if (mItemRef.mId != Shared.INVALID) {
@@ -104,7 +104,7 @@ public final class DisplayItem {
         return texture;
     }
 
-    public Texture getScreennailImage(MediaPresenter presenter) {
+    public Texture getScreennailImage(MediaWaiter presenter) {
         Texture texture = mScreennailImage;
         if (texture == null || texture.mState == Texture.STATE_ERROR) {
             MediaSet parentMediaSet = mItemRef.mParentMediaSet;

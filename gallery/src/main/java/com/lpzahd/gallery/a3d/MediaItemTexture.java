@@ -1,6 +1,5 @@
 package com.lpzahd.gallery.a3d;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -9,7 +8,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import com.lpzahd.gallery.cache.CacheService;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -23,7 +22,7 @@ public final class MediaItemTexture extends Texture {
 
     private final Config mConfig;
     private final MediaItem mItem;
-    private MediaPresenter mPresenter;
+    private MediaWaiter mPresenter;
     private boolean mIsRetrying;
     private boolean mCached;
 
@@ -32,7 +31,7 @@ public final class MediaItemTexture extends Texture {
         public int thumbnailHeight;
     }
 
-    public MediaItemTexture(MediaPresenter presenter, Config config, MediaItem item) {
+    public MediaItemTexture(MediaWaiter presenter, Config config, MediaItem item) {
         mConfig = config;
         mPresenter = presenter;
         mItem = item;

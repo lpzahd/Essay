@@ -29,7 +29,9 @@ final class Bus {
     }
 
     public <T> void post(Object tag, T argu) {
-        buses.get(tag).receive(Flowable.just(argu));
+        Receiver bus = buses.get(tag);
+        if(bus != null)
+            bus.receive(Flowable.just(argu));
     }
 
     public void clear() {

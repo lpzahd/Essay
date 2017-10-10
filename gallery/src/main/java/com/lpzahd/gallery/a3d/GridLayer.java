@@ -5,7 +5,7 @@ import android.opengl.GLU;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import com.lpzahd.gallery.R;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 import java.util.ArrayList;
 import javax.microedition.khronos.opengles.GL11;
 
@@ -97,7 +97,7 @@ public final class GridLayer extends RootLayer implements MediaFeed.Listener, Ti
     private static final MediaBucketList sMarkedBucketList = new MediaBucketList();
     private float mTimeElapsedSinceStackViewReady;
 
-    private MediaPresenter mPresenter;
+    private MediaWaiter mPresenter;
     private RenderView mView;
     private boolean mPickIntent;
     private boolean mViewIntent;
@@ -106,7 +106,7 @@ public final class GridLayer extends RootLayer implements MediaFeed.Listener, Ti
     private String mRequestFocusContentUri;
     private int mFrameCount;
 
-    public GridLayer(MediaPresenter presenter, int itemWidth, int itemHeight, LayoutInterface layoutInterface, RenderView view) {
+    public GridLayer(MediaWaiter presenter, int itemWidth, int itemHeight, LayoutInterface layoutInterface, RenderView view) {
         mBackground = new BackgroundLayer(this, presenter);
         mPresenter = presenter;
         mView = view;
@@ -225,8 +225,8 @@ public final class GridLayer extends RootLayer implements MediaFeed.Listener, Ti
                 }
             }
             layoutInterface.mNumRows = numMaxRows;
-            layoutInterface.mSpacingX = (int) (10 * MediaPresenter.PIXEL_DENSITY);
-            layoutInterface.mSpacingY = (int) (10 * MediaPresenter.PIXEL_DENSITY);
+            layoutInterface.mSpacingX = (int) (10 * MediaWaiter.PIXEL_DENSITY);
+            layoutInterface.mSpacingY = (int) (10 * MediaWaiter.PIXEL_DENSITY);
             if (mState == STATE_MEDIA_SETS) {
                 // Entering album.
                 mInAlbum = true;
@@ -261,13 +261,13 @@ public final class GridLayer extends RootLayer implements MediaFeed.Listener, Ti
             }
             disableLocationFiltering();
             layoutInterface.mNumRows = numMaxRows - 1;
-            layoutInterface.mSpacingX = (int) (100 * MediaPresenter.PIXEL_DENSITY);
-            layoutInterface.mSpacingY = (int) (70 * MediaPresenter.PIXEL_DENSITY * yStretch);
+            layoutInterface.mSpacingX = (int) (100 * MediaWaiter.PIXEL_DENSITY);
+            layoutInterface.mSpacingY = (int) (70 * MediaWaiter.PIXEL_DENSITY * yStretch);
             break;
         case STATE_FULL_SCREEN:
             layoutInterface.mNumRows = 1;
-            layoutInterface.mSpacingX = (int) (40 * MediaPresenter.PIXEL_DENSITY);
-            layoutInterface.mSpacingY = (int) (40 * MediaPresenter.PIXEL_DENSITY);
+            layoutInterface.mSpacingX = (int) (40 * MediaWaiter.PIXEL_DENSITY);
+            layoutInterface.mSpacingY = (int) (40 * MediaWaiter.PIXEL_DENSITY);
             if (mState != STATE_FULL_SCREEN) {
                 mHud.getPathBar().pushLabel(R.drawable.ic_fs_details, "", new Runnable() {
                     public void run() {
@@ -290,8 +290,8 @@ public final class GridLayer extends RootLayer implements MediaFeed.Listener, Ti
             disableLocationFiltering();
             mInputProcessor.clearSelection();
             layoutInterface.mNumRows = numMaxRows - 1;
-            layoutInterface.mSpacingX = (int) (100 * MediaPresenter.PIXEL_DENSITY);
-            layoutInterface.mSpacingY = (int) (70 * MediaPresenter.PIXEL_DENSITY * yStretch);
+            layoutInterface.mSpacingX = (int) (100 * MediaWaiter.PIXEL_DENSITY);
+            layoutInterface.mSpacingY = (int) (70 * MediaWaiter.PIXEL_DENSITY * yStretch);
             if (mInAlbum) {
                 if (mState == STATE_FULL_SCREEN) {
                     mHud.getPathBar().popLabel();
@@ -1139,8 +1139,8 @@ public final class GridLayer extends RootLayer implements MediaFeed.Listener, Ti
     }
 
     public int getMetadataSlotIndexForScreenPosition(int posX, int posY) {
-        return getSlotForScreenPosition(posX, posY, mCamera.mItemWidth + (int) (100 * MediaPresenter.PIXEL_DENSITY), mCamera.mItemHeight
-                + (int) (100 * MediaPresenter.PIXEL_DENSITY));
+        return getSlotForScreenPosition(posX, posY, mCamera.mItemWidth + (int) (100 * MediaWaiter.PIXEL_DENSITY), mCamera.mItemHeight
+                + (int) (100 * MediaWaiter.PIXEL_DENSITY));
     }
 
     public int getSlotIndexForScreenPosition(int posX, int posY) {

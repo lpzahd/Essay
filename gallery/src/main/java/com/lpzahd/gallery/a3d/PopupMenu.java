@@ -16,7 +16,7 @@ import android.text.TextPaint;
 import android.view.MotionEvent;
 
 import com.lpzahd.gallery.R;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import javax.microedition.khronos.opengles.GL11;
 
@@ -43,10 +43,10 @@ public final class PopupMenu extends Layer {
 
     static {
         TextPaint paint = new TextPaint();
-        paint.setTextSize(17f * MediaPresenter.PIXEL_DENSITY);
+        paint.setTextSize(17f * MediaWaiter.PIXEL_DENSITY);
         paint.setColor(0xffffffff);
         paint.setAntiAlias(true);
-        ICON_TITLE_CONFIG = new IconTitleDrawable.Config((int) (45 * MediaPresenter.PIXEL_DENSITY), (int) (34 * MediaPresenter.PIXEL_DENSITY),
+        ICON_TITLE_CONFIG = new IconTitleDrawable.Config((int) (45 * MediaWaiter.PIXEL_DENSITY), (int) (34 * MediaWaiter.PIXEL_DENSITY),
                 paint);
         SRC_PAINT.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
     }
@@ -204,7 +204,7 @@ public final class PopupMenu extends Layer {
         // Measure the menu options.
         Option[] options = mOptions;
         int numOptions = options.length;
-        int maxWidth = (int) (ICON_TITLE_MIN_WIDTH * MediaPresenter.PIXEL_DENSITY);
+        int maxWidth = (int) (ICON_TITLE_MIN_WIDTH * MediaWaiter.PIXEL_DENSITY);
         for (int i = 0; i != numOptions; ++i) {
             Option option = options[i];
             IconTitleDrawable drawable = option.mDrawable;
@@ -219,9 +219,9 @@ public final class PopupMenu extends Layer {
         }
 
         // Layout the menu options.
-        int rowHeight = (int) (mRowHeight * MediaPresenter.PIXEL_DENSITY);
-        int left = (int) (PADDING_LEFT * MediaPresenter.PIXEL_DENSITY);
-        int top = (int) (PADDING_TOP * MediaPresenter.PIXEL_DENSITY);
+        int rowHeight = (int) (mRowHeight * MediaWaiter.PIXEL_DENSITY);
+        int left = (int) (PADDING_LEFT * MediaWaiter.PIXEL_DENSITY);
+        int top = (int) (PADDING_TOP * MediaWaiter.PIXEL_DENSITY);
         int right = left + maxWidth;
         for (int i = 0; i != numOptions; ++i) {
             Option option = options[i];
@@ -232,7 +232,7 @@ public final class PopupMenu extends Layer {
         }
 
         // Resize the popup menu.
-        setSize(right + PADDING_RIGHT * MediaPresenter.PIXEL_DENSITY, top + PADDING_BOTTOM * MediaPresenter.PIXEL_DENSITY);
+        setSize(right + PADDING_RIGHT * MediaWaiter.PIXEL_DENSITY, top + PADDING_BOTTOM * MediaWaiter.PIXEL_DENSITY);
 
     }
 
@@ -290,7 +290,7 @@ public final class PopupMenu extends Layer {
 
         @Override
         protected void onSizeChanged() {
-            mBackgroundRect.set(0, 0, getWidth(), getHeight() - (int) (POPUP_TRIANGLE_EXTRA_HEIGHT * MediaPresenter.PIXEL_DENSITY));
+            mBackgroundRect.set(0, 0, getWidth(), getHeight() - (int) (POPUP_TRIANGLE_EXTRA_HEIGHT * MediaWaiter.PIXEL_DENSITY));
         }
 
         @Override

@@ -34,7 +34,7 @@ import com.lpzahd.gallery.a3d.SortCursor;
 import com.lpzahd.gallery.a3d.UriTexture;
 import com.lpzahd.gallery.a3d.Utils;
 import com.lpzahd.gallery.context.GalleryActivity;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -192,7 +192,7 @@ public final class CacheService extends IntentService {
         return sAlbumCache.get(setId, 0) != null;
     }
 
-    public static void senseDirty(final MediaPresenter presenter, final Observer observer) {
+    public static void senseDirty(final MediaWaiter presenter, final Observer observer) {
         if (CACHE_THREAD.get() == null) {
             QUEUE_DIRTY_SENSE = false;
             QUEUE_DIRTY_ALL = false;
@@ -224,7 +224,7 @@ public final class CacheService extends IntentService {
         }
     }
 
-    public static void markDirty(final MediaPresenter presenter) {
+    public static void markDirty(final MediaWaiter presenter) {
         sList = null;
         sAlbumCache.put(ALBUM_CACHE_DIRTY_INDEX, sDummyData, 0);
         if (CACHE_THREAD.get() == null) {
@@ -263,7 +263,7 @@ public final class CacheService extends IntentService {
         sAlbumCache.put(ALBUM_CACHE_DIRTY_BUCKET_INDEX, data, 0);
     }
 
-    public static void markDirty(final MediaPresenter presenter, final long id) {
+    public static void markDirty(final MediaWaiter presenter, final long id) {
         markDirtyImmediate(id);
         if (CACHE_THREAD.get() == null) {
             QUEUE_DIRTY_SET = false;
@@ -525,8 +525,8 @@ public final class CacheService extends IntentService {
         return -1L;
     }
 
-    public static byte[] queryThumbnail(final MediaPresenter presenter, final long thumbId, final long origId, final boolean isVideo,
-                                              final long timestamp) {
+    public static byte[] queryThumbnail(final MediaWaiter presenter, final long thumbId, final long origId, final boolean isVideo,
+                                        final long timestamp) {
         final DiskCache thumbnailCache = (isVideo) ? LocalDataSource.sThumbnailCacheVideo : LocalDataSource.sThumbnailCache;
         return queryThumbnail(presenter, thumbId, origId, isVideo, thumbnailCache, timestamp);
     }
@@ -572,7 +572,7 @@ public final class CacheService extends IntentService {
         return list;
     }
 
-    private static byte[] queryThumbnail(final MediaPresenter presenter, final long thumbId, final long origId, final boolean isVideo,
+    private static byte[] queryThumbnail(final MediaWaiter presenter, final long thumbId, final long origId, final boolean isVideo,
                                          final DiskCache thumbnailCache, final long timestamp) {
         if (!presenter.isPaused()) {
             final Thread thumbnailThread = THUMBNAIL_THREAD.getAndSet(null);
@@ -590,7 +590,7 @@ public final class CacheService extends IntentService {
         return bitmap;
     }
 
-    private static void buildThumbnails(final MediaPresenter presenter) {
+    private static void buildThumbnails(final MediaWaiter presenter) {
         Log.i(TAG, "Preparing DiskCache for all thumbnails.");
         ImageList list = getImageList(presenter.getActivity());
         final int size = (list.ids == null) ? 0 : list.ids.length;
@@ -635,8 +635,8 @@ public final class CacheService extends IntentService {
         return false;
     }
 
-    private static byte[] buildThumbnailForId(final MediaPresenter presenter, final DiskCache thumbnailCache, final long thumbId,
-                                                    final long origId, final boolean isVideo, final int thumbnailWidth, final int thumbnailHeight, final long timestamp) {
+    private static byte[] buildThumbnailForId(final MediaWaiter presenter, final DiskCache thumbnailCache, final long thumbId,
+                                              final long origId, final boolean isVideo, final int thumbnailWidth, final int thumbnailHeight, final long timestamp) {
         if (origId == Shared.INVALID) {
             return null;
         }
@@ -784,7 +784,7 @@ public final class CacheService extends IntentService {
             if(!(getBaseContext() instanceof GalleryActivity)) return;
 
             GalleryActivity gallery = (GalleryActivity) getBaseContext();
-            final MediaPresenter presenter = gallery.getMediaPresenter();
+            final MediaWaiter presenter = gallery.getMediaWaiter();
             if(presenter == null) return ;
             startNewThumbnailThread(presenter);
         } else {
@@ -865,7 +865,7 @@ public final class CacheService extends IntentService {
         }
     }
 
-    public static void startNewThumbnailThread(final MediaPresenter presenter) {
+    public static void startNewThumbnailThread(final MediaWaiter presenter) {
         restartThread(THUMBNAIL_THREAD, "ThumbnailRefresh", new Runnable() {
             public void run() {
                 Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
@@ -895,7 +895,7 @@ public final class CacheService extends IntentService {
                 if(!(getBaseContext() instanceof GalleryActivity)) return;
 
                 GalleryActivity gallery = (GalleryActivity) getBaseContext();
-                final MediaPresenter presenter = gallery.getMediaPresenter();
+                final MediaWaiter presenter = gallery.getMediaWaiter();
                 if(presenter == null) return ;
                 refreshDirtySets(presenter);
             }
@@ -1005,7 +1005,7 @@ public final class CacheService extends IntentService {
         sAlbumCache.delete(ALBUM_CACHE_INCOMPLETE_INDEX);
     }
 
-    private static void refreshDirtySets(final MediaPresenter presenter) {
+    private static void refreshDirtySets(final MediaWaiter presenter) {
         final byte[] existingData = sAlbumCache.get(ALBUM_CACHE_DIRTY_BUCKET_INDEX, 0);
         if (existingData != null && existingData.length > 0) {
             final long[] ids = toLongArray(existingData);
@@ -1033,7 +1033,7 @@ public final class CacheService extends IntentService {
         sAlbumCache.delete(ALBUM_CACHE_DIRTY_BUCKET_INDEX);
     }
 
-    public static long[] computeDirtySets(final MediaPresenter presenter) {
+    public static long[] computeDirtySets(final MediaWaiter presenter) {
         final Uri uriImages = Images.Media.EXTERNAL_CONTENT_URI;
         final Uri uriVideos = Video.Media.EXTERNAL_CONTENT_URI;
         final ContentResolver cr = presenter.getActivity().getContentResolver();
@@ -1107,7 +1107,7 @@ public final class CacheService extends IntentService {
         array.add(value);
     }
 
-    private static void processQueuedDirty(final MediaPresenter presenter) {
+    private static void processQueuedDirty(final MediaWaiter presenter) {
         do {
             if (QUEUE_DIRTY_SENSE) {
                 QUEUE_DIRTY_SENSE = false;

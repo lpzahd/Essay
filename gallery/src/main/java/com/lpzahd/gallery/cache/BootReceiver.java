@@ -11,12 +11,11 @@ import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
 import android.util.Log;
 
-import com.lpzahd.gallery.Gallery;
 import com.lpzahd.gallery.a3d.LocalDataSource;
 import com.lpzahd.gallery.a3d.PicasaDataSource;
 import com.lpzahd.gallery.a3d.SingleDataSource;
 import com.lpzahd.gallery.context.GalleryActivity;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 public class BootReceiver extends BroadcastReceiver {
     private static final String TAG = "BootReceiver";
@@ -28,7 +27,7 @@ public class BootReceiver extends BroadcastReceiver {
         if(!(context instanceof GalleryActivity)) return;
 
         GalleryActivity gallery = (GalleryActivity) context;
-        final MediaPresenter presenter = gallery.getMediaPresenter();
+        final MediaWaiter presenter = gallery.getMediaWaiter();
         if(presenter == null) return ;
 
         final String action = intent.getAction();

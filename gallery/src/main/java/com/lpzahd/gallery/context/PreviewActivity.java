@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
-import com.lpzahd.gallery.presenter.PreviewWaiter;
+import com.lpzahd.gallery.waiter.PreviewWaiter;
 import com.lpzahd.waiter.WaiterActivity;
 
 

@@ -8,15 +8,11 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.view.KeyEvent;
 import android.view.Menu;
-
-import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.gallery.Gallery;
-import com.lpzahd.gallery.presenter.MediaPresenter;
-import com.lpzahd.gallery.presenter.MultiSelectPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
+import com.lpzahd.gallery.waiter.MultiSelectWaiter;
 import com.lpzahd.waiter.WaiterActivity;
 import com.lpzahd.waiter.agency.ActivityWaiter;
-
-import java.util.TimeZone;
 
 /**
  * Author : Lpzahd
@@ -31,10 +27,10 @@ public class GalleryActivity extends WaiterActivity {
         return mHandler;
     }
 
-    private MediaPresenter mMediaPresenter;
+    private MediaWaiter mMediaWaiter;
 
-    public MediaPresenter getMediaPresenter() {
-        return mMediaPresenter;
+    public MediaWaiter getMediaWaiter() {
+        return mMediaWaiter;
     }
 
     public static void startActivity(Context context) {
@@ -58,13 +54,13 @@ public class GalleryActivity extends WaiterActivity {
             @Gallery.Configuration.MODE int mode = configuration.getMode();
             switch (mode) {
                 case Gallery.Configuration.MODE_SELECT:
-                    parent = new MultiSelectPresenter(this, configuration.getMaxSize());
+                    parent = new MultiSelectWaiter(this, configuration.getMaxSize());
                     addActivityWaiter(parent);
                     break;
                 case Gallery.Configuration.MODE_GALLERY:
                 default:
-                    addActivityWaiter(mMediaPresenter = new MediaPresenter(this));
-                    parent = mMediaPresenter;
+                    addActivityWaiter(mMediaWaiter = new MediaWaiter(this));
+                    parent = mMediaWaiter;
                     break;
             }
             for (ActivityWaiter waiter : configuration.getWaiters()) {

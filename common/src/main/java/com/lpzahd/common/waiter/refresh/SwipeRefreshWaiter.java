@@ -211,11 +211,11 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
     /**
      * 加载更多回调
      */
-    private interface LoadMoreCallBack {
+    public interface LoadMoreCallBack {
         void onLoadMore();
     }
 
-    private static class RecyclerViewOnScroll extends RecyclerView.OnScrollListener {
+    public static class RecyclerViewOnScroll extends RecyclerView.OnScrollListener {
 
         private static final long MIN_DURATION_TIME = 1000;
 
@@ -229,7 +229,7 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
 
         long loadmoreTime;
 
-        private RecyclerViewOnScroll(RecyclerView recyclerView, LoadMoreCallBack loadMoreCallBack) {
+        public RecyclerViewOnScroll(RecyclerView recyclerView, LoadMoreCallBack loadMoreCallBack) {
             this.mRecyclerView = recyclerView;
             this.mLoadMoreCallBack = loadMoreCallBack;
         }

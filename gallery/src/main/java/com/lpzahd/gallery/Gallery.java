@@ -3,12 +3,10 @@ package com.lpzahd.gallery;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 
 import com.lpzahd.common.bus.Receiver;
 import com.lpzahd.common.bus.RxBus;
 import com.lpzahd.gallery.context.GalleryActivity;
-import com.lpzahd.gallery.presenter.MultiSelectPresenter;
 import com.lpzahd.waiter.LifecleCallBack;
 import com.lpzahd.waiter.WaiterActivity;
 import com.lpzahd.waiter.WaiterFragment;
@@ -75,27 +73,20 @@ public class Gallery extends InnerGallery {
         public ImageGallery subscribe(@NonNull Receiver receiver) {
             mConfiguration.setBusService(new RxBus.BusService(this, receiver));
             if(Configuration.isActivity(mConfiguration)) {
+                mConfiguration.getBusService().regist();
                 mConfiguration.activity.addLifecleCallBack(new SimpleLifecleCallBack<WaiterActivity>() {
                     @Override
-                    public void created(WaiterActivity activity) {
-                        mConfiguration.getBusService().regist();
-                    }
-
-                    @Override
                     public void destroyed(WaiterActivity activity) {
-                        mConfiguration.getBusService().regist();
+                        mConfiguration.getBusService().unregist();
                     }
                 });
             } else {
+                mConfiguration.getBusService().regist();
                 mConfiguration.fragment.addLifecleCallBack(new SimpleLifecleCallBack<WaiterFragment>() {
-                    @Override
-                    public void created(WaiterFragment fragment) {
-                        mConfiguration.getBusService().regist();
-                    }
 
                     @Override
                     public void destroyed(WaiterFragment fragment) {
-                        mConfiguration.getBusService().regist();
+                        mConfiguration.getBusService().unregist();
                     }
                 });
             }

@@ -11,9 +11,8 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
-import android.util.FloatMath;
 
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 public final class StringTexture extends Texture {
     private String mString;
@@ -34,7 +33,7 @@ public final class StringTexture extends Texture {
             paint.setTypeface(typeface);
             paint.setTextSize(textSize);
             // 10 pixel buffer to compensate for the shade at the end.
-            return (int) (10.0f * MediaPresenter.PIXEL_DENSITY) + (int) Math.ceil(paint.measureText(string));
+            return (int) (10.0f * MediaWaiter.PIXEL_DENSITY) + (int) Math.ceil(paint.measureText(string));
         }
     }
 
@@ -225,7 +224,7 @@ public final class StringTexture extends Texture {
         public float g = 1f;
         public float b = 1f;
         public float a = 1f;
-        public int shadowRadius = 4 * (int) MediaPresenter.PIXEL_DENSITY;
+        public int shadowRadius = 4 * (int) MediaWaiter.PIXEL_DENSITY;
         public boolean underline = false;
         public boolean bold = false;
         public boolean italic = false;

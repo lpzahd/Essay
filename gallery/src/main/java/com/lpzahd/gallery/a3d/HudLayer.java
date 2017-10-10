@@ -2,19 +2,17 @@ package com.lpzahd.gallery.a3d;
 
 import android.app.AlertDialog;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.net.Uri;
-import android.util.FloatMath;
 import android.view.MotionEvent;
 
 import com.lpzahd.gallery.R;
 import com.lpzahd.gallery.a3d.PopupMenu.Option;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +23,7 @@ public final class HudLayer extends Layer {
     public static final int MODE_NORMAL = 0;
     public static final int MODE_SELECT = 1;
 
-    private MediaPresenter mPresenter;
+    private MediaWaiter mPresenter;
     private GridLayer mGridLayer;
     private final ImageButton mTopRightButton = new ImageButton();
     private final ImageButton mZoomInButton = new ImageButton();
@@ -102,16 +100,16 @@ public final class HudLayer extends Layer {
     private String mCachedPosition;
     private String mCachedCurrentLabel;
 
-    HudLayer(MediaPresenter mPresenter) {
+    HudLayer(MediaWaiter mPresenter) {
         mAlpha = 1.0f;
         if (mTimeBar == null) {
             mTimeBar = new TimeBar(mPresenter.getActivity());
             mPathBar = new PathBarLayer();
         }
-        mTopRightButton.setSize((int) (100 * MediaPresenter.PIXEL_DENSITY), (int) (94 * MediaPresenter.PIXEL_DENSITY));
+        mTopRightButton.setSize((int) (100 * MediaWaiter.PIXEL_DENSITY), (int) (94 * MediaWaiter.PIXEL_DENSITY));
 
-        mZoomInButton.setSize(43 * MediaPresenter.PIXEL_DENSITY, 43 * MediaPresenter.PIXEL_DENSITY);
-        mZoomOutButton.setSize(43 * MediaPresenter.PIXEL_DENSITY, 43 * MediaPresenter.PIXEL_DENSITY);
+        mZoomInButton.setSize(43 * MediaWaiter.PIXEL_DENSITY, 43 * MediaWaiter.PIXEL_DENSITY);
+        mZoomOutButton.setSize(43 * MediaWaiter.PIXEL_DENSITY, 43 * MediaWaiter.PIXEL_DENSITY);
         mZoomInButton.setImages(ZOOM_IN_ICON, ZOOM_IN_ICON_PRESSED);
         mZoomInButton.setAction(mZoomInButtonAction);
         mZoomOutButton.setImages(ZOOM_OUT_ICON, ZOOM_OUT_ICON_PRESSED);
@@ -189,7 +187,7 @@ public final class HudLayer extends Layer {
                         }).build() });
     }
 
-    public void setContext(MediaPresenter presenter) {
+    public void setContext(MediaWaiter presenter) {
         if (mPresenter != presenter) {
             mPresenter = presenter;
             mTimeBar.regenerateStringsForContext(mPresenter.getActivity());
@@ -352,7 +350,7 @@ public final class HudLayer extends Layer {
                             final Intent intent = new Intent("com.android.camera.action.CROP");
                             intent.setClassName("com.cooliris.media", "com.cooliris.media.CropImage");
                             intent.setData(Uri.parse(item.mContentUri));
-                            mPresenter.getActivity().startActivityForResult(intent, MediaPresenter.CROP_MSG_INTERNAL);
+                            mPresenter.getActivity().startActivityForResult(intent, MediaWaiter.CROP_MSG_INTERNAL);
                         }
                     }) };
         }
@@ -418,17 +416,17 @@ public final class HudLayer extends Layer {
         final float height = mHeight;
         closeSelectionMenu();
 
-        mTimeBar.setPosition(0f, height - TimeBar.HEIGHT * MediaPresenter.PIXEL_DENSITY);
-        mTimeBar.setSize(width, TimeBar.HEIGHT * MediaPresenter.PIXEL_DENSITY);
+        mTimeBar.setPosition(0f, height - TimeBar.HEIGHT * MediaWaiter.PIXEL_DENSITY);
+        mTimeBar.setSize(width, TimeBar.HEIGHT * MediaWaiter.PIXEL_DENSITY);
         mSelectionMenuTop.setPosition(0f, 0);
-        mSelectionMenuTop.setSize(width, MenuBar.HEIGHT * MediaPresenter.PIXEL_DENSITY);
-        mSelectionMenuBottom.setPosition(0f, height - MenuBar.HEIGHT * MediaPresenter.PIXEL_DENSITY);
-        mSelectionMenuBottom.setSize(width, MenuBar.HEIGHT * MediaPresenter.PIXEL_DENSITY);
+        mSelectionMenuTop.setSize(width, MenuBar.HEIGHT * MediaWaiter.PIXEL_DENSITY);
+        mSelectionMenuBottom.setPosition(0f, height - MenuBar.HEIGHT * MediaWaiter.PIXEL_DENSITY);
+        mSelectionMenuBottom.setSize(width, MenuBar.HEIGHT * MediaWaiter.PIXEL_DENSITY);
 
-        mFullscreenMenu.setPosition(0f, height - MenuBar.HEIGHT * MediaPresenter.PIXEL_DENSITY);
-        mFullscreenMenu.setSize(width, MenuBar.HEIGHT * MediaPresenter.PIXEL_DENSITY);
+        mFullscreenMenu.setPosition(0f, height - MenuBar.HEIGHT * MediaWaiter.PIXEL_DENSITY);
+        mFullscreenMenu.setSize(width, MenuBar.HEIGHT * MediaWaiter.PIXEL_DENSITY);
 
-        mPathBar.setPosition(0f, -4f * MediaPresenter.PIXEL_DENSITY);
+        mPathBar.setPosition(0f, -4f * MediaWaiter.PIXEL_DENSITY);
         computeSizeForPathbar();
 
         mTopRightButton.setPosition(width - mTopRightButton.getWidth(), 0f);
@@ -438,9 +436,9 @@ public final class HudLayer extends Layer {
 
     private void computeSizeForPathbar() {
         float pathBarWidth = mWidth
-                - ((mGridLayer.getState() == GridLayer.STATE_FULL_SCREEN) ? 32 * MediaPresenter.PIXEL_DENSITY
-                        : 120 * MediaPresenter.PIXEL_DENSITY);
-        mPathBar.setSize(pathBarWidth, (float) Math.ceil(39 * MediaPresenter.PIXEL_DENSITY));
+                - ((mGridLayer.getState() == GridLayer.STATE_FULL_SCREEN) ? 32 * MediaWaiter.PIXEL_DENSITY
+                        : 120 * MediaWaiter.PIXEL_DENSITY);
+        mPathBar.setSize(pathBarWidth, (float) Math.ceil(39 * MediaWaiter.PIXEL_DENSITY));
         mPathBar.recomputeComponents();
     }
 
@@ -481,7 +479,7 @@ public final class HudLayer extends Layer {
         int pressedImage = 0;
         Runnable action = null;
         final ImageButton topRightButton = mTopRightButton;
-        int height = (int) (94 * MediaPresenter.PIXEL_DENSITY);
+        int height = (int) (94 * MediaWaiter.PIXEL_DENSITY);
         switch (state) {
         case GridLayer.STATE_MEDIA_SETS:
             image = CAMERA_BUTTON_ICON;
@@ -502,7 +500,7 @@ public final class HudLayer extends Layer {
         default:
             break;
         }
-        topRightButton.setSize((int) (100 * MediaPresenter.PIXEL_DENSITY), height);
+        topRightButton.setSize((int) (100 * MediaWaiter.PIXEL_DENSITY), height);
         topRightButton.setImages(image, pressedImage);
         topRightButton.setAction(action);
     }

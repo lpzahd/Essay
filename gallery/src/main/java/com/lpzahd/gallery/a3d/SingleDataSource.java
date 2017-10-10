@@ -2,7 +2,6 @@ package com.lpzahd.gallery.a3d;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
-import android.content.Context;
 import android.database.Cursor;
 import android.media.ExifInterface;
 import android.net.Uri;
@@ -13,7 +12,7 @@ import android.provider.MediaStore.Video;
 import android.util.Log;
 
 import com.lpzahd.gallery.cache.CacheService;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,9 +30,9 @@ public class SingleDataSource implements DataSource {
     public final boolean mSingleUri;
     public final boolean mAllItems;
     public final DiskCache mDiskCache;
-    private MediaPresenter mPresenter;
+    private MediaWaiter mPresenter;
 
-    public SingleDataSource(final MediaPresenter presenter, final String uri, final boolean slideshow) {
+    public SingleDataSource(final MediaWaiter presenter, final String uri, final boolean slideshow) {
         this.mUri = uri;
         mPresenter = presenter;
         String bucketId = Uri.parse(uri).getQueryParameter("bucketId");

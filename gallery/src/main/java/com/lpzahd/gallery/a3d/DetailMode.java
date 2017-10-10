@@ -3,7 +3,7 @@ package com.lpzahd.gallery.a3d;
 import android.content.res.Resources;
 
 import com.lpzahd.gallery.R;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ import java.util.Date;
 
 public final class DetailMode {
 
-    public static CharSequence[] populateDetailModeStrings(MediaPresenter presenter, ArrayList<MediaBucket> buckets) {
+    public static CharSequence[] populateDetailModeStrings(MediaWaiter presenter, ArrayList<MediaBucket> buckets) {
         int numBuckets = buckets.size();
         if (MediaBucketList.isSetSelection(buckets) && numBuckets == 1) {
             // If just 1 set was selected, save the trouble of processing the
@@ -47,7 +47,7 @@ public final class DetailMode {
         }
     }
 
-    private static CharSequence[] populateSetViewDetailModeStrings(MediaPresenter presenter, MediaSet selectedItemsSet, int numOriginalSets) {
+    private static CharSequence[] populateSetViewDetailModeStrings(MediaWaiter presenter, MediaSet selectedItemsSet, int numOriginalSets) {
         if (selectedItemsSet == null) {
             return null;
         }
@@ -76,8 +76,8 @@ public final class DetailMode {
             long minTimestamp = selectedItemsSet.mMinTimestamp;
             long maxTimestamp = selectedItemsSet.mMaxTimestamp;
             if (selectedItemsSet.isPicassaSet()) {
-                minTimestamp -= MediaPresenter.CURRENT_TIME_ZONE.getOffset(minTimestamp);
-                maxTimestamp -= MediaPresenter.CURRENT_TIME_ZONE.getOffset(maxTimestamp);
+                minTimestamp -= MediaWaiter.CURRENT_TIME_ZONE.getOffset(minTimestamp);
+                maxTimestamp -= MediaWaiter.CURRENT_TIME_ZONE.getOffset(maxTimestamp);
             }
             strings.add(resources.getString(R.string.start) + ": " + dateTimeFormat.format(new Date(minTimestamp)));
             strings.add(resources.getString(R.string.end) + ": " + dateTimeFormat.format(new Date(maxTimestamp)));
@@ -85,8 +85,8 @@ public final class DetailMode {
             long minTimestamp = selectedItemsSet.mMinAddedTimestamp;
             long maxTimestamp = selectedItemsSet.mMaxAddedTimestamp;
             if (selectedItemsSet.isPicassaSet()) {
-                minTimestamp -= MediaPresenter.CURRENT_TIME_ZONE.getOffset(minTimestamp);
-                maxTimestamp -= MediaPresenter.CURRENT_TIME_ZONE.getOffset(maxTimestamp);
+                minTimestamp -= MediaWaiter.CURRENT_TIME_ZONE.getOffset(minTimestamp);
+                maxTimestamp -= MediaWaiter.CURRENT_TIME_ZONE.getOffset(maxTimestamp);
             }
             strings.add(resources.getString(R.string.start) + ": " + dateTimeFormat.format(new Date(minTimestamp)));
             strings.add(resources.getString(R.string.end) + ": " + dateTimeFormat.format(new Date(maxTimestamp)));
@@ -116,7 +116,7 @@ public final class DetailMode {
         return stringsArr;
     }
 
-    private static CharSequence[] populateItemViewDetailModeStrings(MediaPresenter presenter, MediaItem item) {
+    private static CharSequence[] populateItemViewDetailModeStrings(MediaWaiter presenter, MediaItem item) {
         if (item == null) {
             return null;
         }
@@ -130,13 +130,13 @@ public final class DetailMode {
         if (item.isDateTakenValid()) {
             long dateTaken = item.mDateTakenInMs;
             if (item.isPicassaItem()) {
-                dateTaken -= MediaPresenter.CURRENT_TIME_ZONE.getOffset(dateTaken);
+                dateTaken -= MediaWaiter.CURRENT_TIME_ZONE.getOffset(dateTaken);
             }
             strings[2] = resources.getString(R.string.taken_on) + ": " + dateTimeFormat.format(new Date(dateTaken));
         } else if (item.isDateAddedValid()) {
             long dateAdded = item.mDateAddedInSec * 1000;
             if (item.isPicassaItem()) {
-                dateAdded -= MediaPresenter.CURRENT_TIME_ZONE.getOffset(dateAdded);
+                dateAdded -= MediaWaiter.CURRENT_TIME_ZONE.getOffset(dateAdded);
             }
             // TODO: Make this added_on as soon as translations are ready.
             // strings[2] = resources.getString(R.string.added_on) + ": " +

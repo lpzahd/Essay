@@ -15,7 +15,7 @@ import android.provider.MediaStore.Video;
 import android.util.Log;
 
 import com.lpzahd.gallery.cache.CacheService;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.io.File;
 import java.net.URI;
@@ -46,10 +46,10 @@ public final class LocalDataSource implements DataSource {
         return (path.toLowerCase().hashCode());
     }
 
-    private MediaPresenter mPresenter;
+    private MediaWaiter mPresenter;
     private ContentObserver mObserver;
 
-    public LocalDataSource(MediaPresenter presenter) {
+    public LocalDataSource(MediaWaiter presenter) {
         mPresenter = presenter;
     }
 

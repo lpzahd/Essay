@@ -1,12 +1,11 @@
 package com.lpzahd.gallery.a3d;
 
-import android.content.Context;
 import android.os.Process;
 import android.view.Gravity;
 import android.widget.Toast;
 
 import com.lpzahd.gallery.R;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +30,7 @@ public final class MediaFeed implements Runnable {
     private int mExpandedMediaSetIndex = Shared.INVALID;
     private MediaFilter mMediaFilter;
     private MediaSet mMediaFilteredSet;
-    private MediaPresenter mPresenter;
+    private MediaWaiter mPresenter;
     private Thread mDataSourceThread = null;
     private Thread mAlbumSourceThread = null;
     private boolean mListenerNeedsLayout;
@@ -45,7 +44,7 @@ public final class MediaFeed implements Runnable {
         void onFeedChanged(MediaFeed feed, boolean needsLayout);
     }
 
-    public MediaFeed(MediaPresenter presenter, DataSource dataSource, Listener listener) {
+    public MediaFeed(MediaWaiter presenter, DataSource dataSource, Listener listener) {
         mPresenter = presenter;
         mListener = listener;
         mDataSource = dataSource;

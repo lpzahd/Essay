@@ -3,7 +3,7 @@ package com.lpzahd.gallery.a3d;
 import android.content.Context;
 
 import com.lpzahd.gallery.R;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -73,7 +73,7 @@ public final class GridDrawManager {
 
         StringTexture.Config stc = new StringTexture.Config();
         stc.bold = true;
-        stc.fontSize = 16 * MediaPresenter.PIXEL_DENSITY;
+        stc.fontSize = 16 * MediaWaiter.PIXEL_DENSITY;
         stc.sizeMode = StringTexture.Config.SIZE_EXACT;
         stc.overflowMode = StringTexture.Config.OVERFLOW_FADE;
         mNoItemsTexture = new StringTexture(context.getResources().getString(R.string.no_items), stc);
@@ -98,7 +98,7 @@ public final class GridDrawManager {
         return false;
     }
 
-    public void drawThumbnails(MediaPresenter presenter, RenderView view, GL11 gl, int state) {
+    public void drawThumbnails(MediaWaiter presenter, RenderView view, GL11 gl, int state) {
         final GridDrawables drawables = mDrawables;
         final DisplayList displayList = mDisplayList;
         final DisplayItem[] displayItems = mDisplayItems;
@@ -207,7 +207,7 @@ public final class GridDrawManager {
         return mCurrentFocusItemHeight;
     }
 
-    public void drawFocusItems(MediaPresenter presenter, RenderView view, GL11 gl, float zoomValue, boolean slideshowMode, float timeElapsedSinceView) {
+    public void drawFocusItems(MediaWaiter presenter, RenderView view, GL11 gl, float zoomValue, boolean slideshowMode, float timeElapsedSinceView) {
         int selectedSlotIndex = mSelectedSlot;
         GridDrawables drawables = mDrawables;
         GridCamera camera = mCamera;
@@ -267,7 +267,7 @@ public final class GridDrawManager {
                     Texture hiRes = (zoomValue != 1.0f && i == 0 && item.getMediaType() != MediaItem.MEDIA_TYPE_VIDEO) ? displayItem
                             .getHiResImage(view.getContext())
                             : null;
-                    if (MediaPresenter.PIXEL_DENSITY > 1.0f) {
+                    if (MediaWaiter.PIXEL_DENSITY > 1.0f) {
                         hiRes = texture;
                     }
                     if (i != 0) {
@@ -387,7 +387,7 @@ public final class GridDrawManager {
         }
     }
 
-    public void drawBlendedComponents(MediaPresenter presenter, RenderView view, GL11 gl, float alpha, int state, int hudMode, float stackMixRatio,
+    public void drawBlendedComponents(MediaWaiter presenter, RenderView view, GL11 gl, float alpha, int state, int hudMode, float stackMixRatio,
                                       float gridMixRatio, MediaBucketList selectedBucketList, MediaBucketList markedBucketList, boolean isFeedLoading) {
         int firstBufferedVisibleSlot = mBufferedVisibleRange.begin;
         int lastBufferedVisibleSlot = mBufferedVisibleRange.end;

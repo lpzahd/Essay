@@ -1,4 +1,4 @@
-package com.lpzahd.gallery.presenter.multi;
+package com.lpzahd.gallery.waiter.multi;
 
 import android.content.Context;
 import android.net.Uri;

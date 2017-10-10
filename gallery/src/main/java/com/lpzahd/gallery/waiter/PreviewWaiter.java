@@ -1,4 +1,4 @@
-package com.lpzahd.gallery.presenter;
+package com.lpzahd.gallery.waiter;
 
 import android.content.Context;
 import android.content.Intent;

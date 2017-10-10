@@ -4,7 +4,7 @@ import android.graphics.Typeface;
 import android.view.MotionEvent;
 
 import com.lpzahd.gallery.R;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.util.ArrayList;
 
@@ -19,7 +19,7 @@ public final class PathBarLayer extends Layer {
     private Component mTouchItem = null;
 
     static {
-        sPathFormat.fontSize = 18f * MediaPresenter.PIXEL_DENSITY;
+        sPathFormat.fontSize = 18f * MediaWaiter.PIXEL_DENSITY;
     }
 
     public PathBarLayer() {
@@ -122,7 +122,7 @@ public final class PathBarLayer extends Layer {
         }
 
         public float getIconWidth() {
-            return ICON_WIDTH * MediaPresenter.PIXEL_DENSITY;
+            return ICON_WIDTH * MediaWaiter.PIXEL_DENSITY;
         }
     }
 
@@ -139,9 +139,9 @@ public final class PathBarLayer extends Layer {
             Component component = mComponents.get(i);
             float iconWidth = (component.icon == 0) ? 0 : component.getIconWidth();
             if (iconWidth == 0) {
-                iconWidth = 8 * MediaPresenter.PIXEL_DENSITY;
+                iconWidth = 8 * MediaWaiter.PIXEL_DENSITY;
             }
-            float offset = 5 * MediaPresenter.PIXEL_DENSITY;
+            float offset = 5 * MediaWaiter.PIXEL_DENSITY;
             float thisComponentWidth = (i != numComponents - 1) ? iconWidth + offset : component.texture.computeTextWidth()
                     + iconWidth + offset;
             component.width = thisComponentWidth;
@@ -167,7 +167,7 @@ public final class PathBarLayer extends Layer {
         final Texture join = view.getResource(JOIN);
         final Texture cap = view.getResource(CAP);
         final float y = mY + 3;
-        int x = (int) (3 * MediaPresenter.PIXEL_DENSITY);
+        int x = (int) (3 * MediaWaiter.PIXEL_DENSITY);
         float height = mHeight;
         int numComponents = mComponents.size();
         for (int i = 0; i < numComponents; ++i) {
@@ -189,7 +189,7 @@ public final class PathBarLayer extends Layer {
                 // Draw the cap on the right edge.
                 view.draw2D(cap, x + width, y);
             }
-            float xOffset = 5 * MediaPresenter.PIXEL_DENSITY;
+            float xOffset = 5 * MediaWaiter.PIXEL_DENSITY;
             // Draw the label.
             final int[] icons = component.animatedIcons;
 
@@ -199,18 +199,18 @@ public final class PathBarLayer extends Layer {
             final Texture icon = view.getResource(iconId);
             if (icon != null) {
                 view.loadTexture(icon);
-                view.draw2D(icon, x + xOffset, y - 2 * MediaPresenter.PIXEL_DENSITY);
+                view.draw2D(icon, x + xOffset, y - 2 * MediaWaiter.PIXEL_DENSITY);
             }
             if (i == numComponents - 1) {
                 final StringTexture texture = component.texture;
                 view.loadTexture(texture);
                 float iconWidth = component.getIconWidth();
                 if (texture.computeTextWidth() <= (width - iconWidth)) {
-                    float textOffset = (iconWidth == 0) ? 8 * MediaPresenter.PIXEL_DENSITY : iconWidth;
+                    float textOffset = (iconWidth == 0) ? 8 * MediaWaiter.PIXEL_DENSITY : iconWidth;
                     view.draw2D(texture, x + textOffset, y + 5);
                 }
             }
-            x += (int) (width + (21 * MediaPresenter.PIXEL_DENSITY + 0.5f));
+            x += (int) (width + (21 * MediaWaiter.PIXEL_DENSITY + 0.5f));
         }
     }
 
@@ -251,11 +251,11 @@ public final class PathBarLayer extends Layer {
 
     public void recomputeComponents() {
         float width = mWidth;
-        width -= 20f * MediaPresenter.PIXEL_DENSITY;
+        width -= 20f * MediaWaiter.PIXEL_DENSITY;
         int numComponents = mComponents.size();
         for (int i = 0; i < numComponents; i++) {
             Component component = mComponents.get(i);
-            width -= (component.getIconWidth() + 20.0f * MediaPresenter.PIXEL_DENSITY);
+            width -= (component.getIconWidth() + 20.0f * MediaWaiter.PIXEL_DENSITY);
             component.computeLabel(width);
         }
     }

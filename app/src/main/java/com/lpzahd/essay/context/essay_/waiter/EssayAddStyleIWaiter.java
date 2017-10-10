@@ -1,42 +1,24 @@
 package com.lpzahd.essay.context.essay_.waiter;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.view.menu.MenuItemImpl;
-import android.support.v7.view.menu.MenuPopupHelper;
-import android.support.v7.view.menu.MenuPresenter;
-import android.support.v7.view.menu.MenuView;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatImageView;
-import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.AttributeSet;
-import android.view.InflateException;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 
 import com.lpzahd.aop.api.ThrottleFirst;
-import com.lpzahd.atool.ui.T;
+import com.lpzahd.atool.ui.L;
 import com.lpzahd.common.bus.Receiver;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.essay_.EssayAddActivity;
 import com.lpzahd.gallery.Gallery;
 import com.lpzahd.gallery.context.GalleryActivity;
-import com.lpzahd.gallery.presenter.MultiSelectPresenter;
+import com.lpzahd.gallery.tool.MediaTool;
 import com.lpzahd.waiter.agency.ActivityWaiter;
-import com.lpzahd.waiter.consumer.State;
 
-import java.util.Random;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -147,7 +129,7 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> {
                         flowable.subscribe(new Consumer<T>() {
                             @Override
                             public void accept(T t) throws Exception {
-
+                                L.e(t.toString());
                             }
                         });
                     }

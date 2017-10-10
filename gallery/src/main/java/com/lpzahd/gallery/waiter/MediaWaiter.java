@@ -1,4 +1,4 @@
-package com.lpzahd.gallery.presenter;
+package com.lpzahd.gallery.waiter;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -47,7 +47,7 @@ import java.util.TimeZone;
  * Date : 五月
  * Desction : (•ิ_•ิ)
  */
-public class MediaPresenter extends ActivityWaiter<GalleryActivity, ActivityWaiter> {
+public class MediaWaiter extends ActivityWaiter<GalleryActivity, ActivityWaiter> {
 
     public static final TimeZone CURRENT_TIME_ZONE = TimeZone.getDefault();
 
@@ -63,7 +63,7 @@ public class MediaPresenter extends ActivityWaiter<GalleryActivity, ActivityWait
 
     private boolean mPause;
 
-    public MediaPresenter(GalleryActivity activity) {
+    public MediaWaiter(GalleryActivity activity) {
         super(activity);
     }
 
@@ -131,13 +131,13 @@ public class MediaPresenter extends ActivityWaiter<GalleryActivity, ActivityWait
                     } while (numRetries > 0 && !ImageManager.hasStorage());
                 }
                 final boolean imageManagerHasStorageAfterDelay = ImageManager.hasStorage();
-                CacheService.computeDirtySets(MediaPresenter.this);
+                CacheService.computeDirtySets(MediaWaiter.this);
                 CacheService.startCache(context, false);
                 final boolean isCacheReady = CacheService.isCacheReady(false);
 
                 // Creating the DataSource objects.
                 final PicasaDataSource picasaDataSource = new PicasaDataSource(context);
-                final LocalDataSource localDataSource = new LocalDataSource(MediaPresenter.this);
+                final LocalDataSource localDataSource = new LocalDataSource(MediaWaiter.this);
                 final ConcatenatedDataSource combinedDataSource = new ConcatenatedDataSource(localDataSource, picasaDataSource);
 
                 // Depending upon the intent, we assign the right dataSource.
@@ -177,7 +177,7 @@ public class MediaPresenter extends ActivityWaiter<GalleryActivity, ActivityWait
                     // View intent for images.
                     Uri uri = context.getIntent().getData();
                     boolean slideshow = context.getIntent().getBooleanExtra("slideshow", false);
-                    final SingleDataSource singleDataSource = new SingleDataSource(MediaPresenter.this, uri.toString(), slideshow);
+                    final SingleDataSource singleDataSource = new SingleDataSource(MediaWaiter.this, uri.toString(), slideshow);
                     final ConcatenatedDataSource singleCombinedDataSource = new ConcatenatedDataSource(singleDataSource, picasaDataSource);
                     mGridLayer.setDataSource(singleCombinedDataSource);
                     mGridLayer.setViewIntent(true, Utils.getBucketNameFromUri(uri));

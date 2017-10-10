@@ -13,7 +13,7 @@ import android.util.SparseArray;
 import android.view.MotionEvent;
 
 import com.lpzahd.gallery.R;
-import com.lpzahd.gallery.presenter.MediaPresenter;
+import com.lpzahd.gallery.waiter.MediaWaiter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,10 +65,10 @@ public final class TimeBar extends Layer implements MediaFeed.Listener {
 
     TimeBar(Context context) {
         // Setup formatting for text labels.
-        mMonthYearFormat.fontSize = 17f * MediaPresenter.PIXEL_DENSITY;
+        mMonthYearFormat.fontSize = 17f * MediaWaiter.PIXEL_DENSITY;
         mMonthYearFormat.bold = true;
         mMonthYearFormat.a = 0.85f;
-        mDayFormat.fontSize = 17f * MediaPresenter.PIXEL_DENSITY;
+        mDayFormat.fontSize = 17f * MediaWaiter.PIXEL_DENSITY;
         mDayFormat.a = 0.61f;
         regenerateStringsForContext(context);
         Bitmap background = BitmapFactory.decodeResource(context.getResources(), R.drawable.popup);
@@ -266,7 +266,7 @@ public final class TimeBar extends Layer implements MediaFeed.Listener {
                             j = items.size() - 1;
                     }
                 }
-                mTotalWidth = dx - MARKER_SPACING_PIXELS * MediaPresenter.PIXEL_DENSITY;
+                mTotalWidth = dx - MARKER_SPACING_PIXELS * MediaWaiter.PIXEL_DENSITY;
             }
             mPosition = getPositionForScroll(scrollX);
             mPositionAnim = mPosition;
@@ -283,7 +283,7 @@ public final class TimeBar extends Layer implements MediaFeed.Listener {
 
     private float addMarker(Marker marker) {
         mMarkers.add(marker);
-        return marker.x + MARKER_SPACING_PIXELS * MediaPresenter.PIXEL_DENSITY;
+        return marker.x + MARKER_SPACING_PIXELS * MediaWaiter.PIXEL_DENSITY;
     }
 
     /*
@@ -335,7 +335,7 @@ public final class TimeBar extends Layer implements MediaFeed.Listener {
         if (mInDrag) {
             final float x = getKnobXForPosition(mPosition) - mScrollAnim;
             float velocity;
-            float autoScrollMargin = AUTO_SCROLL_MARGIN * MediaPresenter.PIXEL_DENSITY;
+            float autoScrollMargin = AUTO_SCROLL_MARGIN * MediaWaiter.PIXEL_DENSITY;
             if (x < autoScrollMargin) {
                 velocity = -(float) Math.pow((1f - x / autoScrollMargin), 2);
             } else if (x > mWidth - autoScrollMargin) {
@@ -397,10 +397,10 @@ public final class TimeBar extends Layer implements MediaFeed.Listener {
                     }
                     int numPixelsBufferX = 70;
                     float expectedWidth = month.getWidth()
-                            + ((validDate) ? (day.getWidth() + year.getWidth() + 10 * MediaPresenter.PIXEL_DENSITY) : 0);
-                    if ((expectedWidth + numPixelsBufferX * MediaPresenter.PIXEL_DENSITY) != mBackgroundRect.right) {
-                        mBackgroundRect.right = (int) (expectedWidth + numPixelsBufferX * MediaPresenter.PIXEL_DENSITY);
-                        mBackgroundRect.bottom = (int) (month.getHeight() + 20 * MediaPresenter.PIXEL_DENSITY);
+                            + ((validDate) ? (day.getWidth() + year.getWidth() + 10 * MediaWaiter.PIXEL_DENSITY) : 0);
+                    if ((expectedWidth + numPixelsBufferX * MediaWaiter.PIXEL_DENSITY) != mBackgroundRect.right) {
+                        mBackgroundRect.right = (int) (expectedWidth + numPixelsBufferX * MediaWaiter.PIXEL_DENSITY);
+                        mBackgroundRect.bottom = (int) (month.getHeight() + 20 * MediaWaiter.PIXEL_DENSITY);
                         try {
                             Bitmap bitmap = Bitmap.createBitmap(mBackgroundRect.right, mBackgroundRect.bottom,
                                     Bitmap.Config.ARGB_8888);
@@ -416,8 +416,8 @@ public final class TimeBar extends Layer implements MediaFeed.Listener {
                     }
                     gl.glTexEnvf(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
                     gl.glColor4f(mAnimTextAlpha, mAnimTextAlpha, mAnimTextAlpha, mAnimTextAlpha);
-                    float x = (view.getWidth() - expectedWidth - numPixelsBufferX * MediaPresenter.PIXEL_DENSITY) / 2;
-                    float y = (view.getHeight() - 10 * MediaPresenter.PIXEL_DENSITY) * 0.5f;
+                    float x = (view.getWidth() - expectedWidth - numPixelsBufferX * MediaWaiter.PIXEL_DENSITY) / 2;
+                    float y = (view.getHeight() - 10 * MediaWaiter.PIXEL_DENSITY) * 0.5f;
                     if (mBackgroundTexture != null) {
                         view.draw2D(mBackgroundTexture, x, y);
                     }
@@ -425,9 +425,9 @@ public final class TimeBar extends Layer implements MediaFeed.Listener {
                     x = (view.getWidth() - expectedWidth) / 2;
                     view.draw2D(month, x, y);
                     if (validDate) {
-                        x += month.getWidth() + 3 * MediaPresenter.PIXEL_DENSITY;
+                        x += month.getWidth() + 3 * MediaWaiter.PIXEL_DENSITY;
                         view.draw2D(day, x, y);
-                        x += day.getWidth() + 7 * MediaPresenter.PIXEL_DENSITY;
+                        x += day.getWidth() + 7 * MediaWaiter.PIXEL_DENSITY;
                         view.draw2D(year, x, y);
                     }
                     if (mAnimTextAlpha != 1f) {
