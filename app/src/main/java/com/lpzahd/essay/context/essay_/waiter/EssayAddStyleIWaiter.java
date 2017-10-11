@@ -17,20 +17,26 @@ import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.lpzahd.Lists;
 import com.lpzahd.atool.enmu.Image;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.bus.Receiver;
+import com.lpzahd.common.taxi.RxTaxi;
+import com.lpzahd.common.taxi.Transmitter;
 import com.lpzahd.common.tone.adapter.OnItemChildTouchListener;
+import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.adapter.ToneItemTouchHelperCallback;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.essay_.EssayAddActivity;
+import com.lpzahd.essay.context.essay_.PreviewPicActivity;
 import com.lpzahd.gallery.Gallery;
 import com.lpzahd.gallery.tool.MediaTool;
 
 import io.reactivex.Flowable;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
 
 import java.util.ArrayList;
@@ -42,6 +48,7 @@ import com.lpzahd.aop.api.ThrottleFirst;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.reactivex.functions.Function;
 
 
 /**
@@ -49,7 +56,7 @@ import butterknife.OnClick;
  * Date : 九月
  * Desction : (•ิ_•ิ)
  */
-public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> {
+public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> implements Transmitter {
 
     @BindView(R.id.tool_bar)
     Toolbar toolBar;
@@ -74,8 +81,22 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> {
 
     private PicAdapter mAdapter;
 
+    private List<MediaTool.MediaBean> mPicSource;
+
     public EssayAddStyleIWaiter(EssayAddActivity essayAddActivity) {
         super(essayAddActivity);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        RxTaxi.get().regist(PreviewPicWaiter.TAG, this);
+    }
+
+    @Override
+    protected void destroy() {
+        super.destroy();
+        RxTaxi.get().unregist(PreviewPicWaiter.TAG);
     }
 
     @Override
@@ -102,11 +123,11 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> {
         final ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(new ToneItemTouchHelperCallback(mAdapter));
         mItemTouchHelper.attachToRecyclerView(recyclerView);
 
-        recyclerView.addOnItemTouchListener(new OnItemChildTouchListener<PicHolder>(recyclerView) {
-
+        recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<PicHolder>(recyclerView) {
             @Override
-            public void onClick(RecyclerView rv, PicHolder picHolder, View child) {
-                super.onClick(rv, picHolder, child);
+            public void onClick(RecyclerView rv, PicHolder picHolder) {
+                super.onClick(rv, picHolder);
+                PreviewPicActivity.startActivity(context);
             }
         });
     }
@@ -130,11 +151,31 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> {
                                     pics.add(pic);
                                 }
                                 mAdapter.setData(pics);
+
+                                mPicSource = mediaBeen;
                             }
                         });
                     }
                 })
                 .openGallery();
+    }
+
+    @Override
+    public Flowable<List<PreviewPicWaiter.PreviewBean>> transmit() {
+        if(Lists.empty(mPicSource)) return null;
+        return Flowable.just(mPicSource)
+                .map(new Function<List<MediaTool.MediaBean>, List<PreviewPicWaiter.PreviewBean>>() {
+                    @Override
+                    public List<PreviewPicWaiter.PreviewBean> apply(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
+                        List<PreviewPicWaiter.PreviewBean> pics = new ArrayList<>();
+                        for (int i = 0, size = mediaBeen.size(); i < size; i++) {
+                            PreviewPicWaiter.PreviewBean pic = new PreviewPicWaiter.PreviewBean();
+                            pic.uri = Frescoer.uri(mediaBeen.get(i).getOriginalPath(), Image.SOURCE_FILE);
+                            pics.add(pic);
+                        }
+                        return pics;
+                    }
+                });
     }
 
     public static class PicBean {

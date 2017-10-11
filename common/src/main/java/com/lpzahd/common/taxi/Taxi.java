@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentMap;
  * Taxi 对象a拉取数据的时候对象b发送
  * 对象b 需要注册
  */
-final class Taxi {
+public final class Taxi {
 
     private ConcurrentMap<Object, Transmitter> buses = new ConcurrentHashMap<>();
 
