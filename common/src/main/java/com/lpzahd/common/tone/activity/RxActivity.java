@@ -34,7 +34,7 @@ public class RxActivity extends ToneActivity {
     /**
      * normal action
      */
-    protected <D> void rxAction(Observable<D> observable, Consumer<D> consumer) {
+    public <D> void rxAction(Observable<D> observable, Consumer<D> consumer) {
         addDispose(observable
                 .doOnSubscribe(showDialogConsumer())
                 .observeOn(AndroidSchedulers.mainThread())

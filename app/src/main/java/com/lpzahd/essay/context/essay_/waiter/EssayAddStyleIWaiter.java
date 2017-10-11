@@ -1,14 +1,13 @@
 package com.lpzahd.essay.context.essay_.waiter;
 
-import android.content.Context;
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -18,9 +17,7 @@ import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
-import com.lpzahd.aop.api.ThrottleFirst;
 import com.lpzahd.atool.enmu.Image;
-import com.lpzahd.atool.ui.L;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.bus.Receiver;
 import com.lpzahd.common.tone.adapter.OnItemChildTouchListener;
@@ -31,20 +28,21 @@ import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.essay_.EssayAddActivity;
 import com.lpzahd.gallery.Gallery;
-import com.lpzahd.gallery.R2;
-import com.lpzahd.gallery.context.GalleryActivity;
 import com.lpzahd.gallery.tool.MediaTool;
-import com.lpzahd.waiter.agency.ActivityWaiter;
+
+import io.reactivex.Flowable;
+import io.reactivex.functions.Consumer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import com.lpzahd.aop.api.ThrottleFirst;
+
+import butterknife.BindView;
 import butterknife.OnClick;
-import io.reactivex.Flowable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
+
 
 /**
  * Author : Lpzahd
@@ -126,7 +124,7 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> {
                             @Override
                             public void accept(List<MediaTool.MediaBean> mediaBeen) throws Exception {
                                 List<PicBean> pics = new ArrayList<>();
-                                for(int i = 0, size = mediaBeen.size(); i < size; i++) {
+                                for (int i = 0, size = mediaBeen.size(); i < size; i++) {
                                     PicBean pic = new PicBean();
                                     pic.uri = Frescoer.uri(mediaBeen.get(i).getOriginalPath(), Image.SOURCE_FILE);
                                     pics.add(pic);
