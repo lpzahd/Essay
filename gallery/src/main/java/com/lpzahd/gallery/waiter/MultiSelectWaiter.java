@@ -32,7 +32,7 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
-import com.lpzahd.atool.enmu.Image;
+import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.bus.RxBus;
@@ -274,7 +274,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
                 bucket.setId(bean.getBucketId());
                 bucket.setName(bean.getBucketDisplayName());
                 bucket.setNum(1);
-                bucket.setUri(Frescoer.uri(bean.getOriginalPath(), Image.SOURCE_FILE));
+                bucket.setUri(Frescoer.uri(bean.getOriginalPath(), ImageSource.SOURCE_FILE));
                 map.put(bucket.getId(), bucket);
             } else {
                 bucket.setNum(bucket.getNum() + 1);
@@ -340,7 +340,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
             @Override
             public MultiBean process(MediaTool.MediaBean mediaBean) {
                 MultiBean bean = new MultiBean();
-                bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), Image.SOURCE_FILE);
+                bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), ImageSource.SOURCE_FILE);
                 return bean;
             }
         });
@@ -379,7 +379,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
     @Override
     public MultiBean process(MediaTool.MediaBean mediaBean) {
         MultiBean bean = new MultiBean();
-        bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), Image.SOURCE_FILE);
+        bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), ImageSource.SOURCE_FILE);
         return bean;
     }
 
@@ -399,36 +399,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
 
         @Override
         public MultiHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            final MultiHolder holder = new MultiHolder(inflateItemView(R.layout.item_media_select_grid, parent));
-//            holder.setCheckBoxClickListener(clickBox(holder));
-            return holder;
-        }
-
-        @android.support.annotation.NonNull
-        private View.OnClickListener clickBox(final MultiHolder holder) {
-            return new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int position = holder.getAdapterPosition();
-                    MultiBean bean = getItem(position);
-                    if (bean.checked) {
-                        bean.checked = false;
-                        slects.remove(Integer.valueOf(position));
-                        selectSize = slects.size();
-                        changeRightTxt();
-                    } else {
-                        if (slects.size() >= maxSize) {
-                            T.t("你最多只能选择" + maxSize + "张照片");
-                            holder.checkBox.setChecked(false);
-                        } else {
-                            bean.checked = true;
-                            slects.add(position);
-                            selectSize = slects.size();
-                            changeRightTxt();
-                        }
-                    }
-                }
-            };
+            return new MultiHolder(inflateItemView(R.layout.item_media_select_grid, parent));
         }
 
         @Override
@@ -459,11 +430,5 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
-
-        private void setCheckBoxClickListener(View.OnClickListener listener) {
-            if (listener != null)
-                checkBox.setOnClickListener(listener);
-        }
-
     }
 }

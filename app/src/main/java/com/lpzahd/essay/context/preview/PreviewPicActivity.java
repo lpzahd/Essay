@@ -1,4 +1,4 @@
-package com.lpzahd.essay.context.essay_;
+package com.lpzahd.essay.context.preview;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,9 +7,7 @@ import android.view.View;
 
 import com.lpzahd.common.tone.activity.RxActivity;
 import com.lpzahd.essay.R;
-import com.lpzahd.essay.context.essay.EssayActivity;
-import com.lpzahd.essay.context.essay.waiter.EssayStyleIIWaiter;
-import com.lpzahd.essay.context.essay_.waiter.PreviewPicWaiter;
+import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

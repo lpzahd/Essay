@@ -27,7 +27,7 @@ public class Realmer {
                 .directory(Keeper.getF().getScopeFile(Files.Scope.DATABASE))
                 .name("lpzahd.realm")
                 .build();
-        Realm.deleteRealm(config);
+//        Realm.deleteRealm(config);
         Realm.setDefaultConfiguration(config);
     }
 }

@@ -1,8 +1,11 @@
 package com.lpzahd.essay.db.essay;
 
+import com.lpzahd.Lists;
+import com.lpzahd.essay.db.file.Image;
+
 import org.threeten.bp.Instant;
 
-import java.util.Date;
+import java.util.Collections;
 import java.util.UUID;
 
 import io.realm.RealmList;
@@ -15,6 +18,64 @@ import io.realm.annotations.PrimaryKey;
  * Desction : (•ิ_•ิ)
  */
 public class Essay extends RealmObject {
+
+//    public Essay(String content) {
+//        this.content = content;
+//    }
+//
+//    public Essay(String title, String content) {
+//        this.title = title;
+//        this.content = content;
+//    }
+//
+//    public Essay(String title, String content, Image... images) {
+//        this.title = title;
+//        this.content = content;
+//
+//        if(!Lists.empty(images)) {
+//            eFile = new EFile();
+//
+//            RealmList<Image> imageRealmList = new RealmList<>();
+//            Collections.addAll(imageRealmList, images);
+//            eFile.setImages(imageRealmList);
+//        }
+//    }
+
+    public void setImages(Image... images) {
+        if (eFile == null)
+            eFile = new EFile();
+
+        addImages(new RealmList<Image>(), images);
+    }
+
+    public void addImages(Image... images) {
+        if (eFile == null)
+            eFile = new EFile();
+
+        if (Lists.empty(eFile.getImages())) {
+            addImages(new RealmList<Image>(), images);
+        } else {
+            addImages(eFile.getImages(), images);
+        }
+    }
+
+    private void addImages(RealmList<Image> imageRealmList, Image... images) {
+        Collections.addAll(imageRealmList, images);
+        eFile.setImages(imageRealmList);
+    }
+
+    public void setImages(RealmList<Image> images) {
+        if (eFile == null)
+            eFile = new EFile();
+
+        eFile.setImages(images);
+    }
+
+    public RealmList<Image> getDefaultImages() {
+        if (eFile == null || eFile.getImages() == null)
+            return new RealmList<>();
+        return eFile.getImages();
+    }
 
     /**
      * uuid

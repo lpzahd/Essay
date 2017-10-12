@@ -4,6 +4,8 @@ import com.lpzahd.Strings;
 import com.lpzahd.atool.error.FixedError;
 import com.lpzahd.atool.ui.T;
 
+import java.util.concurrent.TimeUnit;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -29,6 +31,21 @@ public class RxActivity extends ToneActivity {
     public void onDestroy() {
         super.onDestroy();
         compositeDisposable.clear();
+    }
+
+    public void delayBackpress() {
+        delayBackpress(500L);
+    }
+
+    public void delayBackpress(long delayTime) {
+        Observable.timer(delayTime, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+                        finish();
+                    }
+                });
     }
 
     /**
@@ -79,7 +96,7 @@ public class RxActivity extends ToneActivity {
         };
     }
 
-    protected void addDispose(Disposable disposable) {
+    public void addDispose(Disposable disposable) {
         compositeDisposable.add(disposable);
     }
 

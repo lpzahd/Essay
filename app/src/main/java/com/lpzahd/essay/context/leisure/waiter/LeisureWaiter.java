@@ -25,7 +25,7 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
-import com.lpzahd.atool.enmu.Image;
+import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
@@ -334,7 +334,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                                     LeisureModel model = new LeisureModel();
                                     model.width = bean.getWidth();
                                     model.height = bean.getHeight();
-                                    model.uri = Frescoer.uri(bean.getObjURL(), Image.SOURCE_NET);
+                                    model.uri = Frescoer.uri(bean.getObjURL(), ImageSource.SOURCE_NET);
                                     leisures.add(model);
                                 }
                                 return leisures;

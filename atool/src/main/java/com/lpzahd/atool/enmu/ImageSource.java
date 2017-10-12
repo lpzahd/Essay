@@ -10,7 +10,7 @@ import java.lang.annotation.RetentionPolicy;
  * Date : 三月
  * Desction : (•ิ_•ิ)
  */
-public class Image {
+public class ImageSource {
 
     // 远程图片
     public static final int SOURCE_NET = 1;

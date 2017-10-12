@@ -1,4 +1,4 @@
-package com.lpzahd.essay.context.essay_.waiter;
+package com.lpzahd.essay.context.preview.waiter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -16,22 +16,25 @@ import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.imagepipeline.image.ImageInfo;
 import com.hanks.htextview.HTextView;
 import com.hanks.htextview.HTextViewType;
+import com.lpzahd.Lists;
 import com.lpzahd.atool.ui.L;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
-import com.lpzahd.essay.context.essay_.PreviewPicActivity;
+import com.lpzahd.essay.context.preview.PreviewPicActivity;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
@@ -44,7 +47,7 @@ import me.relex.photodraweeview.PhotoDraweeView;
  */
 public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
 
-    public static final String TAG = "com.lpzahd.essay.context.essay_.waiter.PreviewPicWaiter";
+    public static final String TAG = "com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter";
 
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
@@ -80,27 +83,80 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             Disposable animDispose;
+            ObservableEmitter<PreviewHolder> emitter;
+
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                if(newState == RecyclerView.SCROLL_STATE_IDLE) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     View snapView = snapHelper.findSnapView(mLayoutManager);
-                    if(snapView != null) {
-                        PreviewHolder holder = (PreviewHolder) recyclerView.getChildViewHolder(snapView);
+                    if (snapView != null) {
 
-                        if(animDispose != null && !animDispose.isDisposed()) {
-                            animDispose.dispose();
+                        final PreviewHolder holder = (PreviewHolder) recyclerView.getChildViewHolder(snapView);
+                        if(emitter == null) {
+                            animDispose = Observable.create(new ObservableOnSubscribe<PreviewHolder>() {
+                                @Override
+                                public void subscribe(@NonNull ObservableEmitter<PreviewHolder> e) throws Exception {
+                                    emitter = e;
+                                    e.onNext(holder);
+                                }
+                            })
+                            .throttleLast(50, TimeUnit.MILLISECONDS)
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new Consumer<PreviewHolder>() {
+                                        @Override
+                                        public void accept(PreviewHolder previewHolder) throws Exception {
+                                            L.e("htextview : " + hTextView);
+                                            L.e("holder : " + previewHolder);
+                                            L.e("position : " + previewHolder.getAdapterPosition());
+                                            hTextView.animateText("第" + previewHolder.getAdapterPosition() + "张");
+                                        }
+                                    });
+                            context.addDispose(animDispose);
+                        } else {
+                            emitter.onNext(holder);
                         }
+//                        if(observer == null) {
+//                            Observable observer = Observable.create(new ObservableOnSubscribe<PreviewHolder>() {
+//                                @Override
+//                                public void subscribe(@NonNull ObservableEmitter<PreviewHolder> e) throws Exception {
+//                                    e.onNext();
+//                                }
+//                            });
+//                            observer.onNext(holder);
+//                        }
+//                        Flowable<PreviewHolder> flowable = Flowable.create(new FlowableOnSubscribe<PreviewHolder>() {
+//                            @Override
+//                            public void subscribe(@NonNull FlowableEmitter<PreviewHolder> e) throws Exception {
+//                                e.onNext();
+//                            }
+//                        }, BackpressureStrategy.BUFFER);
+//
+//                        animDispose = Flowable.just(holder)
+//                                .throttleLast(100, TimeUnit.MILLISECONDS)
+//                                .subscribeOn(Schedulers.io())
+////                        animDispose = Flowable.timer(3000, TimeUnit.MILLISECONDS, Schedulers.io())
+//                                .observeOn(AndroidSchedulers.mainThread())
+//                                .subscribe(new Consumer<PreviewHolder>() {
+//                                    @Override
+//                                    public void accept(PreviewHolder previewHolder) throws Exception {
+//                                        L.e("htextview : " + hTextView);
+//                                        L.e("holder : " + holder);
+//                                        L.e("position : " + holder.getAdapterPosition());
+//                                        hTextView.animateText("第" + holder.getAdapterPosition() + "张");
+//                                    }
+//                                });
+////                                .subscribe(new Consumer<Long>() {
+////                                    @Override
+////                                    public void accept(Long aLong) throws Exception {
+////                                        L.e("htextview : " + hTextView);
+////                                        L.e("holder : " + holder);
+////                                        L.e("position : " + holder.getAdapterPosition());
+////                                        hTextView.animateText("第" + holder.getAdapterPosition() + "张");
+////                                    }
+////                                });
+//                        context.addDispose(animDispose);
 
-                        final WeakReference<PreviewHolder> holderRef = new WeakReference<>(holder);
-                        animDispose = Flowable.timer(200, TimeUnit.MILLISECONDS, Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(new Consumer<Long>() {
-                                    @Override
-                                    public void accept(Long aLong) throws Exception {
-                                        if(holderRef.get() != null)
-                                            hTextView.animateText("第" + holderRef.get().getAdapterPosition() + "张");
-                                    }
-                                });
                     }
                 }
             }
@@ -115,6 +171,9 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
                     @Override
                     public void accept(List<PreviewBean> previewBeen) throws Exception {
                         mAdapter.setData(previewBeen);
+                        if(!Lists.empty(previewBeen)) {
+                            hTextView.animateText("第0张");
+                        }
                     }
                 });
     }
