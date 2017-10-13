@@ -25,6 +25,7 @@ import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.bus.Receiver;
+import com.lpzahd.common.bus.RxBus;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
 import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
@@ -33,6 +34,7 @@ import com.lpzahd.common.tone.adapter.ToneItemTouchHelperCallback;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.context.essay.EssayActivity;
 import com.lpzahd.essay.context.essay_.EssayAddActivity;
 import com.lpzahd.essay.context.preview.PreviewPicActivity;
 import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
@@ -170,6 +172,7 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> i
                     @Override
                     public void onSuccess() {
                         T.t("新增成功");
+                        RxBus.get().post(EssayActivity.TAG, true);
                         context.delayBackpress();
                     }
                 });

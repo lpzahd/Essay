@@ -12,7 +12,7 @@ import io.reactivex.Flowable;
  *
  * Bus A对象注册并等待对象b推送数据
  */
-final class Bus {
+public final class Bus {
 
     private ConcurrentMap<Object, Receiver> buses = new ConcurrentHashMap<>();
 

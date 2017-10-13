@@ -23,6 +23,8 @@ import butterknife.ButterKnife;
  */
 public class EssayActivity extends RxActivity {
 
+    public static final String TAG = "com.lpzahd.essay.context.essay.EssayActivity";
+
     @BindView(R.id.tool_bar)
     Toolbar toolBar;
 

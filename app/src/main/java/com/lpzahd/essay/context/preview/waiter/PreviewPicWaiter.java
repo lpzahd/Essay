@@ -1,9 +1,13 @@
 package com.lpzahd.essay.context.preview.waiter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
@@ -48,6 +52,7 @@ import me.relex.photodraweeview.PhotoDraweeView;
 public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
 
     public static final String TAG = "com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter";
+    private static final String SHARE_ELEMENT_NAME = "share_pic";
 
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
@@ -59,6 +64,30 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
 
     private PreviewAdapter mAdapter;
     private LinearLayoutManager mLayoutManager;
+
+
+    /**
+     * fresco 似乎不大好用共享元素动画， 说是用这个ChangeBounds
+     */
+    @Deprecated
+    public static void startActivity(Activity activity, View share) {
+        Intent intent = new Intent(activity, PreviewPicActivity.class);
+        ViewCompat.setTransitionName(share, SHARE_ELEMENT_NAME);
+        ActivityOptionsCompat opt = ActivityOptionsCompat.makeSceneTransitionAnimation(activity,
+                share, SHARE_ELEMENT_NAME);
+        ActivityCompat.startActivity(activity, intent, opt.toBundle());
+//        ActivityCompat.setExitSharedElementCallback(activity, new SharedElementCallback() {
+//            @Override
+//            public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+//                super.onMapSharedElements(names, sharedElements);
+//            }
+//        });
+//        ActivityOptionsCompat opt = ActivityOptionsCompat.makeSceneTransitionAnimation(activity,
+//                new Pair<>(v1, ViewCompat.getTransitionName(v1)),
+//                new Pair<>(v2, ViewCompat.getTransitionName(v2)));
+//        ActivityCompat.startActivity(activity, intent, opt.toBundle());
+//        shareView.setDrawingCacheEnabled(false);
+    }
 
     public PreviewPicWaiter(PreviewPicActivity previewPicActivity) {
         super(previewPicActivity);
@@ -82,7 +111,7 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
-            Disposable animDispose;
+            Disposable dispose;
             ObservableEmitter<PreviewHolder> emitter;
 
             @Override
@@ -93,7 +122,7 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
 
                         final PreviewHolder holder = (PreviewHolder) recyclerView.getChildViewHolder(snapView);
                         if(emitter == null) {
-                            animDispose = Observable.create(new ObservableOnSubscribe<PreviewHolder>() {
+                            dispose = Observable.create(new ObservableOnSubscribe<PreviewHolder>() {
                                 @Override
                                 public void subscribe(@NonNull ObservableEmitter<PreviewHolder> e) throws Exception {
                                     emitter = e;
@@ -106,57 +135,14 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
                                     .subscribe(new Consumer<PreviewHolder>() {
                                         @Override
                                         public void accept(PreviewHolder previewHolder) throws Exception {
-                                            L.e("htextview : " + hTextView);
-                                            L.e("holder : " + previewHolder);
-                                            L.e("position : " + previewHolder.getAdapterPosition());
-                                            hTextView.animateText("第" + previewHolder.getAdapterPosition() + "张");
+                                            if(hTextView != null)
+                                                hTextView.animateText("第" + previewHolder.getAdapterPosition() + "张");
                                         }
                                     });
-                            context.addDispose(animDispose);
+                            context.addDispose(dispose);
                         } else {
                             emitter.onNext(holder);
                         }
-//                        if(observer == null) {
-//                            Observable observer = Observable.create(new ObservableOnSubscribe<PreviewHolder>() {
-//                                @Override
-//                                public void subscribe(@NonNull ObservableEmitter<PreviewHolder> e) throws Exception {
-//                                    e.onNext();
-//                                }
-//                            });
-//                            observer.onNext(holder);
-//                        }
-//                        Flowable<PreviewHolder> flowable = Flowable.create(new FlowableOnSubscribe<PreviewHolder>() {
-//                            @Override
-//                            public void subscribe(@NonNull FlowableEmitter<PreviewHolder> e) throws Exception {
-//                                e.onNext();
-//                            }
-//                        }, BackpressureStrategy.BUFFER);
-//
-//                        animDispose = Flowable.just(holder)
-//                                .throttleLast(100, TimeUnit.MILLISECONDS)
-//                                .subscribeOn(Schedulers.io())
-////                        animDispose = Flowable.timer(3000, TimeUnit.MILLISECONDS, Schedulers.io())
-//                                .observeOn(AndroidSchedulers.mainThread())
-//                                .subscribe(new Consumer<PreviewHolder>() {
-//                                    @Override
-//                                    public void accept(PreviewHolder previewHolder) throws Exception {
-//                                        L.e("htextview : " + hTextView);
-//                                        L.e("holder : " + holder);
-//                                        L.e("position : " + holder.getAdapterPosition());
-//                                        hTextView.animateText("第" + holder.getAdapterPosition() + "张");
-//                                    }
-//                                });
-////                                .subscribe(new Consumer<Long>() {
-////                                    @Override
-////                                    public void accept(Long aLong) throws Exception {
-////                                        L.e("htextview : " + hTextView);
-////                                        L.e("holder : " + holder);
-////                                        L.e("position : " + holder.getAdapterPosition());
-////                                        hTextView.animateText("第" + holder.getAdapterPosition() + "张");
-////                                    }
-////                                });
-//                        context.addDispose(animDispose);
-
                     }
                 }
             }
@@ -190,6 +176,7 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
         public PreviewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            ViewCompat.setTransitionName(photoDraweeView, SHARE_ELEMENT_NAME);
         }
     }
 

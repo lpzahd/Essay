@@ -237,6 +237,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
                     if (bean.checked) {
                         bean.checked = false;
                         slects.remove(position);
+                        holder.checkBox.setChecked(false);
                         selectSize = slects.size();
                         changeRightTxt();
                     } else {
@@ -246,6 +247,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
                         } else {
                             bean.checked = true;
                             slects.add(position);
+                            holder.checkBox.setChecked(true);
                             selectSize = slects.size();
                             changeRightTxt();
                         }
@@ -429,6 +431,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
         MultiHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            checkBox.setClickable(false);
         }
     }
 }

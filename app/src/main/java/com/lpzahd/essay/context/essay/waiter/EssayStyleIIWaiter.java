@@ -19,6 +19,8 @@ import com.lpzahd.Lists;
 import com.lpzahd.Objects;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.common.bus.Receiver;
+import com.lpzahd.common.bus.RxBus;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
 import com.lpzahd.common.tone.adapter.OnItemChildTouchListener;
@@ -35,7 +37,6 @@ import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
 import com.lpzahd.essay.db.essay.Essay;
 import com.lpzahd.essay.db.file.Image;
 import com.lpzahd.essay.tool.DateTime;
-import com.lpzahd.gallery.tool.MediaTool;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -46,7 +47,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.realm.Realm;
 import io.realm.RealmList;
@@ -58,7 +61,7 @@ import io.realm.Sort;
  * Date : 九月
  * Desction : (•ิ_•ิ)
  */
-public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implements DataFactory.DataProcess<Essay, EssayStyleIIWaiter.EssayModel>, EssayStyleIIAddDialog.InputCallback{
+public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implements DataFactory.DataProcess<Essay, EssayStyleIIWaiter.EssayModel>, EssayStyleIIAddDialog.InputCallback, Receiver<Boolean> {
 
     @BindView(R.id.swipe_refresh_layout)
     SwipeRefreshLayout swipeRefreshLayout;
@@ -85,6 +88,7 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         super.init();
         mFactoty = DataFactory.of(this);
         mRealm = Realm.getDefaultInstance();
+        RxBus.get().registIfAbsent(EssayActivity.TAG, this);
     }
 
     @Override
@@ -101,7 +105,8 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
             @Override
             public void onClick(RecyclerView rv, EssayHolder essayHolder, View child) {
                 if(child == essayHolder.simpleDraweeView) {
-                    PreviewPicActivity.startActivity(context);
+//                    PreviewPicActivity.startActivity(context);
+                    PreviewPicWaiter.startActivity(context, child);
                     RxTaxi.get().regist(PreviewPicWaiter.TAG,
                             transmit(mAdapter.getItem(essayHolder.getAdapterPosition()).id));
                 }
@@ -170,6 +175,7 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         if (mRealm != null && !mRealm.isClosed())
             mRealm.close();
         RxTaxi.get().unregist(PreviewPicWaiter.TAG);
+        RxBus.get().unregist(EssayActivity.TAG);
     }
 
     @Override
@@ -225,6 +231,16 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         });
     }
 
+    @Override
+    public void receive(Flowable<Boolean> flowable) {
+        flowable.observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean aBoolean) throws Exception {
+                        if(aBoolean) mRefreshWaiter.autoRefresh();
+                    }
+                });
+    }
 
 
     static class EssayModel {
