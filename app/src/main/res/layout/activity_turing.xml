@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/content_chat"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:fitsSystemWindows="true"
+              android:background="#8aece3e3"
+              android:orientation="vertical"
+              tools:context="com.lpzahd.essay.context.turing.TuringActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay"/>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp">
+
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/send_message_btn"
+            android:layout_width="80dp"
+            android:layout_height="36dp"
+            android:layout_gravity="end|bottom"
+            android:background="@drawable/bg_select_button"
+            android:gravity="center"
+            android:text="发送"
+            android:textColor="@color/turing_selector_button"
+            android:textSize="14sp"/>
+
+        <android.support.v7.widget.AppCompatEditText
+            android:id="@+id/message_edt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginRight="88dp"
+            android:layout_marginEnd="88dp"
+            android:background="@drawable/bg_rect_round_white"
+            android:maxLines="5"
+            android:minHeight="36dp"
+            android:paddingBottom="6dp"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:paddingTop="6dp"
+            android:textSize="14sp"
+            tools:text="哈哈哈"/>
+
+    </FrameLayout>
+
+</LinearLayout>
+

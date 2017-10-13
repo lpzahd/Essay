@@ -412,7 +412,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
             MultiBean bean = getItem(position);
             holder.checkBox.setChecked(bean.checked);
             ImageRequest request = ImageRequestBuilder.newBuilderWithSource(bean.uri)
-                    .setResizeOptions(new ResizeOptions(size, size))
+                    .setResizeOptions(ResizeOptions.forSquareSize(size))
                     .build();
             DraweeController controller = Fresco.newDraweeControllerBuilder()
                     .setOldController(holder.imageDraweeView.getController())
