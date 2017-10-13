@@ -176,7 +176,6 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
         public PreviewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            ViewCompat.setTransitionName(photoDraweeView, SHARE_ELEMENT_NAME);
         }
     }
 
