@@ -19,4 +19,8 @@ public class Lists extends NoInstance {
     public static boolean empty(Queue queue) {
         return queue == null || queue.isEmpty();
     }
+
+    public static boolean empty(Object[] array) {
+        return array == null || array.length == 0;
+    }
 }

@@ -14,6 +14,7 @@ import com.lpzahd.Strings;
 import com.lpzahd.atool.ui.L;
 import com.lpzahd.base.NoInstance;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,14 +40,20 @@ public class MediaTool extends NoInstance {
         return getImageFromContext(context, MEDIA_NO_BUCKET, page, limit);
     }
 
+    public static List<MediaBean> getImageFromContext(Context context, String bucketId, int page, int limit) {
+        return getImageFromContext(context, MEDIA_NO_BUCKET, page, limit, true);
+    }
+
     /**
      * 获取
-     * @param context 上下文
-     * @param bucketId  当bucketId = Integer.MIN_VALUE 时，全查
-     * @param page  页码
-     * @param limit 数量 limit = Integer.MAX_VALUE 时，全查
+     *
+     * @param context  上下文
+     * @param bucketId 当bucketId = Integer.MIN_VALUE 时，全查
+     * @param page     页码
+     * @param limit    数量 limit = Integer.MAX_VALUE 时，全查
+     * @param strict   严格校验文件是否存在
      */
-    public static List<MediaBean> getImageFromContext(Context context, String bucketId, int page, int limit) {
+    public static List<MediaBean> getImageFromContext(Context context, String bucketId, int page, int limit, boolean strict) {
         int offset = page * limit;
         ContentResolver resolver = context.getContentResolver();
 
@@ -62,23 +69,23 @@ public class MediaTool extends NoInstance {
         projection.add(MediaStore.Images.Media.LATITUDE);
         projection.add(MediaStore.Images.Media.LONGITUDE);
         projection.add(MediaStore.Images.Media.SIZE);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             projection.add(MediaStore.Video.Media.WIDTH);
             projection.add(MediaStore.Video.Media.HEIGHT);
         }
 
         String selection = null;
         String[] selectionArgs = null;
-        if(!Strings.equals(bucketId, String.valueOf(Integer.MIN_VALUE))) {
+        if (!Strings.equals(bucketId, String.valueOf(Integer.MIN_VALUE))) {
             selection = MediaStore.Video.Media.BUCKET_ID + "=?";
             selectionArgs = new String[]{bucketId};
         }
 
         String sortOrder;
-        if(limit == Integer.MAX_VALUE) {
-            sortOrder = MediaStore.Images.Media.DATE_ADDED +" DESC";
+        if (limit == Integer.MAX_VALUE) {
+            sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
         } else {
-            sortOrder =  MediaStore.Images.Media.DATE_ADDED +" DESC LIMIT " + limit +" OFFSET " + offset;
+            sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC LIMIT " + limit + " OFFSET " + offset;
         }
 
         Cursor cursor = ContentResolverCompat.query(resolver,
@@ -90,19 +97,26 @@ public class MediaTool extends NoInstance {
                 new CancellationSignal());
 
         List<MediaBean> mediaBeanList = new ArrayList<>();
-        if(cursor != null) {
+        if (cursor != null) {
 
             try {
                 int count = cursor.getCount();
-                if(count > 0) {
+                if (count > 0) {
                     cursor.moveToFirst();
                     do {
                         MediaBean mediaBean = parseImageCursor(cursor);
-                        mediaBeanList.add(mediaBean);
+
+                        if(!strict) {
+                            mediaBeanList.add(mediaBean);
+                        } else {
+                            if(new File(mediaBean.getOriginalPath()).exists()) {
+                                mediaBeanList.add(mediaBean);
+                            }
+                        }
                     } while (cursor.moveToNext());
                 }
             } finally {
-                if(!cursor.isClosed()){
+                if (!cursor.isClosed()) {
                     cursor.close();
                 }
                 cursor = null;
@@ -256,7 +270,7 @@ public class MediaTool extends NoInstance {
 
 
         int width = 0, height = 0;
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             width = cursor.getInt(cursor.getColumnIndex(MediaStore.Video.Media.WIDTH));
             height = cursor.getInt(cursor.getColumnIndex(MediaStore.Video.Media.HEIGHT));
         } else {

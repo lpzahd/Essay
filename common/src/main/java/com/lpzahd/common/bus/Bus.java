@@ -9,8 +9,10 @@ import io.reactivex.Flowable;
  * Author : Lpzahd
  * Date : 九月
  * Desction : (•ิ_•ิ)
+ *
+ * Bus A对象注册并等待对象b推送数据
  */
-final class Bus {
+public final class Bus {
 
     private ConcurrentMap<Object, Receiver> buses = new ConcurrentHashMap<>();
 
@@ -28,8 +30,9 @@ final class Bus {
         buses.remove(tag);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> void post(Object tag, T argu) {
-        Receiver bus = buses.get(tag);
+        Receiver<T> bus = buses.get(tag);
         if(bus != null)
             bus.receive(Flowable.just(argu));
     }

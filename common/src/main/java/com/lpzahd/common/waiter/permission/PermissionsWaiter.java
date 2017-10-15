@@ -95,10 +95,6 @@ public class PermissionsWaiter extends ToneActivityWaiter<AppCompatActivity> {
 
     /**
      * 获取权限集中需要申请权限的列表
-     *
-     * @param permissions
-     * @return
-     * @since 2.5.0
      */
     private List<String> findDeniedPermissions(String[] permissions) {
         List<String> needRequestPermissonList = new ArrayList<>();
@@ -115,10 +111,6 @@ public class PermissionsWaiter extends ToneActivityWaiter<AppCompatActivity> {
 
     /**
      * 检测是否说有的权限都已经授权
-     *
-     * @param grantResults
-     * @return
-     * @since 2.5.0
      */
     private boolean verifyPermissions(int[] grantResults) {
         for (int result : grantResults) {
@@ -175,8 +167,6 @@ public class PermissionsWaiter extends ToneActivityWaiter<AppCompatActivity> {
 
     /**
      * 启动应用的设置
-     *
-     * @since 2.5.0
      */
     private void startAppSettings() {
         Intent intent = new Intent(

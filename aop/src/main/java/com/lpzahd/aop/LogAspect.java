@@ -31,7 +31,7 @@ public class LogAspect {
         LogAspect.enabled = enabled;
     }
 
-    //带有DebugLog注解的所有类
+    //带有Log注解的所有类
     @Pointcut("within(@com.lpzahd.aop.api.Log *)")
     public void withinAnnotatedClass() {
     }
@@ -90,8 +90,7 @@ public class LogAspect {
 //                .append("\u21E2 ")
                 .append("\t");
 
-        builder
-                .append("方法 ")
+        builder.append("方法 ")
                 .append(methodName)
                 .append('(');
         for (int i = 0; i < parameterValues.length; i++) {

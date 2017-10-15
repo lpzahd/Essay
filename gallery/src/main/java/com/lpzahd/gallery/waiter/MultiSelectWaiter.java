@@ -32,7 +32,8 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
-import com.lpzahd.atool.enmu.Image;
+import com.lpzahd.aop.api.Log;
+import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.bus.RxBus;
@@ -49,6 +50,7 @@ import com.lpzahd.gallery.context.GalleryActivity;
 import com.lpzahd.gallery.waiter.multi.BucketPresenter;
 import com.lpzahd.gallery.tool.MediaTool;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -66,6 +68,7 @@ import io.reactivex.FlowableEmitter;
 import io.reactivex.FlowableOnSubscribe;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 
 /**
@@ -237,6 +240,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
                     if (bean.checked) {
                         bean.checked = false;
                         slects.remove(position);
+                        holder.checkBox.setChecked(false);
                         selectSize = slects.size();
                         changeRightTxt();
                     } else {
@@ -246,6 +250,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
                         } else {
                             bean.checked = true;
                             slects.add(position);
+                            holder.checkBox.setChecked(true);
                             selectSize = slects.size();
                             changeRightTxt();
                         }
@@ -274,7 +279,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
                 bucket.setId(bean.getBucketId());
                 bucket.setName(bean.getBucketDisplayName());
                 bucket.setNum(1);
-                bucket.setUri(Frescoer.uri(bean.getOriginalPath(), Image.SOURCE_FILE));
+                bucket.setUri(Frescoer.uri(bean.getOriginalPath(), ImageSource.SOURCE_FILE));
                 map.put(bucket.getId(), bucket);
             } else {
                 bucket.setNum(bucket.getNum() + 1);
@@ -340,7 +345,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
             @Override
             public MultiBean process(MediaTool.MediaBean mediaBean) {
                 MultiBean bean = new MultiBean();
-                bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), Image.SOURCE_FILE);
+                bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), ImageSource.SOURCE_FILE);
                 return bean;
             }
         });
@@ -379,7 +384,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
     @Override
     public MultiBean process(MediaTool.MediaBean mediaBean) {
         MultiBean bean = new MultiBean();
-        bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), Image.SOURCE_FILE);
+        bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), ImageSource.SOURCE_FILE);
         return bean;
     }
 
@@ -399,36 +404,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
 
         @Override
         public MultiHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            final MultiHolder holder = new MultiHolder(inflateItemView(R.layout.item_media_select_grid, parent));
-//            holder.setCheckBoxClickListener(clickBox(holder));
-            return holder;
-        }
-
-        @android.support.annotation.NonNull
-        private View.OnClickListener clickBox(final MultiHolder holder) {
-            return new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int position = holder.getAdapterPosition();
-                    MultiBean bean = getItem(position);
-                    if (bean.checked) {
-                        bean.checked = false;
-                        slects.remove(Integer.valueOf(position));
-                        selectSize = slects.size();
-                        changeRightTxt();
-                    } else {
-                        if (slects.size() >= maxSize) {
-                            T.t("你最多只能选择" + maxSize + "张照片");
-                            holder.checkBox.setChecked(false);
-                        } else {
-                            bean.checked = true;
-                            slects.add(position);
-                            selectSize = slects.size();
-                            changeRightTxt();
-                        }
-                    }
-                }
-            };
+            return new MultiHolder(inflateItemView(R.layout.item_media_select_grid, parent));
         }
 
         @Override
@@ -436,7 +412,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
             MultiBean bean = getItem(position);
             holder.checkBox.setChecked(bean.checked);
             ImageRequest request = ImageRequestBuilder.newBuilderWithSource(bean.uri)
-                    .setResizeOptions(new ResizeOptions(size, size))
+                    .setResizeOptions(ResizeOptions.forSquareSize(size))
                     .build();
             DraweeController controller = Fresco.newDraweeControllerBuilder()
                     .setOldController(holder.imageDraweeView.getController())
@@ -458,12 +434,7 @@ public class MultiSelectWaiter extends ToneActivityWaiter<GalleryActivity> imple
         MultiHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            checkBox.setClickable(false);
         }
-
-        private void setCheckBoxClickListener(View.OnClickListener listener) {
-            if (listener != null)
-                checkBox.setOnClickListener(listener);
-        }
-
     }
 }

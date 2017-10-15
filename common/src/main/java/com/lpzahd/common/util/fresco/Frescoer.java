@@ -4,7 +4,7 @@ import android.net.Uri;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 
-import com.lpzahd.atool.enmu.Image;
+import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.constant.Constance;
 
@@ -20,22 +20,22 @@ public class Frescoer {
     }
 
     public static Uri res(@DrawableRes int resId) {
-        return uri(String.valueOf(resId), Image.SOURCE_RES);
+        return uri(String.valueOf(resId), ImageSource.SOURCE_RES);
     }
 
-    public static Uri uri(@NonNull String path, @Image.SOURCE int source) {
+    public static Uri uri(@NonNull String path, @ImageSource.SOURCE int source) {
         Uri uri;
         switch (source) {
-            case Image.SOURCE_NET:
+            case ImageSource.SOURCE_NET:
                 uri = Uri.parse(path);
                 break;
-            case Image.SOURCE_FILE:
+            case ImageSource.SOURCE_FILE:
                 uri = Uri.parse(Strings.join("file://", Constance.AppPackageName, "/", path));
                 break;
-            case Image.SOURCE_RES:
+            case ImageSource.SOURCE_RES:
                 uri = Uri.parse(Strings.join("res://", Constance.AppPackageName, "/", path));
                 break;
-            case Image.SOURCE_ASSET:
+            case ImageSource.SOURCE_ASSET:
                 uri = Uri.parse(Strings.join("asset://", Constance.AppPackageName, "/", path));
                 break;
             default:

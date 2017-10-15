@@ -50,7 +50,7 @@
                 android:textColorHint="#999999"
                 android:textColor="#666666"
                 android:minLines="3"
-                android:maxLines="12"
+                android:maxLines="8"
                 android:textSize="@dimen/s12"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"

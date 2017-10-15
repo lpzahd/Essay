@@ -1,57 +1,55 @@
 package com.lpzahd.essay.context.essay.waiter;
 
-import android.app.DialogFragment;
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
-import android.graphics.drawable.PaintDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RectShape;
+import android.net.Uri;
 import android.support.annotation.IntDef;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.AppCompatTextView;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.lpzahd.Lists;
+import com.lpzahd.Objects;
 import com.lpzahd.Strings;
+import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.common.bus.Receiver;
+import com.lpzahd.common.bus.RxBus;
+import com.lpzahd.common.taxi.RxTaxi;
+import com.lpzahd.common.taxi.Transmitter;
+import com.lpzahd.common.tone.adapter.OnItemChildTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.data.DataFactory;
-import com.lpzahd.common.tone.fragment.ToneDialogFragment;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
+import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.essay.EssayActivity;
-import com.lpzahd.essay.context.essay.EssayAddDialog;
 import com.lpzahd.essay.context.essay.EssayStyleIIAddDialog;
+import com.lpzahd.essay.context.preview.PreviewPicActivity;
+import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
 import com.lpzahd.essay.db.essay.Essay;
 import com.lpzahd.essay.db.file.Image;
 import com.lpzahd.essay.tool.DateTime;
-import com.lpzahd.view.DraweeForm;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.realm.Realm;
 import io.realm.RealmList;
@@ -63,7 +61,7 @@ import io.realm.Sort;
  * Date : 九月
  * Desction : (•ิ_•ิ)
  */
-public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implements DataFactory.DataProcess<Essay, EssayStyleIIWaiter.EssayModel>,EssayStyleIIAddDialog.InputCallback {
+public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implements DataFactory.DataProcess<Essay, EssayStyleIIWaiter.EssayModel>, EssayStyleIIAddDialog.InputCallback, Receiver<Boolean> {
 
     @BindView(R.id.swipe_refresh_layout)
     SwipeRefreshLayout swipeRefreshLayout;
@@ -90,17 +88,57 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         super.init();
         mFactoty = DataFactory.of(this);
         mRealm = Realm.getDefaultInstance();
+        RxBus.get().registIfAbsent(EssayActivity.TAG, this);
     }
 
     @Override
     protected void initView() {
         super.initView();
 
-        recyclerView.setPadding(16,0,16,0);
+        recyclerView.setPadding(16, 0, 16, 0);
 
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         mAdapter = new EssayAdapter(context);
         recyclerView.setAdapter(mAdapter);
+
+        recyclerView.addOnItemTouchListener(new OnItemChildTouchListener<EssayHolder>(recyclerView) {
+            @Override
+            public void onClick(RecyclerView rv, EssayHolder essayHolder, View child) {
+                if(child == essayHolder.simpleDraweeView) {
+//                    PreviewPicActivity.startActivity(context);
+                    PreviewPicWaiter.startActivity(context, child);
+                    RxTaxi.get().regist(PreviewPicWaiter.TAG,
+                            transmit(mAdapter.getItem(essayHolder.getAdapterPosition()).id));
+                }
+            }
+
+            private Transmitter<List<PreviewPicWaiter.PreviewBean>> transmit(final String id) {
+                return new Transmitter<List<PreviewPicWaiter.PreviewBean>>() {
+                    @Override
+                    public Flowable<List<PreviewPicWaiter.PreviewBean>> transmit() {
+                        Essay target = mRealm.where(Essay.class)
+                                .equalTo("id", id)
+                                .findFirst();
+                        if(Objects.isNull(target) || Lists.empty(target.getDefaultImages())) return null;
+                        return Flowable.just(target.getDefaultImages())
+                                .map(new Function<RealmList<Image>, List<PreviewPicWaiter.PreviewBean>>() {
+                                    @Override
+                                    public List<PreviewPicWaiter.PreviewBean> apply(@NonNull RealmList<Image> images) throws Exception {
+                                        List<PreviewPicWaiter.PreviewBean> pics = new ArrayList<>();
+                                        for (int i = 0, size = images.size(); i < size; i++) {
+                                            PreviewPicWaiter.PreviewBean pic = new PreviewPicWaiter.PreviewBean();
+                                            pic.uri = Frescoer.uri(images.get(i).getPath(), ImageSource.SOURCE_FILE);
+                                            pics.add(pic);
+                                        }
+                                        return pics;
+                                    }
+                                });
+                    }
+                };
+
+            }
+
+        });
 
         addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefreshLayout, recyclerView) {
 
@@ -136,15 +174,22 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         super.destroy();
         if (mRealm != null && !mRealm.isClosed())
             mRealm.close();
+        RxTaxi.get().unregist(PreviewPicWaiter.TAG);
+        RxBus.get().unregist(EssayActivity.TAG);
     }
 
     @Override
     public EssayStyleIIWaiter.EssayModel process(Essay essay) {
         EssayStyleIIWaiter.EssayModel model = new EssayStyleIIWaiter.EssayModel();
+        model.id = essay.getId();
         model.title = essay.getTitle();
         model.content = essay.getContent();
         model.date = DateTime.format(essay.getDate(), "yyyy-MM-dd");
         model.gravity = parseContent(model.content);
+
+        if (!Objects.isNull(essay.geteFile()) && !Lists.empty(essay.geteFile().getImages())) {
+            model.uri = Frescoer.uri(essay.geteFile().getImages().get(0).getPath(), ImageSource.SOURCE_FILE);
+        }
         return model;
     }
 
@@ -159,7 +204,7 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         boolean isPoet = true;
         int len = lines[0].length();
         for (int i = 1; i < lines.length; i++) {
-            if(len != lines[i].length()) {
+            if (len != lines[i].length()) {
                 isPoet = false;
                 break;
             }
@@ -186,12 +231,27 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         });
     }
 
+    @Override
+    public void receive(Flowable<Boolean> flowable) {
+        flowable.observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean aBoolean) throws Exception {
+                        if(aBoolean) mRefreshWaiter.autoRefresh();
+                    }
+                });
+    }
+
+
     static class EssayModel {
+        String id;
         String title;
         String content;
         String date;
         @GRAVITY
         int gravity;
+
+        Uri uri;
     }
 
     private static final int GRAVITY_LEFT = 1;
@@ -199,7 +259,8 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
 
     @IntDef({GRAVITY_LEFT, GRAVITY_CENTER})
     @Retention(RetentionPolicy.SOURCE)
-    private @interface GRAVITY {}
+    private @interface GRAVITY {
+    }
 
     static class EssayHolder extends ToneAdapter.ToneHolder {
 
@@ -208,6 +269,9 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
 
         @BindView(R.id.bottom_layout)
         RelativeLayout bottomLayout;
+
+        @BindView(R.id.simple_drawee_view)
+        SimpleDraweeView simpleDraweeView;
 
         @BindView(R.id.date_tv)
         AppCompatTextView dateTv;
@@ -222,7 +286,6 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
             super(itemView);
             ButterKnife.bind(this, itemView);
 
-            final Context context = itemView.getContext();
             GradientDrawable topDrawable = new GradientDrawable();
             topDrawable.setCornerRadii(new float[]{
                     16f, 16f, 16f, 16f, 0f, 0f, 0f, 0f
@@ -262,10 +325,17 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
             }
 
             holder.contentTv.setText(model.content);
-            if(model.gravity == GRAVITY_LEFT) {
+            if (model.gravity == GRAVITY_LEFT) {
                 holder.contentTv.setGravity(Gravity.START);
             } else {
                 holder.contentTv.setGravity(Gravity.CENTER);
+            }
+
+            if (Objects.isNull(model.uri)) {
+                holder.simpleDraweeView.setVisibility(View.GONE);
+            } else {
+                holder.simpleDraweeView.setVisibility(View.VISIBLE);
+                holder.simpleDraweeView.setImageURI(model.uri);
             }
         }
     }

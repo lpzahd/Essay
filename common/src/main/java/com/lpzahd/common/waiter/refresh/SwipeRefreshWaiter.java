@@ -211,11 +211,11 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
     /**
      * 加载更多回调
      */
-    public interface LoadMoreCallBack {
+    interface LoadMoreCallBack {
         void onLoadMore();
     }
 
-    public static class RecyclerViewOnScroll extends RecyclerView.OnScrollListener {
+    static class RecyclerViewOnScroll extends RecyclerView.OnScrollListener {
 
         private static final long MIN_DURATION_TIME = 1000;
 
@@ -250,8 +250,6 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
             if (layoutManager instanceof StaggeredGridLayoutManager) {
                 StaggeredGridLayoutManager manager = ((StaggeredGridLayoutManager) layoutManager);
                 int[] pos = new int[manager.getSpanCount()];
-                //因为StaggeredGridLayoutManager的特殊性可能导致最后显示的item存在多个，所以这里取到的是一个数组
-                //得到这个数组后再取到数组中position值最大的那个就是最后显示的position值了
                 manager.findLastVisibleItemPositions(pos);
                 lastVisibleItem = findMax(pos);
                 firstVisibleItem = manager.findFirstVisibleItemPositions(pos)[0];

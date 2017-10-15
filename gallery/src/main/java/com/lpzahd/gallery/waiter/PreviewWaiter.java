@@ -30,7 +30,7 @@ import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.lpzahd.Lists;
-import com.lpzahd.atool.enmu.Image;
+import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.data.DataFactory;
@@ -251,7 +251,7 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> implement
     @Override
     public PreviewBean process(MediaTool.MediaBean mediaBean) {
         PreviewBean bean = new PreviewBean();
-        bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), Image.SOURCE_FILE);
+        bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), ImageSource.SOURCE_FILE);
         return bean;
     }
 

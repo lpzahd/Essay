@@ -1,5 +1,7 @@
 package com.lpzahd.essay.db.file;
 
+import com.lpzahd.atool.enmu.ImageSource;
+
 import org.threeten.bp.Instant;
 
 import java.util.UUID;
@@ -13,6 +15,13 @@ import io.realm.annotations.PrimaryKey;
  * Desction : (•ิ_•ิ)
  */
 public class Image extends RealmObject {
+
+//    public Image(String path, int width, int height, @ImageSource.SOURCE int source) {
+//        this.path = path;
+//        this.width = width;
+//        this.height = height;
+//        this.source = source;
+//    }
 
     /**
      * uuid
@@ -30,7 +39,9 @@ public class Image extends RealmObject {
      *
      * @link Config com.lpzahd.image
      */
-    private @com.lpzahd.atool.enmu.Image.SOURCE int source;
+    private
+    @ImageSource.SOURCE
+    int source;
 
     /**
      * 宽
@@ -67,6 +78,19 @@ public class Image extends RealmObject {
      */
     private String tag;
 
+    private static Image build(Builder builder) {
+        Image image = new Image();
+        image.setPath(builder.path);
+        image.setSource(builder.source);
+        image.setWidth(builder.width);
+        image.setHeight(builder.height);
+        image.setDesc(builder.desc);
+        image.setSuffix(builder.suffix);
+        image.setLink(builder.link);
+        image.setTag(builder.tag);
+        return image;
+    }
+
     public String getId() {
         return id;
     }
@@ -83,7 +107,9 @@ public class Image extends RealmObject {
         this.path = path;
     }
 
-    public @com.lpzahd.atool.enmu.Image.SOURCE int getSource() {
+    public
+    @ImageSource.SOURCE
+    int getSource() {
         return source;
     }
 
@@ -147,4 +173,61 @@ public class Image extends RealmObject {
         this.tag = tag;
     }
 
+    public static final class Builder {
+        private String path;
+        private int source;
+        private int width;
+        private int height;
+        private int desc;
+        private String suffix;
+        private String link;
+        private String tag;
+
+        public Builder() {
+        }
+
+        public Builder path(String val) {
+            path = val;
+            return this;
+        }
+
+        public Builder source(int val) {
+            source = val;
+            return this;
+        }
+
+        public Builder width(int val) {
+            width = val;
+            return this;
+        }
+
+        public Builder height(int val) {
+            height = val;
+            return this;
+        }
+
+        public Builder desc(int val) {
+            desc = val;
+            return this;
+        }
+
+        public Builder suffix(String val) {
+            suffix = val;
+            return this;
+        }
+
+        public Builder link(String val) {
+            link = val;
+            return this;
+        }
+
+        public Builder tag(String val) {
+            tag = val;
+            return this;
+        }
+
+        public Image build() {
+            return Image.build(this);
+        }
+    }
 }
