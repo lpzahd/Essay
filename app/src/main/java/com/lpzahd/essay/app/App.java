@@ -15,7 +15,12 @@ import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.derive.container.MiniCup;
 
+import java.io.IOException;
+
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Author : Lpzahd
@@ -51,7 +56,17 @@ public class App extends Application implements Application.ActivityLifecycleCal
         activityMiniCup = new MiniCup<>();
         registerActivityLifecycleCallbacks(this);
 
-        OkHttpClient okHttp = new OkHttpClient.Builder().build();
+        OkHttpClient okHttp = new OkHttpClient.Builder()
+                .addInterceptor(new Interceptor() {
+                    @Override
+                    public Response intercept(Chain chain) throws IOException {
+                        Request request = chain.request().newBuilder()
+                                .addHeader("referer", "www.baidu.com")
+                                .build();
+                        return chain.proceed(request);
+                    }
+                })
+                .build();
         ImagePipelineConfig pipelineConfig = OkHttpImagePipelineConfigFactory
                 .newBuilder(app, okHttp)
                 .setDownsampleEnabled(true)

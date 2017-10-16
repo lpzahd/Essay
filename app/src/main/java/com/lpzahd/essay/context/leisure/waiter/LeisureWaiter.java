@@ -150,7 +150,9 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         menuFab.collapse();
         //这里还是用门面模式好，先懒得写
         RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
-        if (manager == null || manager instanceof StaggeredGridLayoutManager) {
+        if(manager == null) return ;
+
+        if (manager instanceof StaggeredGridLayoutManager) {
             mAdapter.reloadTag();
             int[] lastPositions = new int[((StaggeredGridLayoutManager) manager).getSpanCount()];
             int firstVisibleItem = ((StaggeredGridLayoutManager) manager).findFirstVisibleItemPositions(lastPositions)[0];
@@ -334,7 +336,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                                     LeisureModel model = new LeisureModel();
                                     model.width = bean.getWidth();
                                     model.height = bean.getHeight();
-                                    model.uri = Frescoer.uri(bean.getObjURL(), ImageSource.SOURCE_NET);
+                                    model.uri = Frescoer.uri(bean.getMiddleURL(), ImageSource.SOURCE_NET);
                                     leisures.add(model);
                                 }
                                 return leisures;
