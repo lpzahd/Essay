@@ -44,9 +44,9 @@
         <activity android:name=".context.essay.EssayActivity"/>
         <activity android:name=".context.essay_.EssayAddActivity"/>
         <activity android:name=".context.preview.PreviewPicActivity"/>
+        <activity android:name=".context.preview.SinglePicActivity"/>
         <activity android:name=".context.leisure.LeisureActivity"/>
-        <activity android:name=".context.turing.TuringActivity">
-        </activity>
+        <activity android:name=".context.turing.TuringActivity"/>
     </application>
 
 </manifest>

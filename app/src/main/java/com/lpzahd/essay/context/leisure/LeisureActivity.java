@@ -2,8 +2,6 @@ package com.lpzahd.essay.context.leisure;
 
 import android.content.Context;
 import android.content.Intent;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import com.lpzahd.common.tone.activity.ToneActivity;
 import com.lpzahd.essay.R;
@@ -16,8 +14,6 @@ import com.lpzahd.essay.context.leisure.waiter.LeisureWaiter;
  */
 public class LeisureActivity extends ToneActivity {
 
-    private LeisureWaiter mLeisureWaiter;
-
     public static void startActivity(Context context) {
         Intent intent = new Intent(context, LeisureActivity.class);
         context.startActivity(intent);
@@ -26,7 +22,7 @@ public class LeisureActivity extends ToneActivity {
     @Override
     public void init() {
         super.init();
-        addActivityWaiter(mLeisureWaiter = new LeisureWaiter(this));
+        addActivityWaiter(new LeisureWaiter(this));
     }
 
     @Override

@@ -28,14 +28,19 @@ import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
+import com.lpzahd.common.taxi.RxTaxi;
+import com.lpzahd.common.taxi.Transmitter;
+import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
+import com.lpzahd.common.waiter.refresh.DspRefreshWaiter;
 import com.lpzahd.common.waiter.refresh.RefreshProcessor;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.leisure.LeisureActivity;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
+import com.lpzahd.essay.context.preview.SinglePicActivity;
 import com.lpzahd.essay.db.leisure.WordQuery;
 import com.lpzahd.essay.exotic.retrofit.Net;
 import com.lpzahd.essay.tool.DateTime;
@@ -97,7 +102,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
     @BindView(R.id.activity_leisure)
     FrameLayout activityLeisure;
 
-    private SwipeRefreshWaiter mRefreshWaiter;
+    private DspRefreshWaiter<BaiduPic.ImgsBean, LeisureModel> mRefreshWaiter;
     private LeisureAdapter mAdapter;
 
     // 查询关键字
@@ -317,34 +322,74 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         mAdapter = new LeisureAdapter(context);
         recyclerView.setAdapter(mAdapter);
 
-        addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefreshLayout, recyclerView) {
+        recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<LeisureHolder>(recyclerView) {
+            @Override
+            public void onLongClick(RecyclerView rv, LeisureHolder leisureHolder) {
+                SinglePicActivity.startActivity(context);
+                final int position = leisureHolder.getAdapterPosition();
+                RxTaxi.get().regist(SinglePicActivity.TAG, new Transmitter() {
+                    @Override
+                    public Flowable transmit() {
+                        return Flowable.just(mRefreshWaiter.getSource()
+                                .get(position).getObjURL());
+                    }
+                });
+            }
+        });
+
+        addWindowWaiter(mRefreshWaiter = new DspRefreshWaiter<BaiduPic.ImgsBean, LeisureModel>(swipeRefreshLayout, recyclerView) {
 
             @Override
-            public Flowable<? extends List> doRefresh(final int page) {
+            public Flowable<List<BaiduPic.ImgsBean>> doRefresh(int page) {
                 return Net.get().baiduImg(mWord, page, getCount())
                         .toFlowable(BackpressureStrategy.BUFFER)
-                        .map(new Function<BaiduPic, List>() {
+                        .map(new Function<BaiduPic, List<BaiduPic.ImgsBean>>() {
                             @Override
-                            public List apply(@NonNull BaiduPic pic) throws Exception {
-                                if (pic == null || Lists.empty(pic.getImgs()))
+                            public List<BaiduPic.ImgsBean> apply(@NonNull BaiduPic baiduPic) throws Exception {
+                                if (baiduPic == null || Lists.empty(baiduPic.getImgs()))
                                     return Collections.emptyList();
-
-                                List<BaiduPic.ImgsBean> imgs = pic.getImgs();
-                                List<LeisureModel> leisures = new ArrayList<>(imgs.size());
-                                for (int i = 0, size = imgs.size(); i < size; i++) {
-                                    BaiduPic.ImgsBean bean = imgs.get(i);
-                                    LeisureModel model = new LeisureModel();
-                                    model.width = bean.getWidth();
-                                    model.height = bean.getHeight();
-                                    model.uri = Frescoer.uri(bean.getMiddleURL(), ImageSource.SOURCE_NET);
-                                    leisures.add(model);
-                                }
-                                return leisures;
+                                return baiduPic.getImgs();
                             }
                         });
             }
 
+            @Override
+            public LeisureModel process(BaiduPic.ImgsBean bean) {
+                LeisureModel model = new LeisureModel();
+                model.width = bean.getWidth();
+                model.height = bean.getHeight();
+                model.uri = Frescoer.uri(bean.getMiddleURL(), ImageSource.SOURCE_NET);
+                return model;
+            }
         });
+//        addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefreshLayout, recyclerView) {
+//
+//            @Override
+//            public Flowable<? extends List> doRefresh(final int page) {
+//                return Net.get().baiduImg(mWord, page, getCount())
+//                        .toFlowable(BackpressureStrategy.BUFFER)
+//                        .map(new Function<BaiduPic, List>() {
+//                            @Override
+//                            public List apply(@NonNull BaiduPic pic) throws Exception {
+//                                if (pic == null || Lists.empty(pic.getImgs()))
+//                                    return Collections.emptyList();
+//
+//                                List<BaiduPic.ImgsBean> imgs = pic.getImgs();
+//                                List<LeisureModel> leisures = new ArrayList<>(imgs.size());
+//                                for (int i = 0, size = imgs.size(); i < size; i++) {
+//                                    BaiduPic.ImgsBean bean = imgs.get(i);
+//                                    LeisureModel model = new LeisureModel();
+//                                    model.width = bean.getWidth();
+//                                    model.height = bean.getHeight();
+//                                    model.uri = Frescoer.uri(bean.getMiddleURL(), ImageSource.SOURCE_NET);
+//                                    leisures.add(model);
+//                                }
+//                                return leisures;
+//                            }
+//                        });
+//            }
+//
+//        });
 
         mRefreshWaiter.setCount(QUERY_COUNT);
 
@@ -394,6 +439,8 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
         if (!mRealm.isClosed())
             mRealm.close();
+
+        RxTaxi.get().unregist(SinglePicActivity.TAG);
 
     }
 

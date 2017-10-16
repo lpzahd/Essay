@@ -39,7 +39,7 @@ public class PreviewPicActivity extends RxActivity {
         setContentView(R.layout.activity_preview_pic);
         ButterKnife.bind(this);
 
-        toolBar.setTitle("随笔");
+        toolBar.setTitle("预览");
         toolBar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
         context.setSupportActionBar(toolBar);
         toolBar.setNavigationOnClickListener(new View.OnClickListener() {
