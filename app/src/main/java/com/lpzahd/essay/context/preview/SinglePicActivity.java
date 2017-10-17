@@ -2,15 +2,23 @@ package com.lpzahd.essay.context.preview;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Animatable;
 import android.view.Window;
 import android.view.WindowManager;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.controller.BaseControllerListener;
+import com.facebook.drawee.controller.ControllerListener;
 import com.facebook.drawee.interfaces.DraweeController;
+import com.facebook.imagepipeline.image.ImageInfo;
+import com.facebook.imagepipeline.image.QualityInfo;
+import com.lpzahd.atool.ui.L;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
 import com.lpzahd.common.tone.activity.RxActivity;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
+import com.lpzahd.essay.exotic.fresco.FrescoInit;
 import com.lpzahd.fresco.zoomable.DoubleTapGestureListener;
 import com.lpzahd.fresco.zoomable.ZoomableDraweeView;
 
@@ -31,7 +39,7 @@ public class SinglePicActivity extends RxActivity {
     @BindView(R.id.zoomable_drawee_view)
     ZoomableDraweeView zoomableDraweeView;
 
-    private Transmitter<String> mTransmitter;
+    private Transmitter<BaiduPic.ImgsBean> mTransmitter;
 
     public static void startActivity(Context context) {
         Intent intent = new Intent(context, SinglePicActivity.class);
@@ -70,14 +78,48 @@ public class SinglePicActivity extends RxActivity {
     protected void initData() {
         mTransmitter.transmit()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<String>() {
+                .subscribe(new Consumer<BaiduPic.ImgsBean>() {
                     @Override
-                    public void accept(String s) throws Exception {
+                    public void accept(BaiduPic.ImgsBean been) throws Exception {
+                        FrescoInit.get().changeReferer(been.getFromURL());
                         DraweeController draweeController = Fresco.newDraweeControllerBuilder()
-                                .setUri(s)
+                                .setUri(been.getObjURL())
+                                .setControllerListener(controllerListener)
                                 .build();
                         zoomableDraweeView.setController(draweeController);
                     }
                 });
     }
+
+    ControllerListener controllerListener = new BaseControllerListener<ImageInfo>() {
+        @Override
+        public void onFinalImageSet(
+                String id,
+                ImageInfo imageInfo,
+                 Animatable anim) {
+            if (imageInfo == null) {
+                return;
+            }
+            QualityInfo qualityInfo = imageInfo.getQualityInfo();
+            L.e("Final image received! " +
+                            "Size %d x %d",
+                    "Quality level %d, good enough: %s, full quality: %s",
+                    imageInfo.getWidth(),
+                    imageInfo.getHeight(),
+                    qualityInfo.getQuality(),
+                    qualityInfo.isOfGoodEnoughQuality(),
+                    qualityInfo.isOfFullQuality());
+        }
+
+        @Override
+        public void onIntermediateImageSet(String id,  ImageInfo imageInfo) {
+            L.e("Intermediate image received");
+        }
+
+        @Override
+        public void onFailure(String id, Throwable throwable) {
+            L.e("Error loading %s : " + throwable);
+        }
+    };
+
 }

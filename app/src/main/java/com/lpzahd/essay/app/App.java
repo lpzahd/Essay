@@ -14,6 +14,7 @@ import com.lpzahd.atool.constant.Constance;
 import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.derive.container.MiniCup;
+import com.lpzahd.essay.exotic.fresco.FrescoInit;
 
 import java.io.IOException;
 
@@ -56,22 +57,25 @@ public class App extends Application implements Application.ActivityLifecycleCal
         activityMiniCup = new MiniCup<>();
         registerActivityLifecycleCallbacks(this);
 
-        OkHttpClient okHttp = new OkHttpClient.Builder()
-                .addInterceptor(new Interceptor() {
-                    @Override
-                    public Response intercept(Chain chain) throws IOException {
-                        Request request = chain.request().newBuilder()
-                                .addHeader("referer", "www.baidu.com")
-                                .build();
-                        return chain.proceed(request);
-                    }
-                })
-                .build();
-        ImagePipelineConfig pipelineConfig = OkHttpImagePipelineConfigFactory
-                .newBuilder(app, okHttp)
-                .setDownsampleEnabled(true)
-                .build();
-        Fresco.initialize(app, pipelineConfig);
+        FrescoInit.get().init(app);
+//        FrescoInit.init(app);
+
+//        OkHttpClient okHttp = new OkHttpClient.Builder()
+//                .addInterceptor(new Interceptor() {
+//                    @Override
+//                    public Response intercept(Chain chain) throws IOException {
+//                        Request request = chain.request().newBuilder()
+//                                .addHeader("referer", "www.baidu.com")
+//                                .build();
+//                        return chain.proceed(request);
+//                    }
+//                })
+//                .build();
+//        ImagePipelineConfig pipelineConfig = OkHttpImagePipelineConfigFactory
+//                .newBuilder(app, okHttp)
+//                .setDownsampleEnabled(true)
+//                .build();
+//        Fresco.initialize(app, pipelineConfig);
 
         AndroidThreeTen.init(this);
     }

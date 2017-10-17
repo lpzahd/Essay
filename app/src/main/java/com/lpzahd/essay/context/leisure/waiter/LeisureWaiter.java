@@ -42,6 +42,7 @@ import com.lpzahd.essay.context.leisure.LeisureActivity;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
 import com.lpzahd.essay.context.preview.SinglePicActivity;
 import com.lpzahd.essay.db.leisure.WordQuery;
+import com.lpzahd.essay.exotic.fresco.FrescoInit;
 import com.lpzahd.essay.exotic.retrofit.Net;
 import com.lpzahd.essay.tool.DateTime;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
@@ -118,6 +119,18 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
     protected void init() {
         super.init();
         mRealm = Realm.getDefaultInstance();
+    }
+
+    @Override
+    protected void resume() {
+        super.resume();
+        FrescoInit.get().changeReferer("www.baidu.com");
+    }
+
+    @Override
+    protected void pause() {
+        super.pause();
+        FrescoInit.get().removeReferer();
     }
 
     @Override
@@ -329,9 +342,9 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                 final int position = leisureHolder.getAdapterPosition();
                 RxTaxi.get().regist(SinglePicActivity.TAG, new Transmitter() {
                     @Override
-                    public Flowable transmit() {
+                    public Flowable<BaiduPic.ImgsBean> transmit() {
                         return Flowable.just(mRefreshWaiter.getSource()
-                                .get(position).getObjURL());
+                                .get(position));
                     }
                 });
             }
@@ -441,7 +454,6 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
             mRealm.close();
 
         RxTaxi.get().unregist(SinglePicActivity.TAG);
-
     }
 
     static class LeisureHolder extends ToneAdapter.ToneHolder {
