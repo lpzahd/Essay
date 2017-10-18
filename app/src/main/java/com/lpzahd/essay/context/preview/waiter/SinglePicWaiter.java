@@ -7,9 +7,12 @@ import android.net.Uri;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.BaseControllerListener;
 import com.facebook.drawee.controller.ControllerListener;
@@ -22,7 +25,10 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.keeper.Files;
+import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.ui.L;
+import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
@@ -71,7 +77,8 @@ import okhttp3.ResponseBody;
 public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
 
     public static final String TAG = "com.lpzahd.essay.context.preview.waiter.SinglePicWaiter";
-    public static final String REGEX_TAG_IMG = "<img\\b[^>]*\\bsrc\\b\\s*=\\s*('|\")?([^'\"\n\r\f>]+(\\.jpg|\\.bmp|\\.eps|\\.gif|\\.mif|\\.miff|\\.png|\\.tif|\\.tiff|\\.svg|\\.wmf|\\.jpe|\\.jpeg|\\.dib|\\.ico|\\.tga|\\.cut|\\.pic|\\.webp)\\b)[^>]*>";
+
+    private static final String REGEX_TAG_IMG = "<img\\b[^>]*\\bsrc\\b\\s*=\\s*('|\")?([^'\"\n\r\f>]+(\\.jpg|\\.bmp|\\.eps|\\.gif|\\.mif|\\.miff|\\.png|\\.tif|\\.tiff|\\.svg|\\.wmf|\\.jpe|\\.jpeg|\\.dib|\\.ico|\\.tga|\\.cut|\\.pic|\\.webp)\\b)[^>]*>";
 
     @BindView(R.id.zoomable_drawee_view)
     ZoomableDraweeView zoomableDraweeView;
@@ -79,7 +86,11 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
 
-    private PicBean objBean;
+    private BaiduPic.ImgsBean objBean;
+    private PicBean firstBean;
+
+    private PicBean displayBean;
+
     private PicAdapter mAdapter;
 
     private Transmitter<BaiduPic.ImgsBean> mTransmitter;
@@ -97,13 +108,21 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
     protected void initView() {
         super.initView();
 //        zoomableDraweeView.setTapListener(new GestureDetector.SimpleOnGestureListener());
-        zoomableDraweeView.setTapListener(new DoubleTapGestureListener(zoomableDraweeView));
+        zoomableDraweeView.setTapListener(new DoubleTapGestureListener(zoomableDraweeView) {
+            @Override
+            public void onLongPress(MotionEvent e) {
+                showFileDownDialog(displayBean.uri);
+            }
+        });
+
+        zoomableDraweeView.setIsLongpressEnabled(true);
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
 
         mAdapter = new PicAdapter(context);
         recyclerView.setAdapter(mAdapter);
+
 
         final ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(new ToneItemTouchHelperCallback(mAdapter));
         mItemTouchHelper.attachToRecyclerView(recyclerView);
@@ -112,11 +131,14 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
             @Override
             public void onClick(RecyclerView rv, PicHolder picHolder) {
                 super.onClick(rv, picHolder);
+                displayBean = mAdapter.getItem(picHolder.getAdapterPosition());
+
                 DraweeController draweeController = Fresco.newDraweeControllerBuilder()
-                        .setUri(mAdapter.getItem(picHolder.getAdapterPosition()).uri)
+                        .setUri(displayBean.uri)
                         .build();
                 zoomableDraweeView.setController(draweeController);
             }
+
         });
     }
 
@@ -127,6 +149,8 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
                 .subscribe(new Consumer<BaiduPic.ImgsBean>() {
                     @Override
                     public void accept(BaiduPic.ImgsBean been) throws Exception {
+                        objBean = been;
+
                         FrescoInit.get().changeReferer(been.getFromURL());
 
                         DraweeController draweeController = Fresco.newDraweeControllerBuilder()
@@ -134,8 +158,9 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
                                 .build();
                         zoomableDraweeView.setController(draweeController);
 
-                        objBean = new PicBean();
-                        objBean.uri = Frescoer.uri(been.getObjURL(), ImageSource.SOURCE_NET);
+                        firstBean = new PicBean();
+                        firstBean.uri = Frescoer.uri(been.getObjURL(), ImageSource.SOURCE_NET);
+                        displayBean = firstBean;
 
                         loadingHtmlPic(been);
                     }
@@ -214,8 +239,8 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
                 .subscribe(new Consumer<List<PicBean>>() {
                     @Override
                     public void accept(List<PicBean> strings) throws Exception {
-                        if(!mAdapter.getData().contains(objBean)) {
-                            strings.add(0, objBean);
+                        if (!mAdapter.getData().contains(firstBean)) {
+                            strings.add(0, firstBean);
                         }
                         mAdapter.setData(strings);
                     }
@@ -257,7 +282,7 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
     };
 
     static class PicBean {
-        public Uri uri;
+        Uri uri;
 
         @Override
         public boolean equals(Object obj) {
@@ -273,17 +298,17 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
         @BindView(R.id.image_drawee_view)
         SimpleDraweeView imageDraweeView;
 
-        public PicHolder(View itemView) {
+        PicHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
     }
 
-    static class PicAdapter extends ToneAdapter<PicBean, PicHolder> {
+    private static class PicAdapter extends ToneAdapter<PicBean, PicHolder> {
 
         private int size;
 
-        public PicAdapter(Context context) {
+        PicAdapter(Context context) {
             super(context);
             size = Ui.dip2px(context, 56);
         }
@@ -306,5 +331,59 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
                     .build();
             holder.imageDraweeView.setController(controller);
         }
+    }
+
+    private void showFileDownDialog(final Uri picUri) {
+        String uriStr = picUri.toString();
+        final String picName = uriStr.substring(uriStr.lastIndexOf("/") + 1).trim();
+        new MaterialDialog.Builder(context)
+                .title("图片下载")
+                .content(picName)
+                .positiveText(R.string.tip_positive)
+                .negativeText(R.string.tip_negative)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+                        OkHttpClient client = new OkHttpClient();
+                        Request request = new Request.Builder()
+                                .url(picUri.toString())
+                                .addHeader("referer", objBean.getFromURLHost())
+                                .build();
+                        OkHttpRxAdapter.adapter(client.newCall(request))
+                                .subscribeOn(Schedulers.io())
+                                .filter(new Predicate<Response>() {
+                                    @Override
+                                    public boolean test(@NonNull Response response) throws Exception {
+                                        return response.isSuccessful();
+                                    }
+                                })
+                                .map(new Function<Response, ResponseBody>() {
+                                    @Override
+                                    public ResponseBody apply(@NonNull Response response) throws Exception {
+                                        return response.body();
+                                    }
+                                })
+                                .map(new Function<ResponseBody, Boolean>() {
+                                    @Override
+                                    public Boolean apply(@NonNull ResponseBody body) throws Exception {
+                                        Files files = Keeper.getF();
+                                        String filePath = files.getFilePath(Files.Scope.PHOTO_RAW, picName);
+                                        return Files.streamToFile(body.byteStream(), filePath);
+                                    }
+                                })
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Consumer<Boolean>() {
+                                    @Override
+                                    public void accept(Boolean aBoolean) throws Exception {
+                                        if (aBoolean) {
+                                            T.t(picName + "图片下载完成");
+                                        } else {
+                                            T.t(picName + "图片下载失败");
+                                        }
+                                    }
+                                });
+                    }
+                })
+                .show();
     }
 }

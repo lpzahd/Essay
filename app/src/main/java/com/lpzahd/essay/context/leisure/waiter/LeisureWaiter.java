@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.andexert.library.RippleView;
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -26,6 +27,8 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.keeper.Files;
+import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.taxi.RxTaxi;
@@ -46,6 +49,7 @@ import com.lpzahd.essay.db.leisure.WordQuery;
 import com.lpzahd.essay.exotic.fresco.FrescoInit;
 import com.lpzahd.essay.exotic.retrofit.Net;
 import com.lpzahd.essay.tool.DateTime;
+import com.lpzahd.essay.tool.OkHttpRxAdapter;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.Collections;
@@ -56,11 +60,19 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Author : Lpzahd
@@ -168,7 +180,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         menuFab.collapse();
         //这里还是用门面模式好，先懒得写
         RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
-        if(manager == null) return ;
+        if (manager == null) return;
 
         if (manager instanceof StaggeredGridLayoutManager) {
             mAdapter.reloadTag();
@@ -215,13 +227,13 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                     public void onInput(@android.support.annotation.NonNull MaterialDialog dialog, CharSequence input) {
                         try {
                             int page = Integer.parseInt(input.toString());
-                            if(page < 0) {
+                            if (page < 0) {
                                 page = -page;
-                            } else if(page == 0) {
+                            } else if (page == 0) {
                                 page = 1;
                             }
 
-                            if(page > 30) {
+                            if (page > 30) {
                                 page = page % 30;
                             }
                             mRefreshWaiter.setStart(page - 1);
@@ -348,6 +360,12 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                     }
                 });
             }
+
+            @Override
+            public void onLongClick(RecyclerView rv, LeisureHolder leisureHolder) {
+                showFileDownDialog(mRefreshWaiter.getSource()
+                        .get(leisureHolder.getAdapterPosition()));
+            }
         });
 
         addWindowWaiter(mRefreshWaiter = new DspRefreshWaiter<BaiduPic.ImgsBean, LeisureModel>(swipeRefreshLayout, recyclerView) {
@@ -426,6 +444,59 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
             mRealm.close();
 
         RxTaxi.get().unregist(SinglePicWaiter.TAG);
+    }
+
+    private void showFileDownDialog(final BaiduPic.ImgsBean bean) {
+        final String picName = bean.getMiddleURL().substring(bean.getMiddleURL().lastIndexOf("/") + 1).trim();
+        new MaterialDialog.Builder(context)
+                .title("图片下载")
+                .content(picName)
+                .positiveText(R.string.tip_positive)
+                .negativeText(R.string.tip_negative)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+                        OkHttpClient client = new OkHttpClient();
+                        Request request = new Request.Builder()
+                                .url(bean.getMiddleURL())
+                                .addHeader("referer", "www.baidu.com")
+                                .build();
+                        OkHttpRxAdapter.adapter(client.newCall(request))
+                                .subscribeOn(Schedulers.io())
+                                .filter(new Predicate<Response>() {
+                                    @Override
+                                    public boolean test(@NonNull Response response) throws Exception {
+                                        return response.isSuccessful();
+                                    }
+                                })
+                                .map(new Function<Response, ResponseBody>() {
+                                    @Override
+                                    public ResponseBody apply(@NonNull Response response) throws Exception {
+                                        return response.body();
+                                    }
+                                })
+                                .map(new Function<ResponseBody, Boolean>() {
+                                    @Override
+                                    public Boolean apply(@NonNull ResponseBody body) throws Exception {
+                                        Files files = Keeper.getF();
+                                        String filePath = files.getFilePath(Files.Scope.PHOTO_RAW, picName);
+                                        return Files.streamToFile(body.byteStream(), filePath);
+                                    }
+                                })
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Consumer<Boolean>() {
+                                    @Override
+                                    public void accept(Boolean aBoolean) throws Exception {
+                                        if (aBoolean) {
+                                            T.t(picName + "图片下载完成");
+                                        } else {
+                                            T.t(picName + "图片下载失败");
+                                        }
+                                    }
+                                });
+                    }
+                })
+                .show();
     }
 
     static class LeisureHolder extends ToneAdapter.ToneHolder {
