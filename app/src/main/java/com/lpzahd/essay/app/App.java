@@ -58,24 +58,6 @@ public class App extends Application implements Application.ActivityLifecycleCal
         registerActivityLifecycleCallbacks(this);
 
         FrescoInit.get().init(app);
-//        FrescoInit.init(app);
-
-//        OkHttpClient okHttp = new OkHttpClient.Builder()
-//                .addInterceptor(new Interceptor() {
-//                    @Override
-//                    public Response intercept(Chain chain) throws IOException {
-//                        Request request = chain.request().newBuilder()
-//                                .addHeader("referer", "www.baidu.com")
-//                                .build();
-//                        return chain.proceed(request);
-//                    }
-//                })
-//                .build();
-//        ImagePipelineConfig pipelineConfig = OkHttpImagePipelineConfigFactory
-//                .newBuilder(app, okHttp)
-//                .setDownsampleEnabled(true)
-//                .build();
-//        Fresco.initialize(app, pipelineConfig);
 
         AndroidThreeTen.init(this);
     }

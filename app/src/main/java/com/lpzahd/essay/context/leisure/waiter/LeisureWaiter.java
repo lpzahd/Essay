@@ -41,13 +41,13 @@ import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.leisure.LeisureActivity;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
 import com.lpzahd.essay.context.preview.SinglePicActivity;
+import com.lpzahd.essay.context.preview.waiter.SinglePicWaiter;
 import com.lpzahd.essay.db.leisure.WordQuery;
 import com.lpzahd.essay.exotic.fresco.FrescoInit;
 import com.lpzahd.essay.exotic.retrofit.Net;
 import com.lpzahd.essay.tool.DateTime;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -337,10 +337,10 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
         recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<LeisureHolder>(recyclerView) {
             @Override
-            public void onLongClick(RecyclerView rv, LeisureHolder leisureHolder) {
+            public void onClick(RecyclerView rv, LeisureHolder leisureHolder) {
                 SinglePicActivity.startActivity(context);
                 final int position = leisureHolder.getAdapterPosition();
-                RxTaxi.get().regist(SinglePicActivity.TAG, new Transmitter() {
+                RxTaxi.get().regist(SinglePicWaiter.TAG, new Transmitter() {
                     @Override
                     public Flowable<BaiduPic.ImgsBean> transmit() {
                         return Flowable.just(mRefreshWaiter.getSource()
@@ -375,34 +375,6 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                 return model;
             }
         });
-//        addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefreshLayout, recyclerView) {
-//
-//            @Override
-//            public Flowable<? extends List> doRefresh(final int page) {
-//                return Net.get().baiduImg(mWord, page, getCount())
-//                        .toFlowable(BackpressureStrategy.BUFFER)
-//                        .map(new Function<BaiduPic, List>() {
-//                            @Override
-//                            public List apply(@NonNull BaiduPic pic) throws Exception {
-//                                if (pic == null || Lists.empty(pic.getImgs()))
-//                                    return Collections.emptyList();
-//
-//                                List<BaiduPic.ImgsBean> imgs = pic.getImgs();
-//                                List<LeisureModel> leisures = new ArrayList<>(imgs.size());
-//                                for (int i = 0, size = imgs.size(); i < size; i++) {
-//                                    BaiduPic.ImgsBean bean = imgs.get(i);
-//                                    LeisureModel model = new LeisureModel();
-//                                    model.width = bean.getWidth();
-//                                    model.height = bean.getHeight();
-//                                    model.uri = Frescoer.uri(bean.getMiddleURL(), ImageSource.SOURCE_NET);
-//                                    leisures.add(model);
-//                                }
-//                                return leisures;
-//                            }
-//                        });
-//            }
-//
-//        });
 
         mRefreshWaiter.setCount(QUERY_COUNT);
 
@@ -453,7 +425,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         if (!mRealm.isClosed())
             mRealm.close();
 
-        RxTaxi.get().unregist(SinglePicActivity.TAG);
+        RxTaxi.get().unregist(SinglePicWaiter.TAG);
     }
 
     static class LeisureHolder extends ToneAdapter.ToneHolder {
