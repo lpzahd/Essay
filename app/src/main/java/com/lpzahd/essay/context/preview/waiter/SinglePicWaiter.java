@@ -176,7 +176,7 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
                 .build();
 
         final URL fromUrl;
-        if (fromUrlStr.startsWith("http://") || fromUrlStr.startsWith("https://")) {
+        if (fromUrlStr.startsWith("http://") || fromUrlStr.startsWith("https://") || fromUrlStr.startsWith("ftp://")) {
             fromUrl = new URL(fromUrlStr);
         } else {
             fromUrl = new URL("http://" + fromUrlStr);

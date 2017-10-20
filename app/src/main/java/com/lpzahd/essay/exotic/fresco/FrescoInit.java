@@ -9,6 +9,7 @@ import com.facebook.imagepipeline.core.ImagePipelineConfig;
 import com.lpzahd.Objects;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -92,7 +93,7 @@ public class FrescoInit {
                 return chain.proceed(chain.request());
 
             Request request = chain.request().newBuilder()
-                    .addHeader("referer", referer)
+                    .addHeader("referer", URLEncoder.encode(referer, "utf-8"))
                     .build();
             return chain.proceed(request);
         }

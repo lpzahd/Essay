@@ -10,8 +10,6 @@ import com.lpzahd.common.tone.activity.RxActivity;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.preview.waiter.SinglePicWaiter;
 
-import butterknife.ButterKnife;
-
 /**
  * Author : Lpzahd
  * Date : 十月
