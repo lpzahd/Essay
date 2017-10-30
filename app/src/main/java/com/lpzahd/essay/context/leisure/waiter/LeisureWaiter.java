@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.andexert.library.RippleView;
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -26,22 +27,31 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.keeper.Files;
+import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
+import com.lpzahd.common.taxi.RxTaxi;
+import com.lpzahd.common.taxi.Transmitter;
+import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
+import com.lpzahd.common.waiter.refresh.DspRefreshWaiter;
 import com.lpzahd.common.waiter.refresh.RefreshProcessor;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.leisure.LeisureActivity;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
+import com.lpzahd.essay.context.preview.SinglePicActivity;
+import com.lpzahd.essay.context.preview.waiter.SinglePicWaiter;
 import com.lpzahd.essay.db.leisure.WordQuery;
+import com.lpzahd.essay.exotic.fresco.FrescoInit;
 import com.lpzahd.essay.exotic.retrofit.Net;
 import com.lpzahd.essay.tool.DateTime;
+import com.lpzahd.essay.tool.OkHttpRxAdapter;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -50,11 +60,19 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Author : Lpzahd
@@ -97,7 +115,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
     @BindView(R.id.activity_leisure)
     FrameLayout activityLeisure;
 
-    private SwipeRefreshWaiter mRefreshWaiter;
+    private DspRefreshWaiter<BaiduPic.ImgsBean, LeisureModel> mRefreshWaiter;
     private LeisureAdapter mAdapter;
 
     // 查询关键字
@@ -113,6 +131,18 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
     protected void init() {
         super.init();
         mRealm = Realm.getDefaultInstance();
+    }
+
+    @Override
+    protected void resume() {
+        super.resume();
+        FrescoInit.get().changeReferer("www.baidu.com");
+    }
+
+    @Override
+    protected void pause() {
+        super.pause();
+        FrescoInit.get().removeReferer();
     }
 
     @Override
@@ -150,7 +180,9 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         menuFab.collapse();
         //这里还是用门面模式好，先懒得写
         RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
-        if (manager == null || manager instanceof StaggeredGridLayoutManager) {
+        if (manager == null) return;
+
+        if (manager instanceof StaggeredGridLayoutManager) {
             mAdapter.reloadTag();
             int[] lastPositions = new int[((StaggeredGridLayoutManager) manager).getSpanCount()];
             int firstVisibleItem = ((StaggeredGridLayoutManager) manager).findFirstVisibleItemPositions(lastPositions)[0];
@@ -195,13 +227,13 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                     public void onInput(@android.support.annotation.NonNull MaterialDialog dialog, CharSequence input) {
                         try {
                             int page = Integer.parseInt(input.toString());
-                            if(page < 0) {
+                            if (page < 0) {
                                 page = -page;
-                            } else if(page == 0) {
+                            } else if (page == 0) {
                                 page = 1;
                             }
 
-                            if(page > 30) {
+                            if (page > 30) {
                                 page = page % 30;
                             }
                             mRefreshWaiter.setStart(page - 1);
@@ -315,33 +347,51 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         mAdapter = new LeisureAdapter(context);
         recyclerView.setAdapter(mAdapter);
 
-        addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefreshLayout, recyclerView) {
+        recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<LeisureHolder>(recyclerView) {
+            @Override
+            public void onClick(RecyclerView rv, LeisureHolder leisureHolder) {
+                SinglePicActivity.startActivity(context);
+                final int position = leisureHolder.getAdapterPosition();
+                RxTaxi.get().regist(SinglePicWaiter.TAG, new Transmitter() {
+                    @Override
+                    public Flowable<BaiduPic.ImgsBean> transmit() {
+                        return Flowable.just(mRefreshWaiter.getSource()
+                                .get(position));
+                    }
+                });
+            }
 
             @Override
-            public Flowable<? extends List> doRefresh(final int page) {
+            public void onLongClick(RecyclerView rv, LeisureHolder leisureHolder) {
+                showFileDownDialog(mRefreshWaiter.getSource()
+                        .get(leisureHolder.getAdapterPosition()));
+            }
+        });
+
+        addWindowWaiter(mRefreshWaiter = new DspRefreshWaiter<BaiduPic.ImgsBean, LeisureModel>(swipeRefreshLayout, recyclerView) {
+
+            @Override
+            public Flowable<List<BaiduPic.ImgsBean>> doRefresh(int page) {
                 return Net.get().baiduImg(mWord, page, getCount())
                         .toFlowable(BackpressureStrategy.BUFFER)
-                        .map(new Function<BaiduPic, List>() {
+                        .map(new Function<BaiduPic, List<BaiduPic.ImgsBean>>() {
                             @Override
-                            public List apply(@NonNull BaiduPic pic) throws Exception {
-                                if (pic == null || Lists.empty(pic.getImgs()))
+                            public List<BaiduPic.ImgsBean> apply(@NonNull BaiduPic baiduPic) throws Exception {
+                                if (baiduPic == null || Lists.empty(baiduPic.getImgs()))
                                     return Collections.emptyList();
-
-                                List<BaiduPic.ImgsBean> imgs = pic.getImgs();
-                                List<LeisureModel> leisures = new ArrayList<>(imgs.size());
-                                for (int i = 0, size = imgs.size(); i < size; i++) {
-                                    BaiduPic.ImgsBean bean = imgs.get(i);
-                                    LeisureModel model = new LeisureModel();
-                                    model.width = bean.getWidth();
-                                    model.height = bean.getHeight();
-                                    model.uri = Frescoer.uri(bean.getObjURL(), ImageSource.SOURCE_NET);
-                                    leisures.add(model);
-                                }
-                                return leisures;
+                                return baiduPic.getImgs();
                             }
                         });
             }
 
+            @Override
+            public LeisureModel process(BaiduPic.ImgsBean bean) {
+                LeisureModel model = new LeisureModel();
+                model.width = bean.getWidth();
+                model.height = bean.getHeight();
+                model.uri = Frescoer.uri(bean.getMiddleURL(), ImageSource.SOURCE_NET);
+                return model;
+            }
         });
 
         mRefreshWaiter.setCount(QUERY_COUNT);
@@ -393,6 +443,60 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         if (!mRealm.isClosed())
             mRealm.close();
 
+        RxTaxi.get().unregist(SinglePicWaiter.TAG);
+    }
+
+    private void showFileDownDialog(final BaiduPic.ImgsBean bean) {
+        final String picName = bean.getMiddleURL().substring(bean.getMiddleURL().lastIndexOf("/") + 1).trim();
+        new MaterialDialog.Builder(context)
+                .title("图片下载")
+                .content(picName)
+                .positiveText(R.string.tip_positive)
+                .negativeText(R.string.tip_negative)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+                        OkHttpClient client = new OkHttpClient();
+                        Request request = new Request.Builder()
+                                .url(bean.getMiddleURL())
+                                .addHeader("referer", "www.baidu.com")
+                                .build();
+                        OkHttpRxAdapter.adapter(client.newCall(request))
+                                .subscribeOn(Schedulers.io())
+                                .filter(new Predicate<Response>() {
+                                    @Override
+                                    public boolean test(@NonNull Response response) throws Exception {
+                                        return response.isSuccessful();
+                                    }
+                                })
+                                .map(new Function<Response, ResponseBody>() {
+                                    @Override
+                                    public ResponseBody apply(@NonNull Response response) throws Exception {
+                                        return response.body();
+                                    }
+                                })
+                                .map(new Function<ResponseBody, Boolean>() {
+                                    @Override
+                                    public Boolean apply(@NonNull ResponseBody body) throws Exception {
+                                        Files files = Keeper.getF();
+                                        String filePath = files.getFilePath(Files.Scope.PHOTO_RAW, picName);
+                                        return Files.streamToFile(body.byteStream(), filePath);
+                                    }
+                                })
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Consumer<Boolean>() {
+                                    @Override
+                                    public void accept(Boolean aBoolean) throws Exception {
+                                        if (aBoolean) {
+                                            T.t(picName + "图片下载完成");
+                                        } else {
+                                            T.t(picName + "图片下载失败");
+                                        }
+                                    }
+                                });
+                    }
+                })
+                .show();
     }
 
     static class LeisureHolder extends ToneAdapter.ToneHolder {

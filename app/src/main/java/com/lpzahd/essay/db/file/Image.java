@@ -16,13 +16,6 @@ import io.realm.annotations.PrimaryKey;
  */
 public class Image extends RealmObject {
 
-//    public Image(String path, int width, int height, @ImageSource.SOURCE int source) {
-//        this.path = path;
-//        this.width = width;
-//        this.height = height;
-//        this.source = source;
-//    }
-
     /**
      * uuid
      */

@@ -7,6 +7,9 @@ import com.lpzahd.Objects;
 import com.lpzahd.atool.constant.Constance;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.RetentionPolicy;
 
 import java.lang.annotation.Retention;
@@ -116,5 +119,28 @@ public class Files {
 
         public static final String DATABASE = ROOT + "/" + "database";
 
+    }
+
+    public static boolean streamToFile(InputStream is, String path) {
+        FileOutputStream fos = null;
+        int len;
+        byte[] buf = new byte[2048];
+        try {
+            fos = new FileOutputStream(path);
+            while ((len = is.read(buf)) != -1) {
+                fos.write(buf, 0, len);
+            }
+            fos.flush();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (is != null) is.close();
+                if (fos != null) fos.close();
+            } catch (IOException ignored) {
+            }
+        }
     }
 }

@@ -14,8 +14,14 @@ import com.lpzahd.atool.constant.Constance;
 import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.derive.container.MiniCup;
+import com.lpzahd.essay.exotic.fresco.FrescoInit;
 
+import java.io.IOException;
+
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Author : Lpzahd
@@ -51,12 +57,7 @@ public class App extends Application implements Application.ActivityLifecycleCal
         activityMiniCup = new MiniCup<>();
         registerActivityLifecycleCallbacks(this);
 
-        OkHttpClient okHttp = new OkHttpClient.Builder().build();
-        ImagePipelineConfig pipelineConfig = OkHttpImagePipelineConfigFactory
-                .newBuilder(app, okHttp)
-                .setDownsampleEnabled(true)
-                .build();
-        Fresco.initialize(app, pipelineConfig);
+        FrescoInit.get().init(app);
 
         AndroidThreeTen.init(this);
     }
