@@ -1,4 +1,4 @@
-package com.lpzahd.essay.tool;
+package com.lpzahd.common.kangna;
 
 import android.os.Looper;
 import com.jakewharton.rxbinding2.internal.Notification;
@@ -16,15 +16,12 @@ public final class KangNaOnCompleteObservable extends Observable<Object> {
 
     private final KangNaView view;
 
-    KangNaOnCompleteObservable(KangNaView view) {
+    public KangNaOnCompleteObservable(KangNaView view) {
         this.view = view;
     }
 
     @Override
     protected void subscribeActual(Observer<? super Object> observer) {
-        if (!checkMainThread(observer)) {
-            return;
-        }
         Listener listener = new Listener(view, observer);
         observer.onSubscribe(listener);
         view.setOnKangNaCompleteListener(listener);

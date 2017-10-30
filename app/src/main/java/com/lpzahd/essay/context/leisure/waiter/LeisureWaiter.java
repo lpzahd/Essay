@@ -321,12 +321,6 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
     }
 
-    static class LeisureModel {
-        Uri uri;
-        int width;
-        int height;
-    }
-
     @Override
     protected void initView() {
         super.initView();
@@ -343,7 +337,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         searchView.setVoiceSearch(false);
         searchView.setEllipsize(true);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         mAdapter = new LeisureAdapter(context);
         recyclerView.setAdapter(mAdapter);
 
@@ -499,7 +493,13 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                 .show();
     }
 
-    static class LeisureHolder extends ToneAdapter.ToneHolder {
+    public static class LeisureModel {
+        public Uri uri;
+        public int width;
+        public int height;
+    }
+
+    public static class LeisureHolder extends ToneAdapter.ToneHolder {
 
         @BindView(R.id.simple_drawee_view)
         SimpleDraweeView simpleDraweeView;
@@ -513,19 +513,19 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         }
     }
 
-    private class LeisureAdapter extends ToneAdapter<LeisureModel, LeisureHolder> {
+    public static class LeisureAdapter extends ToneAdapter<LeisureModel, LeisureHolder> {
 
         int IMG_SIZE_WIDTH;
         int IMG_SIZE_HEIGH;
 
         boolean STYLE_OPEN_RESIZE = false;
 
-        LeisureAdapter(Context context) {
+        public LeisureAdapter(Context context) {
             super(context);
             IMG_SIZE_HEIGH = Ui.dip2px(context, 160);
         }
 
-        void reloadTag() {
+        public void reloadTag() {
             IMG_SIZE_WIDTH = -1;
         }
 

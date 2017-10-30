@@ -18,6 +18,7 @@ import com.lpzahd.essay.R;
 import com.lpzahd.essay.common.waiter.TintBarWaiter;
 import com.lpzahd.essay.context.essay.EssayActivity;
 import com.lpzahd.essay.context.guide.GuideActivity;
+import com.lpzahd.essay.context.instinct.InstinctActivity;
 import com.lpzahd.essay.context.leisure.LeisureActivity;
 import com.lpzahd.essay.context.turing.TuringActivity;
 import com.lpzahd.gallery.Gallery;
@@ -81,6 +82,9 @@ public class GuideStyleIWaiter extends ToneActivityWaiter<GuideActivity> {
                     case 4:
                         TuringActivity.startActivity(context);
                         break;
+                    case 5:
+                        InstinctActivity.startActivity(context);
+                        break;
                 }
             }
         });
@@ -94,6 +98,7 @@ public class GuideStyleIWaiter extends ToneActivityWaiter<GuideActivity> {
                 new GuideModel(2, "音乐", "解落三秋叶,能开二月花", Color.parseColor("#E089F9"), Color.parseColor("#FFD452")),
                 new GuideModel(3, "百度搜图", "解落三秋叶,能开二月花", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
                 new GuideModel(4, "自娱自乐", "解落三秋叶,能开二月花", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
+                new GuideModel(5, "荷尔蒙", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
         };
         mAdapter.setData(Arrays.asList(models));
     }

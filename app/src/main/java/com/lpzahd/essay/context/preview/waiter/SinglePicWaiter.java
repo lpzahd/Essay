@@ -238,11 +238,11 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<PicBean>>() {
                     @Override
-                    public void accept(List<PicBean> strings) throws Exception {
+                    public void accept(List<PicBean> picBeans) throws Exception {
                         if (!mAdapter.getData().contains(firstBean)) {
-                            strings.add(0, firstBean);
+                            picBeans.add(0, firstBean);
                         }
-                        mAdapter.setData(strings);
+                        mAdapter.setData(picBeans);
                     }
                 });
 
@@ -281,8 +281,8 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
         }
     };
 
-    static class PicBean {
-        Uri uri;
+    public static class PicBean {
+        public Uri uri;
 
         @Override
         public boolean equals(Object obj) {
@@ -293,7 +293,7 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
         }
     }
 
-    static class PicHolder extends ToneAdapter.ToneHolder {
+    public static class PicHolder extends ToneAdapter.ToneHolder {
 
         @BindView(R.id.image_drawee_view)
         SimpleDraweeView imageDraweeView;
@@ -304,11 +304,11 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
         }
     }
 
-    private static class PicAdapter extends ToneAdapter<PicBean, PicHolder> {
+    public static class PicAdapter extends ToneAdapter<PicBean, PicHolder> {
 
         private int size;
 
-        PicAdapter(Context context) {
+        public PicAdapter(Context context) {
             super(context);
             size = Ui.dip2px(context, 56);
         }

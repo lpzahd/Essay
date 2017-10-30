@@ -1,10 +1,6 @@
 package com.lpzahd.essay.tool;
 
-import com.jakewharton.rxbinding2.internal.Notification;
-
 import java.io.IOException;
-
-import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;

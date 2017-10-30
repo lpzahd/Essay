@@ -4,22 +4,16 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:orientation="vertical"
-              tools:context=".context.preview.SinglePicActivity">
+              tools:context=".context.instinct.InstinctPhotoActivity">
 
-    <com.lpzahd.fresco.zoomable.ZoomableDraweeView
-        android:id="@+id/zoomable_drawee_view"
+    <com.lpzahd.essay.view.SimpleVideo
+        android:id="@+id/simple_video"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:layout_marginBottom="12dp"
-        android:clipToPadding="false"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp"
-        android:layout_alignParentBottom="true"/>
+        android:layout_height="match_parent"/>
 
 </RelativeLayout>

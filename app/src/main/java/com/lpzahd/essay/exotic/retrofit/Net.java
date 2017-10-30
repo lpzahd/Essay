@@ -1,5 +1,6 @@
 package com.lpzahd.essay.exotic.retrofit;
 
+import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
 import com.lpzahd.essay.context.turing.turing123.Turing123;
 import com.lpzahd.essay.tool.Convert;
@@ -73,8 +74,7 @@ public class Net {
     public Observable<Turing123> turing(String message) {
         return it("http://www.tuling123.com")
                 .create(Turing123Api.class)
-                .sendMessage(RequestBody.create(JSON, Convert.toJson(new TuringParam(message))))
-                .subscribeOn(Schedulers.io());
+                .sendMessage(RequestBody.create(JSON, Convert.toJson(new TuringParam(message))));
     }
 
     static class TuringParam {
@@ -96,5 +96,40 @@ public class Net {
          */
         @POST("/openapi/api")
         Observable<Turing123> sendMessage(@Body RequestBody message);
+    }
+
+    public Observable<YiyiBox> yiyiBoxImg(int page) {
+        return it("http:/www.yiyibox.com")
+                .create(YiyiBoxApi.class)
+                .searchImage(page);
+    }
+
+    public Observable<YiyiBox> yiyiBoxImg2(int page) {
+        return it("http:/www.yiyibox.com")
+                .create(YiyiBoxApi2.class)
+                .searchImage(page)
+                .subscribeOn(Schedulers.io());
+    }
+
+    interface YiyiBoxApi {
+
+        /**
+         * yiyibox图片
+         *
+         * @param page  页码(从第一页开始)
+         */
+        @GET("/api/v1.1/home")
+        Observable<YiyiBox> searchImage(@Query("page") int page);
+    }
+
+    interface YiyiBoxApi2 {
+
+        /**
+         * yiyibox图片
+         *
+         * @param page  页码(从第一页开始)
+         */
+        @GET("/api/v1.2/home")
+        Observable<YiyiBox> searchImage(@Query("page") int page);
     }
 }

@@ -42,6 +42,7 @@ public class GuideActivity extends RxActivity {
     public void onCreate() {
         setContentView(R.layout.activity_guide_style_01);
         ButterKnife.bind(this);
+        showKangNaDialog();
     }
 
 

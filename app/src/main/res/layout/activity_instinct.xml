@@ -6,7 +6,7 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              android:fitsSystemWindows="true"
-             tools:context="com.lpzahd.essay.context.leisure.LeisureActivity">
+             tools:context="com.lpzahd.essay.context.instinct.InstinctActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout"
@@ -34,18 +34,6 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary" />
-
-        <com.miguelcatalan.materialsearchview.MaterialSearchView
-            android:id="@+id/search_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="搜索关键字"
-            android:textColor="@color/color_primary_text_inverted"
-            android:textColorHint="@color/color_secondary_text_inverted"
-            app:searchBackIcon="@drawable/ic_arrow_back_white_24dp"
-            app:searchBackground="?attr/colorPrimary"
-            app:searchCloseIcon="@drawable/ic_close_white_24dp"
-            app:searchSuggestionBackground="@android:color/white" />
 
     </FrameLayout>
 
@@ -81,15 +69,6 @@
             app:fab_size="mini"
             app:fab_title="指定页码搜索" />
 
-        <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/random_wordquery_fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fab_colorNormal="@color/fab_white"
-            app:fab_colorPressed="@color/fab_white_pressed"
-            app:fab_icon="@drawable/ic_star_black_24dp"
-            app:fab_size="mini"
-            app:fab_title="搜索库随机关键字" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/random_page_fab"
@@ -99,17 +78,8 @@
             app:fab_colorPressed="@color/fab_white_pressed"
             app:fab_icon="@drawable/ic_star_black_24dp"
             app:fab_size="mini"
-            app:fab_title="关键字乱序搜索" />
+            app:fab_title="乱序搜索" />
 
-        <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/random_word_fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fab_colorNormal="@color/fab_white"
-            app:fab_colorPressed="@color/fab_white_pressed"
-            app:fab_icon="@drawable/ic_star_black_24dp"
-            app:fab_size="mini"
-            app:fab_title="随机关键字搜索" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/current_page_fab"
