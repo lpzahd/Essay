@@ -145,6 +145,12 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
                 model.width = itemsBean.getWidth();
                 model.height = itemsBean.getHeight();
                 model.uri = Frescoer.uri("http:" + itemsBean.getImg(), ImageSource.SOURCE_NET);
+
+                if (itemsBean.getShorturl().startsWith("v")) {
+                    //video
+                    model.tag = "视频";
+                }
+
                 return model;
             }
 

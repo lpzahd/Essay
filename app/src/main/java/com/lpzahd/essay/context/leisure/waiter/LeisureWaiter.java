@@ -1,8 +1,19 @@
 package com.lpzahd.essay.context.leisure.waiter;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Outline;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
+import android.graphics.drawable.shapes.RectShape;
+import android.graphics.drawable.shapes.Shape;
 import android.net.Uri;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -497,6 +508,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         public Uri uri;
         public int width;
         public int height;
+        public String tag;
     }
 
     public static class LeisureHolder extends ToneAdapter.ToneHolder {
@@ -504,13 +516,59 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         @BindView(R.id.simple_drawee_view)
         SimpleDraweeView simpleDraweeView;
 
+        @BindView(R.id.text_view)
+        AppCompatTextView textView;
+
         @BindView(R.id.ripple)
         RippleView ripple;
 
         LeisureHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            ShapeDrawable drawable = new ShapeDrawable(new SharpShape());
+            textView.setBackgroundDrawable(drawable);
         }
+    }
+
+    public static class SharpShape extends RectShape {
+
+        private float sharpWidthPercent = 0.20f;
+        private int sharpMaxWidth = 80;
+        private int offset = 4;
+
+        public final Path mPath = new Path();
+
+        public SharpShape() {}
+
+        @Override
+        public void draw(Canvas canvas, Paint paint) {
+            paint.setColor(0x99000000);
+            paint.setStyle(Paint.Style.FILL);
+
+            final int left = offset;
+            final int right = canvas.getWidth() - offset;
+            final int top = offset;
+            final int bottom = canvas.getHeight() - offset;
+
+            final int centerY = bottom / 2;
+            final int sharpWidth = Math.min(sharpMaxWidth, (int)((float)right * sharpWidthPercent));
+
+            Path path = new Path();
+
+            path.moveTo(left, centerY);
+            path.lineTo(left + sharpWidth, top);
+            path.lineTo(right - sharpWidth, top);
+            path.lineTo(right, centerY);
+            path.lineTo(right - sharpWidth, bottom);
+            path.lineTo(left + sharpWidth, bottom);
+            path.lineTo(left, centerY);
+
+            path.moveTo(left, centerY);
+            path.lineTo(left + sharpWidth, bottom);
+
+            canvas.drawPath(path, paint);
+        }
+
     }
 
     public static class LeisureAdapter extends ToneAdapter<LeisureModel, LeisureHolder> {
@@ -540,6 +598,13 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
             final LeisureModel model = getItem(position);
             displayDraweeView(holder.simpleDraweeView, model);
+
+            if(Strings.empty(model.tag)) {
+                holder.textView.setVisibility(View.INVISIBLE);
+            } else {
+                holder.textView.setVisibility(View.VISIBLE);
+                holder.textView.setText(model.tag);
+            }
         }
 
         private void displayDraweeView(final SimpleDraweeView v, final LeisureModel model) {
