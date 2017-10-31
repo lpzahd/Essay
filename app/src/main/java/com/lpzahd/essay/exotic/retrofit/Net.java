@@ -98,17 +98,41 @@ public class Net {
         Observable<Turing123> sendMessage(@Body RequestBody message);
     }
 
-    public Observable<YiyiBox> yiyiBoxImg(int page) {
+    public Observable<YiyiBox> yiyiBoxHomeImg(int page) {
         return it("http:/www.yiyibox.com")
                 .create(YiyiBoxApi.class)
                 .searchImage(page);
     }
 
-    public Observable<YiyiBox> yiyiBoxImg2(int page) {
+    public Observable<YiyiBox> yiyiBoxHomeVideo(int page) {
         return it("http:/www.yiyibox.com")
                 .create(YiyiBoxApi2.class)
-                .searchImage(page)
+                .searchVideo(page)
                 .subscribeOn(Schedulers.io());
+    }
+
+    public Observable<YiyiBox> yiyiBoxImg(int page) {
+        return it("http:/www.yiyibox.com")
+                .create(YiyiBoxImgApi.class)
+                .searchImage(page);
+    }
+
+    public Observable<YiyiBox> yiyiBoxVideo(int page) {
+        return it("http:/www.yiyibox.com")
+                .create(YiyiBoxVideoApi.class)
+                .searchVideo(page);
+    }
+
+    public Observable<YiyiBox> yiyiBoxTopImg(int page) {
+        return it("http:/www.yiyibox.com")
+                .create(YiyiBoxImgTopApi.class)
+                .searchImage(page);
+    }
+
+    public Observable<YiyiBox> yiyiBoxTopVideo(int page) {
+        return it("http:/www.yiyibox.com")
+                .create(YiyiBoxVideoTopApi.class)
+                .searchVideo(page);
     }
 
     interface YiyiBoxApi {
@@ -130,6 +154,50 @@ public class Net {
          * @param page  页码(从第一页开始)
          */
         @GET("/api/v1.2/home")
+        Observable<YiyiBox> searchVideo(@Query("page") int page);
+    }
+
+    interface YiyiBoxImgApi {
+
+        /**
+         * yiyibox图片
+         *
+         * @param page  页码(从第一页开始)
+         */
+        @GET("/api/v1.1/")
         Observable<YiyiBox> searchImage(@Query("page") int page);
+    }
+
+    interface YiyiBoxVideoApi {
+
+        /**
+         * yiyibox图片
+         *
+         * @param page  页码(从第一页开始)
+         */
+        @GET("/api/v1.2/")
+        Observable<YiyiBox> searchVideo(@Query("page") int page);
+    }
+
+    interface YiyiBoxImgTopApi {
+
+        /**
+         * yiyibox图片
+         *
+         * @param page  页码(从第一页开始)
+         */
+        @GET("/api/v1.1/top")
+        Observable<YiyiBox> searchImage(@Query("page") int page);
+    }
+
+    interface YiyiBoxVideoTopApi {
+
+        /**
+         * yiyibox图片
+         *
+         * @param page  页码(从第一页开始)
+         */
+        @GET("/api/v1.2/top")
+        Observable<YiyiBox> searchVideo(@Query("page") int page);
     }
 }

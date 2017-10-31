@@ -12,4 +12,9 @@
     <string name="warning_no_content">必须输入一些内容</string>
     <string name="essay">随笔</string>
     <string name="title">标题</string>
+    <string name="box_home">主页</string>
+    <string name="box_photo">图片</string>
+    <string name="box_video">视频</string>
+    <string name="box_photo_ranking">图片排行</string>
+    <string name="box_video_ranking">视频排行</string>
 </resources>

@@ -2,9 +2,12 @@ package com.lpzahd.essay.context.instinct;
 
 import android.content.Context;
 import android.content.Intent;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.lpzahd.common.tone.activity.RxActivity;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.context.essay_.EssayAddActivity;
 import com.lpzahd.essay.context.instinct.waiter.YiyiBoxWaiter;
 
 /**
@@ -30,4 +33,6 @@ public class InstinctActivity extends RxActivity {
         super.onCreate();
         setContentView(R.layout.activity_instinct);
     }
+
+
 }

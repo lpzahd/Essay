@@ -1,23 +1,34 @@
 package com.lpzahd.essay.context.instinct.waiter;
 
+import android.app.Service;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.lpzahd.Lists;
+import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.keeper.Files;
 import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
+import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
+import com.lpzahd.common.tone.adapter.ToneItemTouchHelperCallback;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
@@ -27,6 +38,8 @@ import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
 import com.lpzahd.essay.context.preview.waiter.SinglePicWaiter;
 import com.lpzahd.essay.tool.OkHttpRxAdapter;
 import com.lpzahd.essay.view.SimpleVideo;
+import com.lpzahd.fresco.zoomable.DoubleTapGestureListener;
+import com.lpzahd.fresco.zoomable.ZoomableDraweeView;
 import com.lpzahd.waiter.consumer.State;
 import com.shuyu.gsyvideoplayer.utils.OrientationUtils;
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoPlayer;
@@ -71,7 +84,12 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
 
     private static final String REGEX_TAG_IMG = "<img\\b[^>]*\\bsrc\\b\\s*=\\s*('|\")?([^'\"\n\r\f>]+(\\.jpg|\\.bmp|\\.eps|\\.gif|\\.mif|\\.miff|\\.png|\\.tif|\\.tiff|\\.svg|\\.wmf|\\.jpe|\\.jpeg|\\.dib|\\.ico|\\.tga|\\.cut|\\.pic|\\.webp)\\b)[^>]*>";
 
-    private static final String REGEX_TAG_VIDEO = "<video\\b[^>]*\\bsrc\\b\\s*=\\s*('|\")?([^'\"\n\r\f>]+(\\.mp3|\\.mp4|\\.flv|\\.avi|\\.rm|\\.rmvb|\\.wmv|\\.3gp|\\.mkv)\\b)[^>]*>";
+//    private static final String REGEX_TAG_VIDEO = "<video\\b[^>]*\\bsrc\\b\\s*=\\s*('|\")?([^'\"\n\r\f>]+(\\.mp3|\\.mp4|\\.flv|\\.avi|\\.rm|\\.rmvb|\\.wmv|\\.3gp|\\.mkv)\\b)[^>]*>";
+
+    private static final String REGEX_TAG_VIDEO = "<video\\b[^>]*\\b[^>]*>";
+
+    private static final String REGEX_TAG_SRC = "src\\s*=\\s*\"?(.*?)(\"|>|\\s+)";
+    private static final String REGEX_TAG_POSTER = "poster\\s*=\\s*\"?(.*?)(\"|>|\\s+)";
 
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
@@ -79,8 +97,12 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
     @BindView(R.id.simple_video)
     SimpleVideo simpleVideo;
 
+    @BindView(R.id.zoomable_drawee_view)
+    ZoomableDraweeView zoomableDraweeView;
+
+
     private Transmitter<YiyiBox.DataBean.ItemsBean> mTransmitter;
-    private PreviewPicWaiter.PreviewAdapter mAdapter;
+    private SinglePicWaiter.PicAdapter mAdapter;
 
     private YiyiBox.DataBean.ItemsBean mSource;
 
@@ -93,6 +115,10 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
 
     private Disposable loadDispose;
 
+    private List<SinglePicWaiter.PicBean> pics;
+    private List<VideoBean> videos;
+    private int displayPosition = 0;
+
     public YiyiBoxPhotoWaiter(InstinctPhotoActivity instinctPhotoActivity) {
         super(instinctPhotoActivity);
     }
@@ -104,14 +130,46 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
 
     @Override
     protected void initView() {
+
+        zoomableDraweeView.setTapListener(new DoubleTapGestureListener(zoomableDraweeView) {
+            @Override
+            public void onLongPress(MotionEvent e) {
+                showFileDownDialog(pics.get(displayPosition).uri);
+            }
+        });
+
+        zoomableDraweeView.setIsLongpressEnabled(true);
+
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
 
-        LinearSnapHelper snapHelper = new LinearSnapHelper();
-        snapHelper.attachToRecyclerView(recyclerView);
-
-        mAdapter = new PreviewPicWaiter.PreviewAdapter(context);
+        mAdapter = new SinglePicWaiter.PicAdapter(context);
         recyclerView.setAdapter(mAdapter);
+
+
+        final ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(new ToneItemTouchHelperCallback(mAdapter));
+        mItemTouchHelper.attachToRecyclerView(recyclerView);
+
+        recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<SinglePicWaiter.PicHolder>(recyclerView) {
+            @Override
+            public void onClick(RecyclerView rv, SinglePicWaiter.PicHolder picHolder) {
+                super.onClick(rv, picHolder);
+                displayPosition = picHolder.getAdapterPosition();
+
+                if(displayPosition == -1) return;
+
+                if(type == TYPE_PHOTO) {
+                    DraweeController draweeController = Fresco.newDraweeControllerBuilder()
+                            .setUri(pics.get(displayPosition).uri)
+                            .build();
+                    zoomableDraweeView.setController(draweeController);
+                } else if(type == TYPE_VIDEO) {
+                    stepVideo(videos.get(displayPosition));
+                }
+
+            }
+
+        });
     }
 
     @Override
@@ -160,35 +218,69 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                         return response.isSuccessful();
                     }
                 })
-                .map(new Function<Response, List<String>>() {
+                .map(new Function<Response, List<VideoBean>>() {
 
                     @Override
-                    public List<String> apply(@NonNull Response response) throws Exception {
+                    public List<VideoBean> apply(@NonNull Response response) throws Exception {
                         ResponseBody body = response.body();
 
                         if (body == null)
                             return Collections.emptyList();
 
                         String htmlStr = body.string();
-                        Map<String, Integer> imgMap = new HashMap<>();
-                        Pattern p = Pattern.compile(YiyiBoxPhotoWaiter.REGEX_TAG_VIDEO, Pattern.CASE_INSENSITIVE);
-                        Matcher m = p.matcher(htmlStr);
-                        String quote;
-                        String src;
-                        while (m.find()) {
-                            quote = m.group(1);
-                            src = (quote == null || quote.trim().length() == 0) ? m.group(2).split("\\s+")[0] : m.group(2);
-                            imgMap.put(src, 1);
+                        List<VideoBean> videos = new ArrayList<>();
+
+                        Pattern videoPattern = Pattern.compile(YiyiBoxPhotoWaiter.REGEX_TAG_VIDEO, Pattern.CASE_INSENSITIVE);
+                        Matcher videoMatcher = videoPattern.matcher(htmlStr);
+
+                        Pattern srcPattern = Pattern.compile(REGEX_TAG_SRC, Pattern.CASE_INSENSITIVE);
+                        Pattern posterPattern = Pattern.compile(REGEX_TAG_POSTER, Pattern.CASE_INSENSITIVE);
+
+                        while (videoMatcher.find()) {
+                            String videoStr = videoMatcher.group(0);
+
+                            VideoBean bean = new VideoBean();
+                            Matcher srcMatcher = srcPattern.matcher(videoStr);
+                            while (srcMatcher.find()) {
+                                bean.video = srcMatcher.group(1);
+                            }
+
+                            Matcher posterMatcher = posterPattern.matcher(videoStr);
+                            while (posterMatcher.find()) {
+                                bean.img = posterMatcher.group(1);
+                            }
+
+                            if (!Strings.empty(bean.video) || !Strings.empty(bean.img)) {
+                                videos.add(bean);
+                            }
+
                         }
-                        return new ArrayList<>(imgMap.keySet());
+                        return videos;
                     }
                 })
-                .map(new Function<List<String>, String>() {
+                .map(new Function<List<VideoBean>, List<VideoBean>>() {
                     @Override
-                    public String apply(@NonNull List<String> strings) throws Exception {
+                    public List<VideoBean> apply(@NonNull List<VideoBean> videos) throws Exception {
                         URL fromUrl = new URL("http://www.yiyibox.com");
-                        String video = strings.get(0);
-                        return new URL(fromUrl, video).toExternalForm();
+                        for (int i = 0, size = videos.size(); i < size; i++) {
+                            VideoBean video = videos.get(i);
+                            video.video = new URL(fromUrl, video.video).toExternalForm();
+                            video.img = new URL(fromUrl, video.img).toExternalForm();
+                        }
+                        YiyiBoxPhotoWaiter.this.videos = videos;
+                        return videos;
+                    }
+                })
+                .map(new Function<List<VideoBean>, List<SinglePicWaiter.PicBean>>() {
+                    @Override
+                    public List<SinglePicWaiter.PicBean> apply(@NonNull List<VideoBean> strings) throws Exception {
+                        List<SinglePicWaiter.PicBean> pics = new ArrayList<>();
+                        for (int i = 0, size = strings.size(); i < size; i++) {
+                            SinglePicWaiter.PicBean bean = new SinglePicWaiter.PicBean();
+                            bean.uri = Frescoer.uri(strings.get(i).img, ImageSource.SOURCE_NET);
+                            pics.add(bean);
+                        }
+                        return pics;
                     }
                 })
                 .doOnSubscribe(new Consumer<Disposable>() {
@@ -198,10 +290,18 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<String>() {
+                .subscribe(new Consumer<List<SinglePicWaiter.PicBean>>() {
                     @Override
-                    public void accept(String s) throws Exception {
-                        stepVideo(new URL(s).toExternalForm());
+                    public void accept(List<SinglePicWaiter.PicBean> pics) throws Exception {
+
+                        mAdapter.setData(pics);
+
+                        if(!Lists.empty(videos)) {
+                            displayPosition = 0;
+                            stepVideo(videos.get(displayPosition));
+                        }
+
+
                         context.dismissKangNaDialog();
                     }
                 }, new Consumer<Throwable>() {
@@ -213,9 +313,9 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                 });
     }
 
-    private void stepVideo(String url) {
+    private void stepVideo(VideoBean videoBean) {
         SimpleVideo.Video video = new SimpleVideo.Video();
-        video.url = url;
+        video.url = videoBean.video;
         video.name = "超清视频";
         List<SimpleVideo.Video> videos = new ArrayList<>();
         videos.add(video);
@@ -225,7 +325,7 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
 
         SimpleDraweeView draweeView = new SimpleDraweeView(context);
         simpleVideo.setThumbImageView(draweeView);
-        draweeView.setImageURI("http:" + mSource.getImg());
+        draweeView.setImageURI(Frescoer.uri(videoBean.img, ImageSource.SOURCE_NET));
 
 
         //增加title
@@ -291,6 +391,7 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                             return Collections.emptyList();
 
                         String htmlStr = body.string();
+
                         Map<String, Integer> imgMap = new HashMap<>();
                         Pattern p = Pattern.compile(YiyiBoxPhotoWaiter.REGEX_TAG_IMG, Pattern.CASE_INSENSITIVE);
                         Matcher m = p.matcher(htmlStr);
@@ -315,15 +416,16 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                         return strings;
                     }
                 })
-                .map(new Function<List<String>, List<PreviewPicWaiter.PreviewBean>>() {
+                .map(new Function<List<String>, List<SinglePicWaiter.PicBean>>() {
                     @Override
-                    public List<PreviewPicWaiter.PreviewBean> apply(@NonNull List<String> strings) throws Exception {
-                        List<PreviewPicWaiter.PreviewBean> pics = new ArrayList<>();
+                    public List<SinglePicWaiter.PicBean> apply(@NonNull List<String> strings) throws Exception {
+                        List<SinglePicWaiter.PicBean> pics = new ArrayList<>();
                         for (int i = 0, size = strings.size(); i < size; i++) {
-                            PreviewPicWaiter.PreviewBean bean = new PreviewPicWaiter.PreviewBean();
+                            SinglePicWaiter.PicBean bean = new SinglePicWaiter.PicBean();
                             bean.uri = Frescoer.uri(strings.get(i), ImageSource.SOURCE_NET);
                             pics.add(bean);
                         }
+                        YiyiBoxPhotoWaiter.this.pics = pics;
                         return pics;
                     }
                 })
@@ -334,10 +436,20 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<PreviewPicWaiter.PreviewBean>>() {
+                .subscribe(new Consumer<List<SinglePicWaiter.PicBean>>() {
                     @Override
-                    public void accept(List<PreviewPicWaiter.PreviewBean> picBeans) throws Exception {
+                    public void accept(List<SinglePicWaiter.PicBean> picBeans) throws Exception {
                         mAdapter.setData(picBeans);
+
+                        if(!Lists.empty(picBeans)) {
+                            displayPosition = 0;
+                            DraweeController draweeController = Fresco.newDraweeControllerBuilder()
+                                    .setUri(pics.get(displayPosition).uri)
+                                    .build();
+                            zoomableDraweeView.setController(draweeController);
+                        }
+
+
                         context.dismissKangNaDialog();
                     }
                 }, new Consumer<Throwable>() {
@@ -390,5 +502,64 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
         }
 
         return super.backPressed();
+    }
+
+    private void showFileDownDialog(final Uri picUri) {
+        String uriStr = picUri.toString();
+        final String picName = uriStr.substring(uriStr.lastIndexOf("/") + 1).trim();
+        new MaterialDialog.Builder(context)
+                .title("图片下载")
+                .content(picName)
+                .positiveText(R.string.tip_positive)
+                .negativeText(R.string.tip_negative)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+                        OkHttpClient client = new OkHttpClient();
+                        Request request = new Request.Builder()
+                                .url(picUri.toString())
+                                .addHeader("referer", "http://www.yiyibox.com")
+                                .build();
+                        OkHttpRxAdapter.adapter(client.newCall(request))
+                                .subscribeOn(Schedulers.io())
+                                .filter(new Predicate<Response>() {
+                                    @Override
+                                    public boolean test(@NonNull Response response) throws Exception {
+                                        return response.isSuccessful();
+                                    }
+                                })
+                                .map(new Function<Response, ResponseBody>() {
+                                    @Override
+                                    public ResponseBody apply(@NonNull Response response) throws Exception {
+                                        return response.body();
+                                    }
+                                })
+                                .map(new Function<ResponseBody, Boolean>() {
+                                    @Override
+                                    public Boolean apply(@NonNull ResponseBody body) throws Exception {
+                                        Files files = Keeper.getF();
+                                        String filePath = files.getFilePath(Files.Scope.PHOTO_RAW, picName);
+                                        return Files.streamToFile(body.byteStream(), filePath);
+                                    }
+                                })
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Consumer<Boolean>() {
+                                    @Override
+                                    public void accept(Boolean aBoolean) throws Exception {
+                                        if (aBoolean) {
+                                            T.t(picName + "图片下载完成");
+                                        } else {
+                                            T.t(picName + "图片下载失败");
+                                        }
+                                    }
+                                });
+                    }
+                })
+                .show();
+    }
+
+    private static class VideoBean {
+        public String video;
+        public String img;
     }
 }

@@ -18,6 +18,7 @@ import com.lpzahd.essay.exotic.fresco.FrescoInit;
 
 import java.io.IOException;
 
+import cat.ereza.customactivityoncrash.CustomActivityOnCrash;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -60,6 +61,8 @@ public class App extends Application implements Application.ActivityLifecycleCal
         FrescoInit.get().init(app);
 
         AndroidThreeTen.init(this);
+
+        CustomActivityOnCrash.install(app);
     }
 
     @Override

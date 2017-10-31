@@ -5,6 +5,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -27,8 +29,8 @@ import com.lpzahd.essay.context.instinct.InstinctActivity;
 import com.lpzahd.essay.context.instinct.InstinctPhotoActivity;
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
 import com.lpzahd.essay.context.leisure.waiter.LeisureWaiter;
-import com.lpzahd.essay.context.preview.waiter.SinglePicWaiter;
 import com.lpzahd.essay.exotic.retrofit.Net;
+import com.lpzahd.waiter.consumer.State;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +39,7 @@ import java.util.Random;
 import butterknife.BindView;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
@@ -72,17 +75,70 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
     @BindView(R.id.menu_fab)
     FloatingActionsMenu menuFab;
 
-    private DspRefreshWaiter<YiyiBox.DataBean.ItemsBean, LeisureWaiter.LeisureModel> mRefreshWaiter;
+    private YiyiBoxRefreshWaiter mRefreshWaiter;
 
-    LeisureWaiter.LeisureAdapter mAdapter;
+    private LeisureWaiter.LeisureAdapter mAdapter;
 
     public YiyiBoxWaiter(InstinctActivity instinctActivity) {
         super(instinctActivity);
     }
 
     @Override
+    protected int createOptionsMenu(Menu menu) {
+        context.getMenuInflater().inflate(R.menu.menu_yiyibox, menu);
+        return super.createOptionsMenu(menu);
+    }
+
+    @Override
+    protected int optionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if(id == R.id.action_home) {
+            toolBar.setTitle(R.string.box_home);
+            mRefreshWaiter.setType(YiyiBoxRefreshWaiter.TYPE_HOME);
+            mRefreshWaiter.autoRefresh();
+            recyclerView.scrollToPosition(0);
+            return State.STATE_TRUE;
+        }
+
+        if (id == R.id.action_photo) {
+            toolBar.setTitle(R.string.box_photo);
+            mRefreshWaiter.setType(YiyiBoxRefreshWaiter.TYPE_PHOTO);
+            mRefreshWaiter.autoRefresh();
+            recyclerView.scrollToPosition(0);
+            return State.STATE_TRUE;
+        }
+
+        if (id == R.id.action_video) {
+            toolBar.setTitle(R.string.box_video);
+            mRefreshWaiter.setType(YiyiBoxRefreshWaiter.TYPE_VIDEO);
+            mRefreshWaiter.autoRefresh();
+            recyclerView.scrollToPosition(0);
+            return State.STATE_TRUE;
+        }
+
+        if (id == R.id.action_photo_ranking) {
+            toolBar.setTitle(R.string.box_photo_ranking);
+            mRefreshWaiter.setType(YiyiBoxRefreshWaiter.TYPE_PHOTO_RANKING);
+            mRefreshWaiter.autoRefresh();
+            recyclerView.scrollToPosition(0);
+            return State.STATE_TRUE;
+        }
+
+        if (id == R.id.action_video_ranking) {
+            toolBar.setTitle(R.string.box_video_ranking);
+            mRefreshWaiter.setType(YiyiBoxRefreshWaiter.TYPE_VIDEO_RANKING);
+            mRefreshWaiter.autoRefresh();
+            recyclerView.scrollToPosition(0);
+            return State.STATE_TRUE;
+        }
+
+        return super.optionsItemSelected(item);
+    }
+
+    @Override
     protected void initView() {
-        toolBar.setTitle("荷尔蒙");
+        toolBar.setTitle(R.string.box_home);
         context.setSupportActionBar(toolBar);
 
         toggleFab.setOnClickListener(this);
@@ -109,53 +165,7 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
             }
         });
 
-        addWindowWaiter(mRefreshWaiter = new DspRefreshWaiter<YiyiBox.DataBean.ItemsBean, LeisureWaiter.LeisureModel>(swipeRefreshLayout, recyclerView) {
-
-            @Override
-            public Flowable<List<YiyiBox.DataBean.ItemsBean>> doRefresh(int page) {
-                return Net.get().yiyiBoxImg(page + 1)
-                        .zipWith(Net.get().yiyiBoxImg2(page + 1), new BiFunction<YiyiBox, YiyiBox, YiyiBox>() {
-                            @Override
-                            public YiyiBox apply(@NonNull YiyiBox yiyiBox, @NonNull YiyiBox yiyiBox2) throws Exception {
-                                if(yiyiBox == null || yiyiBox.getData() == null || Lists.empty(yiyiBox.getData().getItems())
-                                        || yiyiBox2 == null || yiyiBox2.getData() == null || Lists.empty(yiyiBox2.getData().getItems()))
-                                    return null;
-
-                                yiyiBox.getData().getItems().addAll(yiyiBox2.getData().getItems());
-                                return yiyiBox;
-                            }
-                        })
-                        .subscribeOn(Schedulers.io())
-                        .toFlowable(BackpressureStrategy.BUFFER)
-                        .map(new Function<YiyiBox, List<YiyiBox.DataBean.ItemsBean>>() {
-                            @Override
-                            public List<YiyiBox.DataBean.ItemsBean> apply(@NonNull YiyiBox yiyiBox) throws Exception {
-                                if (yiyiBox == null
-                                        || yiyiBox.getData() == null
-                                        || Lists.empty(yiyiBox.getData().getItems()))
-                                    return Collections.emptyList();
-                                return yiyiBox.getData().getItems();
-                            }
-                        });
-            }
-
-            @Override
-            public LeisureWaiter.LeisureModel process(YiyiBox.DataBean.ItemsBean itemsBean) {
-                LeisureWaiter.LeisureModel model = new LeisureWaiter.LeisureModel();
-                model.width = itemsBean.getWidth();
-                model.height = itemsBean.getHeight();
-                model.uri = Frescoer.uri("http:" + itemsBean.getImg(), ImageSource.SOURCE_NET);
-
-                if (itemsBean.getShorturl().startsWith("v")) {
-                    //video
-                    model.tag = "视频";
-                }
-
-                return model;
-            }
-
-        });
-
+        mRefreshWaiter = new YiyiBoxRefreshWaiter(swipeRefreshLayout, recyclerView);
         mRefreshWaiter.setSwipeRefreshCallBack(new SwipeRefreshWaiter.SimpleCallBack() {
             @Override
             public void onPtrComplete(int start, int page, @RefreshProcessor.LoadState int loadState) {
@@ -261,5 +271,83 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
     @Override
     protected void destroy() {
         RxTaxi.get().unregist(YiyiBoxPhotoWaiter.TAG);
+    }
+
+    private static class YiyiBoxRefreshWaiter extends DspRefreshWaiter<YiyiBox.DataBean.ItemsBean, LeisureWaiter.LeisureModel> {
+
+        static final int TYPE_HOME = 0;
+        static final int TYPE_PHOTO = 1;
+        static final int TYPE_VIDEO = 2;
+        static final int TYPE_PHOTO_RANKING = 3;
+        static final int TYPE_VIDEO_RANKING = 4;
+
+        private int type = TYPE_HOME;
+
+        YiyiBoxRefreshWaiter(SwipeRefreshLayout swipeRefreshLayout, RecyclerView recyclerView) {
+            super(swipeRefreshLayout, recyclerView);
+        }
+
+        void setType(int type) {
+            this.type = type;
+        }
+
+        @Override
+        public Flowable<List<YiyiBox.DataBean.ItemsBean>> doRefresh(int page) {
+            return getResource(type, page)
+                    .subscribeOn(Schedulers.io())
+                    .toFlowable(BackpressureStrategy.BUFFER)
+                    .map(new Function<YiyiBox, List<YiyiBox.DataBean.ItemsBean>>() {
+                        @Override
+                        public List<YiyiBox.DataBean.ItemsBean> apply(@NonNull YiyiBox yiyiBox) throws Exception {
+                            if (yiyiBox == null
+                                    || yiyiBox.getData() == null
+                                    || Lists.empty(yiyiBox.getData().getItems()))
+                                return Collections.emptyList();
+                            return yiyiBox.getData().getItems();
+                        }
+                    });
+        }
+
+        @Override
+        public LeisureWaiter.LeisureModel process(YiyiBox.DataBean.ItemsBean itemsBean) {
+            LeisureWaiter.LeisureModel model = new LeisureWaiter.LeisureModel();
+            model.width = itemsBean.getWidth();
+            model.height = itemsBean.getHeight();
+            model.uri = Frescoer.uri("http:" + itemsBean.getImg(), ImageSource.SOURCE_NET);
+
+            if (itemsBean.getShorturl().startsWith("v")) {
+                //video
+                model.tag = "视频";
+            }
+
+            return model;
+        }
+
+        private Observable<YiyiBox> getResource(int type, int page) {
+            switch (type) {
+                case TYPE_HOME:
+                    return Net.get().yiyiBoxHomeImg(page + 1)
+                            .zipWith(Net.get().yiyiBoxHomeVideo(page + 1), new BiFunction<YiyiBox, YiyiBox, YiyiBox>() {
+                                @Override
+                                public YiyiBox apply(@NonNull YiyiBox yiyiBox, @NonNull YiyiBox yiyiBox2) throws Exception {
+                                    if(yiyiBox == null || yiyiBox.getData() == null || Lists.empty(yiyiBox.getData().getItems())
+                                            || yiyiBox2 == null || yiyiBox2.getData() == null || Lists.empty(yiyiBox2.getData().getItems()))
+                                        return null;
+
+                                    yiyiBox.getData().getItems().addAll(yiyiBox2.getData().getItems());
+                                    return yiyiBox;
+                                }
+                            });
+                case TYPE_PHOTO:
+                    return Net.get().yiyiBoxImg(page + 1);
+                case TYPE_VIDEO:
+                    return Net.get().yiyiBoxVideo(page + 1);
+                case TYPE_PHOTO_RANKING:
+                    return Net.get().yiyiBoxTopImg(page + 1);
+                case TYPE_VIDEO_RANKING:
+                    return Net.get().yiyiBoxTopVideo(page + 1);
+            }
+            return Observable.empty();
+        }
     }
 }
