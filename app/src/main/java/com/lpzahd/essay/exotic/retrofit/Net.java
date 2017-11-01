@@ -2,6 +2,8 @@ package com.lpzahd.essay.exotic.retrofit;
 
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
+import com.lpzahd.essay.context.pure.bx6644.Bx6644;
+import com.lpzahd.essay.context.pure.bx6644.BxPhotos;
 import com.lpzahd.essay.context.turing.turing123.Turing123;
 import com.lpzahd.essay.tool.Convert;
 
@@ -18,6 +20,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
+import retrofit2.http.Url;
 
 /**
  * Author : Lpzahd
@@ -199,5 +202,46 @@ public class Net {
          */
         @GET("/api/v1.2/top")
         Observable<YiyiBox> searchVideo(@Query("page") int page);
+    }
+
+
+    /**
+     * @param page 页码从第二页开始，第一页的时候不知道返回的是啥
+     */
+    public Observable<Bx6644> pureList(int page) {
+        return it("http:/www.6666bx.com")
+                .create(PureListApi.class)
+                .pureList("http://www.6666bx.com/html/artlist/qingchunweimei/26_" + page + ".json");
+    }
+
+    public interface PureListApi {
+
+        /**
+         * 6644bx 获取每页数据
+         * @param url 详细接口地址 （http://www.6666bx.com/html/artlist/qingchunweimei/26_59.json）
+         */
+        @GET
+        Observable<Bx6644> pureList(@Url String url);
+
+    }
+
+    /**
+     * @param id 图片id
+     */
+    public Observable<BxPhotos> purePhotos(String id) {
+        return it("http:/www.6666bx.com")
+                .create(PurePhotosApi.class)
+                .purePhotos("http://www.6666bx.com/html/artdata/" + id + ".json");
+    }
+
+    public interface PurePhotosApi {
+
+        /**
+         * 6644bx 获取每页数据
+         * @param url 详细接口地址 （http://www.6666bx.com/html/artlist/qingchunweimei/26_59.json）
+         */
+        @GET
+        Observable<BxPhotos> purePhotos(@Url String url);
+
     }
 }

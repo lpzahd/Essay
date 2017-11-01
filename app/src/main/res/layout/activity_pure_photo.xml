@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:id="@+id/activity_leisure"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:fitsSystemWindows="true"
+             tools:context="com.lpzahd.essay.context.pure.PurePhotoActivity">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"/>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <FrameLayout
+        android:id="@+id/tool_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary" />
+
+    </FrameLayout>
+
+    <com.getbase.floatingactionbutton.FloatingActionsMenu
+        android:id="@+id/menu_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        app:fab_addButtonColorNormal="@color/fab_white"
+        app:fab_addButtonColorPressed="@color/fab_white_pressed"
+        app:fab_addButtonPlusIconColor="@color/fab_half_black"
+        app:fab_addButtonSize="mini"
+        app:fab_labelStyle="@style/menu_labels_style">
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/page_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@color/fab_white"
+            app:fab_colorPressed="@color/fab_white_pressed"
+            app:fab_icon="@drawable/ic_star_black_24dp"
+            app:fab_size="mini"
+            app:fab_title="指定页码搜索" />
+
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/random_page_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@color/fab_white"
+            app:fab_colorPressed="@color/fab_white_pressed"
+            app:fab_icon="@drawable/ic_star_black_24dp"
+            app:fab_size="mini"
+            app:fab_title="乱序搜索" />
+
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/current_page_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@color/fab_white"
+            app:fab_colorPressed="@color/fab_white_pressed"
+            app:fab_icon="@drawable/ic_star_black_24dp"
+            app:fab_size="mini"
+            app:fab_title="page" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/total_page_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@color/fab_white"
+            app:fab_colorPressed="@color/fab_white_pressed"
+            app:fab_icon="@drawable/ic_star_black_24dp"
+            app:fab_size="mini"
+            app:fab_title="total" />
+
+    </com.getbase.floatingactionbutton.FloatingActionsMenu>
+
+</FrameLayout>

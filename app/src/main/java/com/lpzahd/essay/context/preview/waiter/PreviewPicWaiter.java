@@ -14,6 +14,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.BaseControllerListener;
 import com.facebook.drawee.interfaces.DraweeController;
@@ -21,28 +23,43 @@ import com.facebook.imagepipeline.image.ImageInfo;
 import com.hanks.htextview.HTextView;
 import com.hanks.htextview.HTextViewType;
 import com.lpzahd.Lists;
+import com.lpzahd.atool.keeper.Files;
+import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.ui.L;
+import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
+import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.preview.PreviewPicActivity;
+import com.lpzahd.essay.tool.OkHttpRxAdapter;
+
+import org.reactivestreams.Publisher;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import me.relex.photodraweeview.PhotoDraweeView;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Author : Lpzahd
@@ -52,6 +69,9 @@ import me.relex.photodraweeview.PhotoDraweeView;
 public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
 
     public static final String TAG = "com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter";
+
+    public static final String TAG_INDEX = "com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter_index";
+
     private static final String SHARE_ELEMENT_NAME = "share_pic";
 
     @BindView(R.id.recycler_view)
@@ -109,6 +129,13 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
         final LinearSnapHelper snapHelper = new LinearSnapHelper();
         snapHelper.attachToRecyclerView(recyclerView);
 
+        recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<PreviewHolder>(recyclerView) {
+            @Override
+            public void onLongClick(RecyclerView rv, PreviewHolder previewHolder) {
+                showFileDownDialog(mAdapter.getItem(previewHolder.getAdapterPosition()).uri);
+            }
+        });
+
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             Disposable dispose;
@@ -152,16 +179,90 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
         recyclerView.setAdapter(mAdapter);
 
         mTransmitter.transmit()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<PreviewBean>>() {
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .flatMap(new Function<List<PreviewBean>, Publisher<Integer>>() {
                     @Override
-                    public void accept(List<PreviewBean> previewBeen) throws Exception {
-                        mAdapter.setData(previewBeen);
-                        if(!Lists.empty(previewBeen)) {
-                            hTextView.animateText("第0张");
+                    public Publisher<Integer> apply(List<PreviewBean> previewBeans) throws Exception {
+                        mAdapter.setData(previewBeans);
+
+
+                        Flowable<Integer> indexObservable = RxTaxi.get().<Integer>pull(TAG_INDEX).transmit();
+                        return indexObservable != null ? indexObservable : Flowable.just(0);
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Integer>()  {
+                    @Override
+                    public void accept(Integer integer) throws Exception {
+                        recyclerView.scrollToPosition(integer);
+                        if(!Lists.empty(mAdapter.getData())) {
+                            hTextView.animateText("第" + integer +"张");
                         }
                     }
                 });
+
+        RxTaxi.get().<Integer>pull(TAG_INDEX).transmit()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer integer) throws Exception {
+
+                    }
+                });
+    }
+
+    private void showFileDownDialog(final Uri picUri) {
+        String uriStr = picUri.toString();
+        final String picName = uriStr.substring(uriStr.lastIndexOf("/") + 1).trim();
+        new MaterialDialog.Builder(context)
+                .title("图片下载")
+                .content(picName)
+                .positiveText(R.string.tip_positive)
+                .negativeText(R.string.tip_negative)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+                        OkHttpClient client = new OkHttpClient();
+                        Request request = new Request.Builder()
+                                .url(picUri.toString())
+                                .addHeader("referer", picUri.getHost())
+                                .build();
+                        OkHttpRxAdapter.adapter(client.newCall(request))
+                                .subscribeOn(Schedulers.io())
+                                .filter(new Predicate<Response>() {
+                                    @Override
+                                    public boolean test(@NonNull Response response) throws Exception {
+                                        return response.isSuccessful();
+                                    }
+                                })
+                                .map(new Function<Response, ResponseBody>() {
+                                    @Override
+                                    public ResponseBody apply(@NonNull Response response) throws Exception {
+                                        return response.body();
+                                    }
+                                })
+                                .map(new Function<ResponseBody, Boolean>() {
+                                    @Override
+                                    public Boolean apply(@NonNull ResponseBody body) throws Exception {
+                                        Files files = Keeper.getF();
+                                        String filePath = files.getFilePath(Files.Scope.PHOTO_RAW, picName);
+                                        return Files.streamToFile(body.byteStream(), filePath);
+                                    }
+                                })
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Consumer<Boolean>() {
+                                    @Override
+                                    public void accept(Boolean aBoolean) throws Exception {
+                                        if (aBoolean) {
+                                            T.t(picName + "图片下载完成");
+                                        } else {
+                                            T.t(picName + "图片下载失败");
+                                        }
+                                    }
+                                });
+                    }
+                })
+                .show();
     }
 
     public static class PreviewBean {
