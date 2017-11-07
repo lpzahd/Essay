@@ -1,33 +1,13 @@
 package com.lpzahd.common.tone.activity;
 
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.lpzahd.Strings;
-import com.lpzahd.atool.ui.L;
-import com.lpzahd.atool.ui.Ui;
-import com.lpzahd.common.R;
-import com.lpzahd.common.kangna.KangNaOnCompleteObservable;
-import com.lpzahd.view.KangNaView;
 import com.lpzahd.waiter.WaiterActivity;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
-
-
 
 /**
  * Author : Lpzahd

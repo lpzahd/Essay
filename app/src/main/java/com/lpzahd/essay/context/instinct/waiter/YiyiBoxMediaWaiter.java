@@ -1,29 +1,31 @@
 package com.lpzahd.essay.context.instinct.waiter;
 
-import android.app.Service;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.MediaController;
-import android.widget.VideoView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.jakewharton.rxbinding2.view.RxView;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.keeper.Downloads;
 import com.lpzahd.atool.keeper.Files;
 import com.lpzahd.atool.keeper.Keeper;
+import com.lpzahd.atool.keeper.storage.CallBack;
+import com.lpzahd.atool.keeper.storage.Result;
+import com.lpzahd.atool.keeper.storage.Task;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
@@ -32,9 +34,8 @@ import com.lpzahd.common.tone.adapter.ToneItemTouchHelperCallback;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
-import com.lpzahd.essay.context.instinct.InstinctPhotoActivity;
+import com.lpzahd.essay.context.instinct.InstinctMediaActivity;
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
-import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
 import com.lpzahd.essay.context.preview.waiter.SinglePicWaiter;
 import com.lpzahd.essay.tool.OkHttpRxAdapter;
 import com.lpzahd.essay.view.SimpleVideo;
@@ -44,8 +45,6 @@ import com.lpzahd.waiter.consumer.State;
 import com.shuyu.gsyvideoplayer.utils.OrientationUtils;
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoPlayer;
 
-import org.reactivestreams.Publisher;
-
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -53,13 +52,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import butterknife.BindView;
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
@@ -78,9 +75,9 @@ import okhttp3.ResponseBody;
  * 时间 : 2017/10/28.
  * 描述 ： 命里有时终须有，命里无时莫强求
  */
-public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity> {
+public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity> {
 
-    public static final String TAG = "com.lpzahd.essay.context.instinct.waiter.YiyiBoxPhotoWaiter";
+    public static final String TAG = "com.lpzahd.essay.context.instinct.waiter.YiyiBoxMediaWaiter";
 
     private static final String REGEX_TAG_IMG = "<img\\b[^>]*\\bsrc\\b\\s*=\\s*('|\")?([^'\"\n\r\f>]+(\\.jpg|\\.bmp|\\.eps|\\.gif|\\.mif|\\.miff|\\.png|\\.tif|\\.tiff|\\.svg|\\.wmf|\\.jpe|\\.jpeg|\\.dib|\\.ico|\\.tga|\\.cut|\\.pic|\\.webp)\\b)[^>]*>";
 
@@ -100,6 +97,8 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
     @BindView(R.id.zoomable_drawee_view)
     ZoomableDraweeView zoomableDraweeView;
 
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
 
     private Transmitter<YiyiBox.DataBean.ItemsBean> mTransmitter;
     private SinglePicWaiter.PicAdapter mAdapter;
@@ -119,8 +118,8 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
     private List<VideoBean> videos;
     private int displayPosition = 0;
 
-    public YiyiBoxPhotoWaiter(InstinctPhotoActivity instinctPhotoActivity) {
-        super(instinctPhotoActivity);
+    public YiyiBoxMediaWaiter(InstinctMediaActivity instinctMediaActivity) {
+        super(instinctMediaActivity);
     }
 
     @Override
@@ -170,6 +169,26 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
             }
 
         });
+
+        RxView.clicks(fab)
+                .throttleFirst(1, TimeUnit.SECONDS)
+                .subscribe(new Consumer<Object>() {
+                    @Override
+                    public void accept(Object o) throws Exception {
+                        if(mAdapter == null || Lists.empty(mAdapter.getData())) {
+                            T.t("暂无图片哦！");
+                        } else {
+                            List<SinglePicWaiter.PicBean> pics = mAdapter.getData();
+
+                            String[] urls = new String[pics.size()];
+
+                            for(int i = 0, size = pics.size(); i < size; i++) {
+                                urls[i] = pics.get(i).uri.toString();
+                            }
+                            showFilesDownDialog(urls);
+                        }
+                    }
+                });
     }
 
     @Override
@@ -203,11 +222,11 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
         simpleVideo.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
 
-        String url = "http://www.yiyibox.com/video/" + source.getId();
+        String url = "http://www.yiyihezi.com/video/" + source.getId();
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("referer", "http://www.yiyibox.com")
+                .addHeader("referer", "http://www.yiyihezi.com")
                 .build();
 
         loadDispose = OkHttpRxAdapter.adapter(client.newCall(request))
@@ -230,7 +249,7 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                         String htmlStr = body.string();
                         List<VideoBean> videos = new ArrayList<>();
 
-                        Pattern videoPattern = Pattern.compile(YiyiBoxPhotoWaiter.REGEX_TAG_VIDEO, Pattern.CASE_INSENSITIVE);
+                        Pattern videoPattern = Pattern.compile(YiyiBoxMediaWaiter.REGEX_TAG_VIDEO, Pattern.CASE_INSENSITIVE);
                         Matcher videoMatcher = videoPattern.matcher(htmlStr);
 
                         Pattern srcPattern = Pattern.compile(REGEX_TAG_SRC, Pattern.CASE_INSENSITIVE);
@@ -261,13 +280,13 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                 .map(new Function<List<VideoBean>, List<VideoBean>>() {
                     @Override
                     public List<VideoBean> apply(@NonNull List<VideoBean> videos) throws Exception {
-                        URL fromUrl = new URL("http://www.yiyibox.com");
+                        URL fromUrl = new URL("http://www.yiyihezi.com");
                         for (int i = 0, size = videos.size(); i < size; i++) {
                             VideoBean video = videos.get(i);
                             video.video = new URL(fromUrl, video.video).toExternalForm();
                             video.img = new URL(fromUrl, video.img).toExternalForm();
                         }
-                        YiyiBoxPhotoWaiter.this.videos = videos;
+                        YiyiBoxMediaWaiter.this.videos = videos;
                         return videos;
                     }
                 })
@@ -366,11 +385,11 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
         simpleVideo.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
 
-        String url = "http://www.yiyibox.com/photo/" + source.getId();
+        String url = "http://www.yiyihezi.com/photo/" + source.getId();
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("referer", "http://www.yiyibox.com")
+                .addHeader("referer", "http://www.yiyihezi.com")
                 .build();
 
         loadDispose = OkHttpRxAdapter.adapter(client.newCall(request))
@@ -391,9 +410,10 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                             return Collections.emptyList();
 
                         String htmlStr = body.string();
+                        body.close();
 
                         Map<String, Integer> imgMap = new HashMap<>();
-                        Pattern p = Pattern.compile(YiyiBoxPhotoWaiter.REGEX_TAG_IMG, Pattern.CASE_INSENSITIVE);
+                        Pattern p = Pattern.compile(YiyiBoxMediaWaiter.REGEX_TAG_IMG, Pattern.CASE_INSENSITIVE);
                         Matcher m = p.matcher(htmlStr);
                         String quote;
                         String src;
@@ -425,7 +445,7 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                             bean.uri = Frescoer.uri(strings.get(i), ImageSource.SOURCE_NET);
                             pics.add(bean);
                         }
-                        YiyiBoxPhotoWaiter.this.pics = pics;
+                        YiyiBoxMediaWaiter.this.pics = pics;
                         return pics;
                     }
                 })
@@ -504,7 +524,35 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
         return super.backPressed();
     }
 
+    private void showFilesDownDialog(final String... urls) {
+        new MaterialDialog.Builder(context)
+                .title("图片下载")
+                .content("图片全部下载？")
+                .positiveText(R.string.tip_positive)
+                .negativeText(R.string.tip_negative)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+                        Downloads.down(urls, new CallBack.SimpleCallBack<InstinctMediaActivity>(context) {
+                            @Override
+                            public void onFailure(InstinctMediaActivity activity, Task task, Exception e) {
+                                T.t("图片全部下载完成");
+                            }
+
+                            @Override
+                            public void onSuccess(InstinctMediaActivity activity, Task task, Result result) {
+                                T.t("图片下载完成");
+                            }
+
+                        });
+
+                    }
+                })
+                .show();
+    }
+
     private void showFileDownDialog(final Uri picUri) {
+
         String uriStr = picUri.toString();
         final String picName = uriStr.substring(uriStr.lastIndexOf("/") + 1).trim();
         new MaterialDialog.Builder(context)
@@ -515,44 +563,19 @@ public class YiyiBoxPhotoWaiter extends ToneActivityWaiter<InstinctPhotoActivity
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                        OkHttpClient client = new OkHttpClient();
-                        Request request = new Request.Builder()
-                                .url(picUri.toString())
-                                .addHeader("referer", "http://www.yiyibox.com")
-                                .build();
-                        OkHttpRxAdapter.adapter(client.newCall(request))
-                                .subscribeOn(Schedulers.io())
-                                .filter(new Predicate<Response>() {
-                                    @Override
-                                    public boolean test(@NonNull Response response) throws Exception {
-                                        return response.isSuccessful();
-                                    }
-                                })
-                                .map(new Function<Response, ResponseBody>() {
-                                    @Override
-                                    public ResponseBody apply(@NonNull Response response) throws Exception {
-                                        return response.body();
-                                    }
-                                })
-                                .map(new Function<ResponseBody, Boolean>() {
-                                    @Override
-                                    public Boolean apply(@NonNull ResponseBody body) throws Exception {
-                                        Files files = Keeper.getF();
-                                        String filePath = files.getFilePath(Files.Scope.PHOTO_RAW, picName);
-                                        return Files.streamToFile(body.byteStream(), filePath);
-                                    }
-                                })
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(new Consumer<Boolean>() {
-                                    @Override
-                                    public void accept(Boolean aBoolean) throws Exception {
-                                        if (aBoolean) {
-                                            T.t(picName + "图片下载完成");
-                                        } else {
-                                            T.t(picName + "图片下载失败");
-                                        }
-                                    }
-                                });
+                        Downloads.down(picUri.toString(), new CallBack.SimpleCallBack<InstinctMediaActivity>(context) {
+                            @Override
+                            public void onFailure(InstinctMediaActivity activity, Task task, Exception e) {
+                                T.t("图片全部下载完成");
+                            }
+
+                            @Override
+                            public void onSuccess(InstinctMediaActivity activity, Task task, Result result) {
+                                T.t("图片下载完成");
+                            }
+
+                        });
+
                     }
                 })
                 .show();

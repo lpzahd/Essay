@@ -23,8 +23,12 @@ import com.facebook.imagepipeline.image.ImageInfo;
 import com.hanks.htextview.HTextView;
 import com.hanks.htextview.HTextViewType;
 import com.lpzahd.Lists;
+import com.lpzahd.atool.keeper.Downloads;
 import com.lpzahd.atool.keeper.Files;
 import com.lpzahd.atool.keeper.Keeper;
+import com.lpzahd.atool.keeper.storage.CallBack;
+import com.lpzahd.atool.keeper.storage.Result;
+import com.lpzahd.atool.keeper.storage.Task;
 import com.lpzahd.atool.ui.L;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.taxi.RxTaxi;
@@ -35,6 +39,7 @@ import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.preview.PreviewPicActivity;
 import com.lpzahd.essay.tool.OkHttpRxAdapter;
+import com.lpzahd.gallery.context.PreviewActivity;
 
 import org.reactivestreams.Publisher;
 
@@ -222,44 +227,18 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                        OkHttpClient client = new OkHttpClient();
-                        Request request = new Request.Builder()
-                                .url(picUri.toString())
-                                .addHeader("referer", picUri.getHost())
-                                .build();
-                        OkHttpRxAdapter.adapter(client.newCall(request))
-                                .subscribeOn(Schedulers.io())
-                                .filter(new Predicate<Response>() {
-                                    @Override
-                                    public boolean test(@NonNull Response response) throws Exception {
-                                        return response.isSuccessful();
-                                    }
-                                })
-                                .map(new Function<Response, ResponseBody>() {
-                                    @Override
-                                    public ResponseBody apply(@NonNull Response response) throws Exception {
-                                        return response.body();
-                                    }
-                                })
-                                .map(new Function<ResponseBody, Boolean>() {
-                                    @Override
-                                    public Boolean apply(@NonNull ResponseBody body) throws Exception {
-                                        Files files = Keeper.getF();
-                                        String filePath = files.getFilePath(Files.Scope.PHOTO_RAW, picName);
-                                        return Files.streamToFile(body.byteStream(), filePath);
-                                    }
-                                })
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(new Consumer<Boolean>() {
-                                    @Override
-                                    public void accept(Boolean aBoolean) throws Exception {
-                                        if (aBoolean) {
-                                            T.t(picName + "图片下载完成");
-                                        } else {
-                                            T.t(picName + "图片下载失败");
-                                        }
-                                    }
-                                });
+                        Downloads.down(picUri.toString(), new CallBack.SimpleCallBack<PreviewPicActivity>(context) {
+                            @Override
+                            public void onFailure(PreviewPicActivity activity, Task task, Exception e) {
+                                T.t("图片全部下载完成");
+                            }
+
+                            @Override
+                            public void onSuccess(PreviewPicActivity activity, Task task, Result result) {
+                                T.t("图片下载完成");
+                            }
+
+                        });
                     }
                 })
                 .show();

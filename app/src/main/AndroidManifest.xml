@@ -47,7 +47,7 @@
         <activity android:name=".context.preview.SinglePicActivity"/>
         <activity android:name=".context.leisure.LeisureActivity"/>
         <activity android:name=".context.instinct.InstinctActivity"/>
-        <activity android:name=".context.instinct.InstinctPhotoActivity"/>
+        <activity android:name=".context.instinct.InstinctMediaActivity"/>
         <activity android:name=".context.pure.PurePhotoActivity"/>
         <activity android:name=".context.turing.TuringActivity"/>
     </application>

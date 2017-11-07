@@ -1,5 +1,6 @@
 package com.lpzahd.essay.context.instinct.waiter;
 
+import android.net.Uri;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,11 +11,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.lpzahd.Lists;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.keeper.Downloads;
+import com.lpzahd.atool.keeper.storage.CallBack;
+import com.lpzahd.atool.keeper.storage.Result;
+import com.lpzahd.atool.keeper.storage.Task;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
@@ -26,7 +32,7 @@ import com.lpzahd.common.waiter.refresh.RefreshProcessor;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.instinct.InstinctActivity;
-import com.lpzahd.essay.context.instinct.InstinctPhotoActivity;
+import com.lpzahd.essay.context.instinct.InstinctMediaActivity;
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
 import com.lpzahd.essay.context.leisure.waiter.LeisureWaiter;
 import com.lpzahd.essay.exotic.retrofit.Net;
@@ -153,15 +159,50 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
         recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<LeisureWaiter.LeisureHolder>(recyclerView) {
             @Override
             public void onClick(RecyclerView rv, LeisureWaiter.LeisureHolder leisureHolder) {
-                InstinctPhotoActivity.startActivity(context);
+                InstinctMediaActivity.startActivity(context);
                 final int position = leisureHolder.getAdapterPosition();
-                RxTaxi.get().regist(YiyiBoxPhotoWaiter.TAG, new Transmitter() {
+                RxTaxi.get().regist(YiyiBoxMediaWaiter.TAG, new Transmitter() {
                     @Override
                     public Flowable<YiyiBox.DataBean.ItemsBean> transmit() {
                         return Flowable.just(mRefreshWaiter.getSource()
                                 .get(position));
                     }
                 });
+            }
+
+            @Override
+            public void onLongClick(RecyclerView rv, LeisureWaiter.LeisureHolder holder) {
+                showFileDownDialog(mAdapter.getItem(holder.getAdapterPosition()).uri);
+            }
+
+            private void showFileDownDialog(final Uri picUri) {
+                String uriStr = picUri.toString();
+                final String picName = uriStr.substring(uriStr.lastIndexOf("/") + 1).trim();
+                new MaterialDialog.Builder(context)
+                        .title("图片下载")
+                        .content(picName)
+                        .positiveText(R.string.tip_positive)
+                        .negativeText(R.string.tip_negative)
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+
+                                Downloads.down(picUri.toString(), new CallBack.SimpleCallBack<InstinctActivity>(context) {
+
+                                    @Override
+                                    public void onFailure(InstinctActivity activity, Task task, Exception e) {
+                                        T.t(picName + "图片下载完成");
+                                    }
+
+                                    @Override
+                                    public void onSuccess(InstinctActivity activity, Task task, Result result) {
+                                        T.t(picName + "图片下载完成");
+                                    }
+                                });
+
+                            }
+                        })
+                        .show();
             }
         });
 
@@ -270,7 +311,7 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
 
     @Override
     protected void destroy() {
-        RxTaxi.get().unregist(YiyiBoxPhotoWaiter.TAG);
+        RxTaxi.get().unregist(YiyiBoxMediaWaiter.TAG);
     }
 
     private static class YiyiBoxRefreshWaiter extends DspRefreshWaiter<YiyiBox.DataBean.ItemsBean, LeisureWaiter.LeisureModel> {

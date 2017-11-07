@@ -117,6 +117,8 @@ public class Files {
         public static final String PHOTO_RAW = PHOTO + "/" + "raw";
         public static final String PHOTO_THUMB = PHOTO + "/" + "thumb";
 
+        public static final String FILE_RAW = FILE + "/" + "raw";
+
         public static final String DATABASE = ROOT + "/" + "database";
 
     }

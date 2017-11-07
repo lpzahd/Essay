@@ -38,8 +38,12 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.keeper.Downloads;
 import com.lpzahd.atool.keeper.Files;
 import com.lpzahd.atool.keeper.Keeper;
+import com.lpzahd.atool.keeper.storage.CallBack;
+import com.lpzahd.atool.keeper.storage.Result;
+import com.lpzahd.atool.keeper.storage.Task;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.taxi.RxTaxi;
@@ -461,44 +465,18 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                        OkHttpClient client = new OkHttpClient();
-                        Request request = new Request.Builder()
-                                .url(bean.getMiddleURL())
-                                .addHeader("referer", "www.baidu.com")
-                                .build();
-                        OkHttpRxAdapter.adapter(client.newCall(request))
-                                .subscribeOn(Schedulers.io())
-                                .filter(new Predicate<Response>() {
-                                    @Override
-                                    public boolean test(@NonNull Response response) throws Exception {
-                                        return response.isSuccessful();
-                                    }
-                                })
-                                .map(new Function<Response, ResponseBody>() {
-                                    @Override
-                                    public ResponseBody apply(@NonNull Response response) throws Exception {
-                                        return response.body();
-                                    }
-                                })
-                                .map(new Function<ResponseBody, Boolean>() {
-                                    @Override
-                                    public Boolean apply(@NonNull ResponseBody body) throws Exception {
-                                        Files files = Keeper.getF();
-                                        String filePath = files.getFilePath(Files.Scope.PHOTO_RAW, picName);
-                                        return Files.streamToFile(body.byteStream(), filePath);
-                                    }
-                                })
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(new Consumer<Boolean>() {
-                                    @Override
-                                    public void accept(Boolean aBoolean) throws Exception {
-                                        if (aBoolean) {
-                                            T.t(picName + "图片下载完成");
-                                        } else {
-                                            T.t(picName + "图片下载失败");
-                                        }
-                                    }
-                                });
+                        Downloads.down(bean.getMiddleURL(), new CallBack.SimpleCallBack<LeisureActivity>(context) {
+
+                            @Override
+                            public void onFailure(LeisureActivity activity, Task task, Exception e) {
+                                T.t(picName + "图片下载完成");
+                            }
+
+                            @Override
+                            public void onSuccess(LeisureActivity activity, Task task, Result result) {
+                                T.t(picName + "图片下载完成");
+                            }
+                        });
                     }
                 })
                 .show();

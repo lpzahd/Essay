@@ -32,7 +32,7 @@ import com.lpzahd.common.waiter.refresh.DspRefreshWaiter;
 import com.lpzahd.common.waiter.refresh.RefreshProcessor;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
-import com.lpzahd.essay.context.instinct.waiter.YiyiBoxPhotoWaiter;
+import com.lpzahd.essay.context.instinct.waiter.YiyiBoxMediaWaiter;
 import com.lpzahd.essay.context.preview.PreviewPicActivity;
 import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
 import com.lpzahd.essay.context.pure.PurePhotoActivity;
@@ -211,7 +211,7 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
 
     @Override
     protected void destroy() {
-        RxTaxi.get().unregist(YiyiBoxPhotoWaiter.TAG);
+        RxTaxi.get().unregist(YiyiBoxMediaWaiter.TAG);
     }
 
     private static class Bx6644RefreshWaiter extends DspRefreshWaiter<BxPhotos, List<Photo>> {

@@ -33,7 +33,7 @@ dependencies {
     provided project(':jtool')
     provided project(':config')
 
-
+    provided 'com.squareup.okhttp3:okhttp:3.8.1'
 }
 repositories {
     mavenCentral()

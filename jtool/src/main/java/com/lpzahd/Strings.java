@@ -200,4 +200,7 @@ public final class Strings extends NoInstance {
         return Objects.equals(a, b) || a != null && b != null && (a.length() == b.length()) && a.equalsIgnoreCase(b);
     }
 
+    public static String format(String format, Object... args) {
+        return String.format(Locale.CHINA, format, args);
+    }
 }

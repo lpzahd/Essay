@@ -31,12 +31,12 @@ public abstract class BaseCancelable<T> implements Cancelable<T> {
      * 
      * <pre>
      *     INITIAL -&gt; CANCELED
-     *     EXECUTING -&gt; COMPLETE, CANCELING, ERROR, CANCELED
+     *     EXECUTING -&gt; COMPLETE, CANCELING, FAIL, CANCELED
      *     CANCELING -&gt; CANCELED
      * </pre>
      * 
      * When the task stop, it must be end with one of the following states:
-     * COMPLETE, CANCELED, or ERROR;
+     * COMPLETE, CANCELED, or FAIL;
      */
     private static final int STATE_INITIAL = (1 << 0);
     private static final int STATE_EXECUTING = (1 << 1);

@@ -102,38 +102,38 @@ public class Net {
     }
 
     public Observable<YiyiBox> yiyiBoxHomeImg(int page) {
-        return it("http:/www.yiyibox.com")
+        return it("http:/www.yiyihezi.com")
                 .create(YiyiBoxApi.class)
                 .searchImage(page);
     }
 
     public Observable<YiyiBox> yiyiBoxHomeVideo(int page) {
-        return it("http:/www.yiyibox.com")
+        return it("http:/www.yiyihezi.com")
                 .create(YiyiBoxApi2.class)
                 .searchVideo(page)
                 .subscribeOn(Schedulers.io());
     }
 
     public Observable<YiyiBox> yiyiBoxImg(int page) {
-        return it("http:/www.yiyibox.com")
+        return it("http:/www.yiyihezi.com")
                 .create(YiyiBoxImgApi.class)
                 .searchImage(page);
     }
 
     public Observable<YiyiBox> yiyiBoxVideo(int page) {
-        return it("http:/www.yiyibox.com")
+        return it("http:/www.yiyihezi.com")
                 .create(YiyiBoxVideoApi.class)
                 .searchVideo(page);
     }
 
     public Observable<YiyiBox> yiyiBoxTopImg(int page) {
-        return it("http:/www.yiyibox.com")
+        return it("http:/www.yiyihezi.com")
                 .create(YiyiBoxImgTopApi.class)
                 .searchImage(page);
     }
 
     public Observable<YiyiBox> yiyiBoxTopVideo(int page) {
-        return it("http:/www.yiyibox.com")
+        return it("http:/www.yiyihezi.com")
                 .create(YiyiBoxVideoTopApi.class)
                 .searchVideo(page);
     }

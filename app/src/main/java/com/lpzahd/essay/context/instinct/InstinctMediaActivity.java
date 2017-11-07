@@ -7,24 +7,24 @@ import android.view.WindowManager;
 
 import com.lpzahd.common.tone.activity.RxActivity;
 import com.lpzahd.essay.R;
-import com.lpzahd.essay.context.instinct.waiter.YiyiBoxPhotoWaiter;
+import com.lpzahd.essay.context.instinct.waiter.YiyiBoxMediaWaiter;
 
 /**
  * 作者 : 迪
  * 时间 : 2017/10/27.
  * 描述 ： 命里有时终须有，命里无时莫强求
  */
-public class InstinctPhotoActivity extends RxActivity {
+public class InstinctMediaActivity extends RxActivity {
 
     public static void startActivity(Context context) {
-        Intent intent = new Intent(context, InstinctPhotoActivity.class);
+        Intent intent = new Intent(context, InstinctMediaActivity.class);
         context.startActivity(intent);
     }
 
     @Override
     public void init() {
         super.init();
-        addActivityWaiter(new YiyiBoxPhotoWaiter(this));
+        addActivityWaiter(new YiyiBoxMediaWaiter(this));
     }
 
     @Override
