@@ -31,6 +31,7 @@ import com.lpzahd.common.waiter.refresh.DspRefreshWaiter;
 import com.lpzahd.common.waiter.refresh.RefreshProcessor;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.common.waiter.FileDownloadWaiter;
 import com.lpzahd.essay.context.instinct.InstinctActivity;
 import com.lpzahd.essay.context.instinct.InstinctMediaActivity;
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
@@ -85,8 +86,16 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
 
     private LeisureWaiter.LeisureAdapter mAdapter;
 
+    private FileDownloadWaiter mFileDownloadWaiter;
+
     public YiyiBoxWaiter(InstinctActivity instinctActivity) {
         super(instinctActivity);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        addWaiter(mFileDownloadWaiter = new FileDownloadWaiter(context));
     }
 
     @Override
@@ -172,38 +181,9 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
 
             @Override
             public void onLongClick(RecyclerView rv, LeisureWaiter.LeisureHolder holder) {
-                showFileDownDialog(mAdapter.getItem(holder.getAdapterPosition()).uri);
+                mFileDownloadWaiter.showDownLoadDialog(mAdapter.getItem(holder.getAdapterPosition()).uri.toString());
             }
 
-            private void showFileDownDialog(final Uri picUri) {
-                String uriStr = picUri.toString();
-                final String picName = uriStr.substring(uriStr.lastIndexOf("/") + 1).trim();
-                new MaterialDialog.Builder(context)
-                        .title("图片下载")
-                        .content(picName)
-                        .positiveText(R.string.tip_positive)
-                        .negativeText(R.string.tip_negative)
-                        .onPositive(new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-
-                                Downloads.down(picUri.toString(), new CallBack.SimpleCallBack<InstinctActivity>(context) {
-
-                                    @Override
-                                    public void onFailure(InstinctActivity activity, Task task, Exception e) {
-                                        T.t(picName + "图片下载完成");
-                                    }
-
-                                    @Override
-                                    public void onSuccess(InstinctActivity activity, Task task, Result result) {
-                                        T.t(picName + "图片下载完成");
-                                    }
-                                });
-
-                            }
-                        })
-                        .show();
-            }
         });
 
         mRefreshWaiter = new YiyiBoxRefreshWaiter(swipeRefreshLayout, recyclerView);

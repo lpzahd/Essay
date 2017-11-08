@@ -29,9 +29,10 @@ public class Downloads {
     }
 
     public static void down(String url, CallBack callBack) {
-        Storage.newStorage()
-                .newTask(Config.Builder.newBuilder(url).build())
-                .enqueue(callBack);
+        Task task = Storage.newStorage()
+                .newTask(Config.Builder.newBuilder(url).build());
+
+        task.enqueue(callBack);
     }
 
     public static void down(String[] urls, CallBack callBack) {

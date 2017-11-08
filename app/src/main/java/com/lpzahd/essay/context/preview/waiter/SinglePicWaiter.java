@@ -11,8 +11,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.BaseControllerListener;
 import com.facebook.drawee.controller.ControllerListener;
@@ -25,14 +23,7 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
-import com.lpzahd.atool.keeper.Downloads;
-import com.lpzahd.atool.keeper.Files;
-import com.lpzahd.atool.keeper.Keeper;
-import com.lpzahd.atool.keeper.storage.CallBack;
-import com.lpzahd.atool.keeper.storage.Result;
-import com.lpzahd.atool.keeper.storage.Task;
 import com.lpzahd.atool.ui.L;
-import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
@@ -42,6 +33,7 @@ import com.lpzahd.common.tone.adapter.ToneItemTouchHelperCallback;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.common.waiter.FileDownloadWaiter;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
 import com.lpzahd.essay.context.preview.SinglePicActivity;
 import com.lpzahd.essay.exotic.fresco.FrescoInit;
@@ -90,6 +82,8 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
 
+    private FileDownloadWaiter mFileDownloadWaiter;
+
     private BaiduPic.ImgsBean objBean;
     private PicBean firstBean;
 
@@ -109,13 +103,19 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
     }
 
     @Override
+    protected void init() {
+        super.init();
+        addWaiter(mFileDownloadWaiter = new FileDownloadWaiter(context));
+    }
+
+    @Override
     protected void initView() {
         super.initView();
 //        zoomableDraweeView.setTapListener(new GestureDetector.SimpleOnGestureListener());
         zoomableDraweeView.setTapListener(new DoubleTapGestureListener(zoomableDraweeView) {
             @Override
             public void onLongPress(MotionEvent e) {
-                showFileDownDialog(displayBean.uri);
+                mFileDownloadWaiter.showDownLoadDialog(displayBean.uri.toString());
             }
         });
 
@@ -337,33 +337,4 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
         }
     }
 
-    private void showFileDownDialog(final Uri picUri) {
-        String uriStr = picUri.toString();
-        final String picName = uriStr.substring(uriStr.lastIndexOf("/") + 1).trim();
-        new MaterialDialog.Builder(context)
-                .title("图片下载")
-                .content(picName)
-                .positiveText(R.string.tip_positive)
-                .negativeText(R.string.tip_negative)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-
-                        Downloads.down(picUri.toString(), new CallBack.SimpleCallBack<SinglePicActivity>(context) {
-
-                            @Override
-                            public void onFailure(SinglePicActivity activity, Task task, Exception e) {
-                                T.t(picName + "图片下载完成");
-                            }
-
-                            @Override
-                            public void onSuccess(SinglePicActivity activity, Task task, Result result) {
-                                T.t(picName + "图片下载完成");
-                            }
-                        });
-
-                    }
-                })
-                .show();
-    }
 }

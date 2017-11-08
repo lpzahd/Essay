@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.multidex.MultiDex;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -37,7 +39,12 @@ public class App extends Application implements Application.ActivityLifecycleCal
         return app;
     }
 
+    private Handler mHandler;
     private MiniCup<Activity> activityMiniCup;
+
+    public Handler getHandler() {
+        return mHandler;
+    }
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -50,6 +57,8 @@ public class App extends Application implements Application.ActivityLifecycleCal
         super.onCreate();
 
         app = this;
+
+        mHandler = new Handler(Looper.getMainLooper());
 
         Constance.initApp(app);
         T.init(app);

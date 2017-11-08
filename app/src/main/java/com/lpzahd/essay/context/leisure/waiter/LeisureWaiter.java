@@ -2,15 +2,10 @@ package com.lpzahd.essay.context.leisure.waiter;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.RectF;
 import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
 import android.graphics.drawable.shapes.RectShape;
-import android.graphics.drawable.shapes.Shape;
 import android.net.Uri;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.AppCompatTextView;
@@ -24,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.andexert.library.RippleView;
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -38,12 +32,6 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
-import com.lpzahd.atool.keeper.Downloads;
-import com.lpzahd.atool.keeper.Files;
-import com.lpzahd.atool.keeper.Keeper;
-import com.lpzahd.atool.keeper.storage.CallBack;
-import com.lpzahd.atool.keeper.storage.Result;
-import com.lpzahd.atool.keeper.storage.Task;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.taxi.RxTaxi;
@@ -56,6 +44,7 @@ import com.lpzahd.common.waiter.refresh.DspRefreshWaiter;
 import com.lpzahd.common.waiter.refresh.RefreshProcessor;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.common.waiter.FileDownloadWaiter;
 import com.lpzahd.essay.context.leisure.LeisureActivity;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
 import com.lpzahd.essay.context.preview.SinglePicActivity;
@@ -64,7 +53,6 @@ import com.lpzahd.essay.db.leisure.WordQuery;
 import com.lpzahd.essay.exotic.fresco.FrescoInit;
 import com.lpzahd.essay.exotic.retrofit.Net;
 import com.lpzahd.essay.tool.DateTime;
-import com.lpzahd.essay.tool.OkHttpRxAdapter;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.Collections;
@@ -75,19 +63,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
-import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 /**
  * Author : Lpzahd
@@ -130,6 +110,8 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
     @BindView(R.id.activity_leisure)
     FrameLayout activityLeisure;
 
+    private FileDownloadWaiter mFileDownloadWaiter;
+
     private DspRefreshWaiter<BaiduPic.ImgsBean, LeisureModel> mRefreshWaiter;
     private LeisureAdapter mAdapter;
 
@@ -146,6 +128,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
     protected void init() {
         super.init();
         mRealm = Realm.getDefaultInstance();
+        mFileDownloadWaiter = new FileDownloadWaiter(context);
     }
 
     @Override
@@ -372,8 +355,8 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
             @Override
             public void onLongClick(RecyclerView rv, LeisureHolder leisureHolder) {
-                showFileDownDialog(mRefreshWaiter.getSource()
-                        .get(leisureHolder.getAdapterPosition()));
+                mFileDownloadWaiter.showDownLoadDialog(mRefreshWaiter.getSource()
+                        .get(leisureHolder.getAdapterPosition()).getMiddleURL());
             }
         });
 
@@ -455,33 +438,6 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         RxTaxi.get().unregist(SinglePicWaiter.TAG);
     }
 
-    private void showFileDownDialog(final BaiduPic.ImgsBean bean) {
-        final String picName = bean.getMiddleURL().substring(bean.getMiddleURL().lastIndexOf("/") + 1).trim();
-        new MaterialDialog.Builder(context)
-                .title("图片下载")
-                .content(picName)
-                .positiveText(R.string.tip_positive)
-                .negativeText(R.string.tip_negative)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                        Downloads.down(bean.getMiddleURL(), new CallBack.SimpleCallBack<LeisureActivity>(context) {
-
-                            @Override
-                            public void onFailure(LeisureActivity activity, Task task, Exception e) {
-                                T.t(picName + "图片下载完成");
-                            }
-
-                            @Override
-                            public void onSuccess(LeisureActivity activity, Task task, Result result) {
-                                T.t(picName + "图片下载完成");
-                            }
-                        });
-                    }
-                })
-                .show();
-    }
-
     public static class LeisureModel {
         public Uri uri;
         public int width;
@@ -516,7 +472,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
         public final Path mPath = new Path();
 
-        public SharpShape() {}
+        SharpShape() {}
 
         @Override
         public void draw(Canvas canvas, Paint paint) {

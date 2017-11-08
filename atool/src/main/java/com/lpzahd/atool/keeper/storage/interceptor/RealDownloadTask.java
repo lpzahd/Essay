@@ -53,6 +53,10 @@ public class RealDownloadTask {
         this.callBack = callBack;
     }
 
+    public void setCallBack(CallBack callBack) {
+        this.callBack = callBack;
+    }
+
     public Result exec() {
 
         Config config = task.config();
@@ -153,6 +157,10 @@ public class RealDownloadTask {
                 }
             }
 
+            if(progress.status == Progress.Status.CANCEL) {
+                throw new IllegalStateException("Canceled!");
+            }
+
             if (progress.status == Progress.Status.LOADING) {
                 progress.status = Progress.Status.SUCCESS;
             }
@@ -222,7 +230,7 @@ public class RealDownloadTask {
                 int len;
                 fileOutputStream = new FileOutputStream(file);
 
-                while ((len = bodyStream.read(buffer)) != -1) {
+                while ((len = bodyStream.read(buffer)) != -1 && progress.status == Progress.Status.LOADING) {
                     fileOutputStream.write(buffer, 0, len);
                 }
 
@@ -232,6 +240,10 @@ public class RealDownloadTask {
 
                 if (write && callBack != null) {
                     callBack.onProgress(task, progress);
+                }
+
+                if(progress.status == Progress.Status.CANCEL) {
+                    throw new IllegalStateException("Canceled!");
                 }
 
             } catch (IOException e) {

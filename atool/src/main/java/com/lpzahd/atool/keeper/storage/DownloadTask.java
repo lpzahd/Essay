@@ -22,6 +22,9 @@ public class DownloadTask implements Task {
 
     private Progress progress;
 
+    private RealDownloadTask task;
+    private CallBack callBack;
+
     public DownloadTask(Storage storage, Config config) {
         this.storage = storage;
         this.config = config;
@@ -56,12 +59,12 @@ public class DownloadTask implements Task {
             executed = true;
         }
 
-        storage.dispatcher().enqueue(new DownloadTask.AsyncTask(callBack));
+        this.callBack = callBack;
+        storage.dispatcher().enqueue(new DownloadTask.AsyncTask());
     }
 
     @Override
     public void cancel() {
-        //TODO 多线程的时候再取消吧
         progress.status = Progress.Status.CANCEL;
     }
 
@@ -76,6 +79,12 @@ public class DownloadTask implements Task {
     }
 
     @Override
+    public void removeCallBack() {
+        callBack = null;
+        if(task != null) task.setCallBack(null);
+    }
+
+    @Override
     public Task clone() {
         return null;
     }
@@ -84,17 +93,14 @@ public class DownloadTask implements Task {
         List<Interceptor> interceptors = new ArrayList<>();
         interceptors.addAll(storage.interceptors());
 
-        RealDownloadTask task = new RealDownloadTask(this, progress, interceptors, callBack);
+        task = new RealDownloadTask(this, progress, interceptors, callBack);
         return task.exec();
     }
 
     final class AsyncTask extends NamedRunnable {
 
-        private final CallBack callback;
-
-        AsyncTask(CallBack callback) {
+        AsyncTask() {
             super("OkHttp %s", config.getUrl());
-            this.callback = callback;
         }
 
         Config config() {
@@ -111,17 +117,20 @@ public class DownloadTask implements Task {
         }
 
         @Override protected void execute() {
-            callback.onStart(DownloadTask.this);
+            if(callBack != null) callBack.onStart(DownloadTask.this);
+
             try {
-                Result result = getFileWithInterceptorConvert(callback);
-                if (result == null) {
-                    callback.onFailure(DownloadTask.this, new IOException("Failed"));
-                } else {
-                    callback.onSuccess(DownloadTask.this, result);
+                Result result = getFileWithInterceptorConvert(callBack);
+                if(callBack != null) {
+                    if (result == null) {
+                        callBack.onFailure(DownloadTask.this, new IOException("Failed"));
+                    } else {
+                        callBack.onSuccess(DownloadTask.this, result);
+                    }
                 }
 
             } catch (Exception e) {
-                callback.onFailure(DownloadTask.this, new IOException("Failed"));
+                if(callBack != null) callBack.onFailure(DownloadTask.this, e);
             } finally {
                 storage.dispatcher().finished(this);
             }

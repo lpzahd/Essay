@@ -22,6 +22,8 @@ public interface Task extends Cloneable {
 
     boolean isCanceled();
 
+    void removeCallBack();
+
     Task clone();
 
     interface Factory {

@@ -1,9 +1,7 @@
 package com.lpzahd.essay.context.instinct.waiter;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,8 +9,6 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -20,12 +16,8 @@ import com.jakewharton.rxbinding2.view.RxView;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
-import com.lpzahd.atool.keeper.Downloads;
 import com.lpzahd.atool.keeper.Files;
 import com.lpzahd.atool.keeper.Keeper;
-import com.lpzahd.atool.keeper.storage.CallBack;
-import com.lpzahd.atool.keeper.storage.Result;
-import com.lpzahd.atool.keeper.storage.Task;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
@@ -34,6 +26,7 @@ import com.lpzahd.common.tone.adapter.ToneItemTouchHelperCallback;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.common.waiter.FileDownloadWaiter;
 import com.lpzahd.essay.context.instinct.InstinctMediaActivity;
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
 import com.lpzahd.essay.context.preview.waiter.SinglePicWaiter;
@@ -64,7 +57,6 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -118,8 +110,16 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
     private List<VideoBean> videos;
     private int displayPosition = 0;
 
+    private FileDownloadWaiter mFileDownloadWaiter;
+
     public YiyiBoxMediaWaiter(InstinctMediaActivity instinctMediaActivity) {
         super(instinctMediaActivity);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        addWaiter(mFileDownloadWaiter = new FileDownloadWaiter(context));
     }
 
     @Override
@@ -133,7 +133,7 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
         zoomableDraweeView.setTapListener(new DoubleTapGestureListener(zoomableDraweeView) {
             @Override
             public void onLongPress(MotionEvent e) {
-                showFileDownDialog(pics.get(displayPosition).uri);
+                mFileDownloadWaiter.showDownLoadDialog(pics.get(displayPosition).uri.toString());
             }
         });
 
@@ -185,7 +185,7 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
                             for(int i = 0, size = pics.size(); i < size; i++) {
                                 urls[i] = pics.get(i).uri.toString();
                             }
-                            showFilesDownDialog(urls);
+                            mFileDownloadWaiter.showDownLoadDialog(urls);
                         }
                     }
                 });
@@ -524,65 +524,8 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
         return super.backPressed();
     }
 
-    private void showFilesDownDialog(final String... urls) {
-        new MaterialDialog.Builder(context)
-                .title("图片下载")
-                .content("图片全部下载？")
-                .positiveText(R.string.tip_positive)
-                .negativeText(R.string.tip_negative)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                        Downloads.down(urls, new CallBack.SimpleCallBack<InstinctMediaActivity>(context) {
-                            @Override
-                            public void onFailure(InstinctMediaActivity activity, Task task, Exception e) {
-                                T.t("图片全部下载完成");
-                            }
-
-                            @Override
-                            public void onSuccess(InstinctMediaActivity activity, Task task, Result result) {
-                                T.t("图片下载完成");
-                            }
-
-                        });
-
-                    }
-                })
-                .show();
-    }
-
-    private void showFileDownDialog(final Uri picUri) {
-
-        String uriStr = picUri.toString();
-        final String picName = uriStr.substring(uriStr.lastIndexOf("/") + 1).trim();
-        new MaterialDialog.Builder(context)
-                .title("图片下载")
-                .content(picName)
-                .positiveText(R.string.tip_positive)
-                .negativeText(R.string.tip_negative)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                        Downloads.down(picUri.toString(), new CallBack.SimpleCallBack<InstinctMediaActivity>(context) {
-                            @Override
-                            public void onFailure(InstinctMediaActivity activity, Task task, Exception e) {
-                                T.t("图片全部下载完成");
-                            }
-
-                            @Override
-                            public void onSuccess(InstinctMediaActivity activity, Task task, Result result) {
-                                T.t("图片下载完成");
-                            }
-
-                        });
-
-                    }
-                })
-                .show();
-    }
-
     private static class VideoBean {
-        public String video;
-        public String img;
+        String video;
+        String img;
     }
 }

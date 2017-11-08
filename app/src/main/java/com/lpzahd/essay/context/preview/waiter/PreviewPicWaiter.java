@@ -37,6 +37,7 @@ import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.common.waiter.FileDownloadWaiter;
 import com.lpzahd.essay.context.preview.PreviewPicActivity;
 import com.lpzahd.essay.tool.OkHttpRxAdapter;
 import com.lpzahd.gallery.context.PreviewActivity;
@@ -90,6 +91,7 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
     private PreviewAdapter mAdapter;
     private LinearLayoutManager mLayoutManager;
 
+    private FileDownloadWaiter mFileDownloadWaiter;
 
     /**
      * fresco 似乎不大好用共享元素动画， 说是用这个ChangeBounds
@@ -118,6 +120,13 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
         super(previewPicActivity);
     }
 
+
+    @Override
+    protected void init() {
+        super.init();
+        addWaiter(mFileDownloadWaiter = new FileDownloadWaiter(context));
+    }
+
     @Override
     protected boolean checkArgus(Intent intent) {
         return super.checkArgus(intent) && ((mTransmitter = RxTaxi.get().pull(TAG)) != null);
@@ -137,7 +146,8 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
         recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<PreviewHolder>(recyclerView) {
             @Override
             public void onLongClick(RecyclerView rv, PreviewHolder previewHolder) {
-                showFileDownDialog(mAdapter.getItem(previewHolder.getAdapterPosition()).uri);
+                mFileDownloadWaiter.showDownLoadDialog(
+                        mAdapter.getItem(previewHolder.getAdapterPosition()).uri.toString());
             }
         });
 
@@ -214,34 +224,6 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
 
                     }
                 });
-    }
-
-    private void showFileDownDialog(final Uri picUri) {
-        String uriStr = picUri.toString();
-        final String picName = uriStr.substring(uriStr.lastIndexOf("/") + 1).trim();
-        new MaterialDialog.Builder(context)
-                .title("图片下载")
-                .content(picName)
-                .positiveText(R.string.tip_positive)
-                .negativeText(R.string.tip_negative)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                        Downloads.down(picUri.toString(), new CallBack.SimpleCallBack<PreviewPicActivity>(context) {
-                            @Override
-                            public void onFailure(PreviewPicActivity activity, Task task, Exception e) {
-                                T.t("图片全部下载完成");
-                            }
-
-                            @Override
-                            public void onSuccess(PreviewPicActivity activity, Task task, Result result) {
-                                T.t("图片下载完成");
-                            }
-
-                        });
-                    }
-                })
-                .show();
     }
 
     public static class PreviewBean {

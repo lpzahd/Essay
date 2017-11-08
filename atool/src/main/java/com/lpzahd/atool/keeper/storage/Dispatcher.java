@@ -33,13 +33,13 @@ public final class Dispatcher {
     private @Nullable ExecutorService executorService;
 
     /** Ready async calls in the order they'll be run. */
-    private final Deque<DownloadTask.AsyncTask> readyAsyncCalls = new ArrayDeque<>();
+    private final Deque<DownloadTask.AsyncTask> readyAsyncTasks = new ArrayDeque<>();
 
     /** Running asynchronous calls. Includes canceled calls that haven't finished yet. */
-    private final Deque<DownloadTask.AsyncTask> runningAsyncCalls = new ArrayDeque<>();
+    private final Deque<DownloadTask.AsyncTask> runningAsyncTasks = new ArrayDeque<>();
 
     /** Running synchronous calls. Includes canceled calls that haven't finished yet. */
-    private final Deque<DownloadTask> runningSyncCalls = new ArrayDeque<>();
+    private final Deque<DownloadTask> runningSyncTasks = new ArrayDeque<>();
 
     public Dispatcher(ExecutorService executorService) {
         this.executorService = executorService;
@@ -51,7 +51,7 @@ public final class Dispatcher {
     public synchronized ExecutorService executorService() {
         if (executorService == null) {
             executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
-                    new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", false));
+                    new SynchronousQueue<Runnable>(), Util.threadFactory("lpz Dispatcher", false));
         }
         return executorService;
     }
@@ -113,11 +113,11 @@ public final class Dispatcher {
     }
 
     synchronized void enqueue(DownloadTask.AsyncTask task) {
-        if (runningAsyncCalls.size() < maxRequests && runningCallsForHost(task) < maxRequestsPerHost) {
-            runningAsyncCalls.add(task);
+        if (runningAsyncTasks.size() < maxRequests && runningCallsForHost(task) < maxRequestsPerHost) {
+            runningAsyncTasks.add(task);
             executorService().execute(task);
         } else {
-            readyAsyncCalls.add(task);
+            readyAsyncTasks.add(task);
         }
     }
 
@@ -126,40 +126,40 @@ public final class Dispatcher {
      * Call#execute() synchronously} and {@linkplain Call#enqueue asynchronously}.
      */
     public synchronized void cancelAll() {
-        for (DownloadTask.AsyncTask task : readyAsyncCalls) {
+        for (DownloadTask.AsyncTask task : readyAsyncTasks) {
             task.get().cancel();
         }
 
-        for (DownloadTask.AsyncTask task : runningAsyncCalls) {
+        for (DownloadTask.AsyncTask task : runningAsyncTasks) {
             task.get().cancel();
         }
 
-        for (DownloadTask task : runningSyncCalls) {
+        for (DownloadTask task : runningSyncTasks) {
             task.cancel();
         }
     }
 
     private void promoteCalls() {
-        if (runningAsyncCalls.size() >= maxRequests) return; // Already running max capacity.
-        if (readyAsyncCalls.isEmpty()) return; // No ready calls to promote.
+        if (runningAsyncTasks.size() >= maxRequests) return; // Already running max capacity.
+        if (readyAsyncTasks.isEmpty()) return; // No ready calls to promote.
 
-        for (Iterator<DownloadTask.AsyncTask> i = readyAsyncCalls.iterator(); i.hasNext(); ) {
+        for (Iterator<DownloadTask.AsyncTask> i = readyAsyncTasks.iterator(); i.hasNext(); ) {
             DownloadTask.AsyncTask task = i.next();
 
             if (runningCallsForHost(task) < maxRequestsPerHost) {
                 i.remove();
-                runningAsyncCalls.add(task);
+                runningAsyncTasks.add(task);
                 executorService().execute(task);
             }
 
-            if (runningAsyncCalls.size() >= maxRequests) return; // Reached max capacity.
+            if (runningAsyncTasks.size() >= maxRequests) return; // Reached max capacity.
         }
     }
 
     /** Returns the number of running calls that share a host with {@code call}. */
     private int runningCallsForHost(DownloadTask.AsyncTask task) {
         int result = 0;
-        for (DownloadTask.AsyncTask t : runningAsyncCalls) {
+        for (DownloadTask.AsyncTask t : runningAsyncTasks) {
             if (t.name().equals(task.name())) result++;
         }
         return result;
@@ -167,17 +167,17 @@ public final class Dispatcher {
 
     /** Used by {@code Call#execute} to signal it is in-flight. */
     synchronized void executed(DownloadTask task) {
-        runningSyncCalls.add(task);
+        runningSyncTasks.add(task);
     }
 
     /** Used by {@code AsyncCall#run} to signal completion. */
     void finished(DownloadTask.AsyncTask task) {
-        finished(runningAsyncCalls, task, true);
+        finished(runningAsyncTasks, task, true);
     }
 
     /** Used by {@code Call#execute} to signal completion. */
     void finished(DownloadTask task) {
-        finished(runningSyncCalls, task, false);
+        finished(runningSyncTasks, task, false);
     }
 
     private <T> void finished(Deque<T> calls, T call, boolean promoteCalls) {
@@ -198,7 +198,7 @@ public final class Dispatcher {
     /** Returns a snapshot of the calls currently awaiting execution. */
     public synchronized List<Task> queuedTasks() {
         List<Task> result = new ArrayList<>();
-        for (DownloadTask.AsyncTask asyncTask : readyAsyncCalls) {
+        for (DownloadTask.AsyncTask asyncTask : readyAsyncTasks) {
             result.add(asyncTask.get());
         }
         return Collections.unmodifiableList(result);
@@ -207,19 +207,19 @@ public final class Dispatcher {
     /** Returns a snapshot of the calls currently being executed. */
     public synchronized List<Task> runningTasks() {
         List<Task> result = new ArrayList<>();
-        result.addAll(runningSyncCalls);
-        for (DownloadTask.AsyncTask asyncTask : runningAsyncCalls) {
+        result.addAll(runningSyncTasks);
+        for (DownloadTask.AsyncTask asyncTask : runningAsyncTasks) {
             result.add(asyncTask.get());
         }
         return Collections.unmodifiableList(result);
     }
 
     public synchronized int queuedCallsCount() {
-        return readyAsyncCalls.size();
+        return readyAsyncTasks.size();
     }
 
     public synchronized int runningCallsCount() {
-        return runningAsyncCalls.size() + runningSyncCalls.size();
+        return runningAsyncTasks.size() + runningSyncTasks.size();
     }
 }
 
