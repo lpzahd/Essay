@@ -9,6 +9,6 @@ import okhttp3.Request;
  */
 public interface Interceptor {
 
-    boolean intercept(int index, Config config, Request request);
+    boolean intercept(int index, Config.SingleTask task, Request request);
 
 }

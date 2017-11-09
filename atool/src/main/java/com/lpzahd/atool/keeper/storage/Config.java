@@ -1,5 +1,7 @@
 package com.lpzahd.atool.keeper.storage;
 
+import com.lpzahd.Lists;
+
 /**
  * 作者 : 迪
  * 时间 : 2017/11/6.
@@ -7,32 +9,97 @@ package com.lpzahd.atool.keeper.storage;
  */
 public class Config {
 
-    private final String[] urls;
-    private final String name;
-    private final long progress;
+    private final SingleTask[] tasks;
     private final Object tag;
 
+    public static class SingleTask {
+
+        private final String url;
+        private final String folder;
+        private final String name;
+        private final boolean replace;
+        private long progress;
+
+        private SingleTask(Builder builder) {
+            url = builder.url;
+            folder = builder.folder;
+            name = builder.name;
+            replace = builder.replace;
+            progress = builder.progress;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public String getFolder() {
+            return folder;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isReplace() {
+            return replace;
+        }
+
+        public long getProgress() {
+            return progress;
+        }
+
+        public static final class Builder {
+            private String url;
+            private String folder;
+            private String name;
+            private boolean replace;
+            private long progress;
+
+            public Builder() {
+            }
+
+            public Builder url(String url) {
+                this.url = url;
+                return this;
+            }
+
+            public Builder folder(String folder) {
+                this.folder = folder;
+                return this;
+            }
+
+            public Builder name(String name) {
+                this.name = name;
+                return this;
+            }
+
+            public Builder replace(boolean replace) {
+                this.replace = replace;
+                return this;
+            }
+
+            public Builder progress(long progress) {
+                this.progress = progress;
+                return this;
+            }
+
+            public SingleTask build() {
+                return new SingleTask(this);
+            }
+        }
+    }
+
     private Config(Builder builder) {
-        urls = builder.urls;
-        name = builder.name;
-        progress = builder.progress;
+        tasks = builder.tasks;
         tag = builder.tag;
     }
 
-    public String getUrl() {
-        return urls[0];
+    public SingleTask getTask() {
+        return Lists.empty(tasks) ? null : tasks[0];
     }
 
-    public String[] getUrls() {
-        return urls;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public long getProgress() {
-        return progress;
+    public SingleTask[] getTasks() {
+        return tasks;
     }
 
     public Object getTag() {
@@ -40,10 +107,9 @@ public class Config {
     }
 
     public static final class Builder {
-        private String name;
-        private long progress;
+
         private Object tag;
-        private String[] urls;
+        private SingleTask[] tasks;
 
         public static Builder newBuilder(String url) {
             return new Builder()
@@ -62,15 +128,6 @@ public class Config {
         public Builder() {
         }
 
-        public Builder name(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public Builder progress(long progress) {
-            this.progress = progress;
-            return this;
-        }
 
         public Builder tag(Object tag) {
             this.tag = tag;
@@ -78,21 +135,36 @@ public class Config {
         }
 
         public Config build() {
-            if(urls == null || urls.length == 0)
-                 throw new NullPointerException("设置地址！");
+            if (Lists.empty(tasks))
+                throw new NullPointerException("没有任务！");
 
             return new Config(this);
         }
 
         public Builder urls(String... urls) {
-            this.urls = urls;
+            SingleTask[] tasks = new SingleTask[urls.length];
+            for (int i = 0; i < urls.length; i++) {
+                tasks[i] = new SingleTask.Builder().url(urls[i])
+                        .build();
+            }
+            this.tasks = tasks;
             return this;
         }
 
         public Builder url(String url) {
-            urls = new String[] {
-                    url
-            };
+            SingleTask task = new SingleTask.Builder().url(url)
+                    .build();
+            this.tasks = new SingleTask[]{task};
+            return this;
+        }
+
+        public Builder task(SingleTask task) {
+            this.tasks = new SingleTask[]{task};
+            return this;
+        }
+
+        public Builder tasks(SingleTask[] tasks) {
+            this.tasks = tasks;
             return this;
         }
     }

@@ -1,23 +1,11 @@
 package com.lpzahd.atool.keeper.storage;
 
-import com.lpzahd.Strings;
-import com.lpzahd.atool.io.IO;
-import com.lpzahd.atool.keeper.Files;
-import com.lpzahd.atool.keeper.Keeper;
-import com.lpzahd.atool.ui.L;
+import com.lpzahd.atool.keeper.storage.interceptor.RealDownloadTask;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.*;
 
 /**
  * 作者 : 迪
@@ -63,6 +51,17 @@ public class Storage {
         return interceptors;
     }
 
+    public static File getDefaultFileName(String name) {
+        return RealDownloadTask.getDefaultFileName(name);
+    }
+
+    public static void getDefaultFileName(String url, RealDownloadTask.Future future) {
+        RealDownloadTask.getDefaultFileName(url, future);
+    }
+
+    public static String getMimeType(String fileName) {
+        return RealDownloadTask.getMimeType(fileName);
+    }
 
     public static final class Builder {
 

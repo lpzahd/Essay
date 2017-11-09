@@ -1,5 +1,6 @@
 package com.lpzahd.atool.keeper.storage;
 
+import com.lpzahd.Strings;
 import com.lpzahd.atool.keeper.storage.interceptor.RealDownloadTask;
 import com.lpzahd.atool.keeper.storage.internal.NamedRunnable;
 
@@ -100,7 +101,7 @@ public class DownloadTask implements Task {
     final class AsyncTask extends NamedRunnable {
 
         AsyncTask() {
-            super("OkHttp %s", config.getUrl());
+            super("OkHttp %s", config.getTask().getUrl());
         }
 
         Config config() {
@@ -108,7 +109,7 @@ public class DownloadTask implements Task {
         }
 
         String name() {
-            return config.getName();
+            return config.getTask().getUrl();
         }
 
 

@@ -1,5 +1,7 @@
 package com.lpzahd.atool.keeper.storage.interceptor;
 
+import android.support.annotation.NonNull;
+
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.io.IO;
@@ -22,8 +24,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -39,7 +43,6 @@ public class RealDownloadTask {
     // 小文件尺寸 10M
     private static final long SIZE_MINI_FILE = 10 * 1024 * 1024 * 8;
 
-    private String fileName;
     private final Task task;
     private final Progress progress;
 
@@ -61,17 +64,17 @@ public class RealDownloadTask {
 
         Config config = task.config();
 
-        String[] urls = config.getUrls();
+        Config.SingleTask[] tasks = config.getTasks();
 
         File[] files;
-        if (urls.length == 1) {
+        if (tasks.length == 1) {
             // 单个文件下载
             files = new File[] {
-                    downloadUrl(config.getUrl(), fileName, progress)
+                    downloadUrl(tasks[0], progress)
             };
         } else {
             // 多文件下载 [串行下载, 并行下载待定]
-            files = downloadUrls(config.getUrls(), progress);
+            files = downloadUrls(tasks, progress);
         }
 
         return new Result.Builder()
@@ -84,9 +87,10 @@ public class RealDownloadTask {
     /**
      * 下载单个文件
      */
-    private File downloadUrl(String url, String fileName, Progress progress) {
+    private File downloadUrl(Config.SingleTask singleTask, Progress progress) {
         OkHttpClient client = new OkHttpClient();
 
+        final String url = singleTask.getUrl();
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("Accept-Encoding", "identity")
@@ -95,7 +99,7 @@ public class RealDownloadTask {
 
         if(Lists.empty(interceptors)) {
             for(Interceptor interceptor : interceptors) {
-                interceptor.intercept(0, task.config(), request);
+                interceptor.intercept(0, singleTask, request);
             }
         }
 
@@ -110,14 +114,22 @@ public class RealDownloadTask {
             if (body == null)
                 return null;
 
+            String fileName = singleTask.getName();
             if (Strings.empty(fileName))
                 fileName = getNetFileName(response, url);
 
-            String folder = getDefaultFolder(fileName);
+            String folder = singleTask.getFolder();
+            if (Strings.empty(folder))
+                folder = getDefaultFolder(fileName);
 
             File file = new File(folder, fileName);
             if (file.exists()) {
-                throw new IllegalStateException("该文件已存在");
+                if(singleTask.isReplace()) {
+                    boolean success = file.delete();
+                    if(!success) throw new IllegalStateException("该文件删除失败");
+                } else {
+                    throw new IllegalStateException("该文件已存在");
+                }
             }
 
             long contentLength = body.contentLength();
@@ -180,16 +192,17 @@ public class RealDownloadTask {
     /**
      * 串行下载
      */
-    private File[] downloadUrls(String[] urls, Progress progress) {
+    private File[] downloadUrls(Config.SingleTask[] tasks, Progress progress) {
         OkHttpClient client = new OkHttpClient();
 
-        File[] files = new File[urls.length];
+        File[] files = new File[tasks.length];
 
-        progress.totalSize = urls.length;
+        progress.totalSize = tasks.length;
 
         progress.status = Progress.Status.LOADING;
 
-        for (String url : urls) {
+        for (Config.SingleTask config : tasks) {
+            String url = config.getUrl();
             Request request = new Request.Builder()
                     .url(url)
                     .addHeader("Accept-Encoding", "identity")
@@ -198,7 +211,7 @@ public class RealDownloadTask {
 
             if(Lists.empty(interceptors)) {
                 for (int i = 0, size = interceptors.size(); i < size; i++) {
-                    interceptors.get(i).intercept(i, task.config(), request);
+                    interceptors.get(i).intercept(i, config, request);
                 }
             }
 
@@ -213,14 +226,23 @@ public class RealDownloadTask {
                 if (body == null)
                     return null;
 
-                String fileName = getNetFileName(response, url);
 
-                String folder = getDefaultFolder(fileName);
+                String fileName = config.getName();
+                if (Strings.empty(fileName))
+                    fileName = getNetFileName(response, url);
+
+                String folder = config.getFolder();
+                if (Strings.empty(folder))
+                    folder = getDefaultFolder(fileName);
 
                 File file = new File(folder, fileName);
                 if (file.exists()) {
-                    file.delete();
-//                    throw new IllegalStateException("该文件已存在");
+                    if(config.isReplace()) {
+                        boolean success = file.delete();
+                        if(!success) continue;
+                    } else {
+                        continue;
+                    }
                 }
 
 
@@ -264,6 +286,58 @@ public class RealDownloadTask {
         return files;
     }
 
+    public static class FutureResult {
+        public File file;
+        public Exception exc;
+
+        public boolean isSuccess() {
+            return file != null && exc == null;
+        }
+    }
+
+    public interface Future {
+        void get(FutureResult result);
+    }
+
+    public static File getDefaultFileName(String name) {
+        return new File(getDefaultFolder(name), name);
+    }
+
+    public static void getDefaultFileName(final String url, final Future future) {
+        if (Strings.empty(url) || future == null)
+            throw new AssertionError("二逼不解释！");
+
+        OkHttpClient client = new OkHttpClient();
+
+        final Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Accept-Encoding", "identity")
+                .addHeader("referer", getHost(url))
+                .build();
+
+        Call call = client.newCall(request);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                FutureResult result = new FutureResult();
+                result.exc = new Exception(e);
+                future.get(result);
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                String fileName = getNetFileName(response, url);
+                String folder = getDefaultFolder(fileName);
+                FutureResult result = new FutureResult();
+                result.file = new File(folder, fileName);
+                future.get(result);
+            }
+        });
+
+    }
+
+
     private static String getDefaultFolder(String fileName) {
         Files files = Keeper.getF();
 
@@ -306,7 +380,7 @@ public class RealDownloadTask {
         return false;
     }
 
-    private static String getMimeType(String fileName) {
+    public static String getMimeType(String fileName) {
         if (fileName == null) return "";
 
         int index = fileName.lastIndexOf(".");
