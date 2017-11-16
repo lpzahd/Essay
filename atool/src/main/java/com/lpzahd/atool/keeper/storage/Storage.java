@@ -23,7 +23,6 @@ public class Storage {
     private final Dispatcher dispatcher;
     private final List<Interceptor> interceptors;
 
-
     public static Storage newStorage() {
         return new Storage();
     }

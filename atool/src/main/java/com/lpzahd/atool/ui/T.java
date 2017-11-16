@@ -25,4 +25,8 @@ public class T {
     public static void t(@StringRes int resId) {
         Toast.makeText(app, app.getString(resId), Toast.LENGTH_SHORT).show();
     }
+
+    public static void t(String format, Object... args) {
+        t(String.format(format, args));
+    }
 }

@@ -32,9 +32,15 @@ public class Progress {
     public Serializable extra3;                     //额外的数据
     public Throwable exception;                     //当前进度出现的异常
 
+    public long[] blocks;
+
     private transient long tempSize;                //每一小段时间间隔的网络流量
     private transient long lastRefreshTime;         //最后一次刷新的时间
     private transient List<Long> speedBuffer;       //网速做平滑的缓存，避免抖动过快
+
+    public void newBlocks(int len) {
+        blocks = new long[len];
+    }
 
     public Progress() {
         lastRefreshTime = SystemClock.elapsedRealtime();
@@ -59,7 +65,7 @@ public class Progress {
 
     }
 
-    public static boolean write(Progress progress, long writeSize, long totalSize) {
+    public static synchronized boolean write(Progress progress, long writeSize, long totalSize) {
         progress.totalSize = totalSize;
         progress.currentSize += writeSize;
         progress.tempSize += writeSize;
@@ -96,4 +102,14 @@ public class Progress {
         return sum / speedBuffer.size();
     }
 
+    @Override
+    public String toString() {
+        return "Progress{" +
+                ", fraction=" + fraction +
+                ", totalSize=" + totalSize +
+                ", currentSize=" + currentSize +
+                ", speed=" + speed +
+                ", status=" + status +
+                '}';
+    }
 }

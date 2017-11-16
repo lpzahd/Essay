@@ -32,6 +32,7 @@ import com.lpzahd.common.waiter.refresh.DspRefreshWaiter;
 import com.lpzahd.common.waiter.refresh.RefreshProcessor;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.common.waiter.FileDownloadWaiter;
 import com.lpzahd.essay.context.instinct.waiter.YiyiBoxMediaWaiter;
 import com.lpzahd.essay.context.preview.PreviewPicActivity;
 import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
@@ -88,6 +89,8 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
     @BindView(R.id.menu_fab)
     FloatingActionsMenu menuFab;
 
+    private FileDownloadWaiter mFileDownloadWaiter;
+
     private Bx6644RefreshWaiter mRefreshWaiter;
 
     private PureAdapter mAdapter;
@@ -96,6 +99,12 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
 
     public PurePhotoWaiter(PurePhotoActivity purePhotoActivity) {
         super(purePhotoActivity);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        addWaiter(mFileDownloadWaiter = new FileDownloadWaiter(context));
     }
 
     @Override
@@ -288,7 +297,7 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
         Uri uri;
     }
 
-    static class PureHolder extends ToneAdapter.ToneHolder {
+    class PureHolder extends ToneAdapter.ToneHolder {
 
         @BindView(R.id.recycler_view)
         RecyclerView recyclerView;
@@ -323,6 +332,12 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
                         }
                     });
                 }
+
+                @Override
+                public void onLongClick(RecyclerView rv, PicHolder holder) {
+                    final int position = holder.getAdapterPosition();
+                    mFileDownloadWaiter.showDownLoadDialog(adapter.getItem(position).uri.toString());
+                }
             });
         }
 
@@ -331,7 +346,7 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
         }
     }
 
-    static class PureAdapter extends ToneAdapter<List<Photo>, PureHolder> {
+    private class PureAdapter extends ToneAdapter<List<Photo>, PureHolder> {
 
         public PureAdapter(Context context) {
             super(context);

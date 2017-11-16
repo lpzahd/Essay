@@ -1,6 +1,7 @@
 package com.lpzahd.atool.keeper.storage;
 
 import com.lpzahd.Lists;
+import com.lpzahd.atool.keeper.storage.internal.ProgressDao;
 
 /**
  * 作者 : 迪
@@ -10,7 +11,8 @@ import com.lpzahd.Lists;
 public class Config {
 
     private final SingleTask[] tasks;
-    private final Object tag;
+    private final String tag;
+    private final ProgressDao dao;
 
     public static class SingleTask {
 
@@ -92,6 +94,7 @@ public class Config {
     private Config(Builder builder) {
         tasks = builder.tasks;
         tag = builder.tag;
+        dao = builder.dao;
     }
 
     public SingleTask getTask() {
@@ -102,14 +105,19 @@ public class Config {
         return tasks;
     }
 
-    public Object getTag() {
+    public String getTag() {
         return tag;
+    }
+
+    public ProgressDao getDao() {
+        return dao;
     }
 
     public static final class Builder {
 
-        private Object tag;
+        private String tag;
         private SingleTask[] tasks;
+        private ProgressDao dao;
 
         public static Builder newBuilder(String url) {
             return new Builder()
@@ -128,8 +136,13 @@ public class Config {
         public Builder() {
         }
 
+        public Builder dao(ProgressDao dao) {
+            this.dao = dao;
+            return this;
+        }
 
-        public Builder tag(Object tag) {
+
+        public Builder tag(String tag) {
             this.tag = tag;
             return this;
         }

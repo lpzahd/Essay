@@ -1,8 +1,8 @@
 package com.lpzahd.atool.keeper.storage;
 
-import com.lpzahd.Strings;
 import com.lpzahd.atool.keeper.storage.interceptor.RealDownloadTask;
 import com.lpzahd.atool.keeper.storage.internal.NamedRunnable;
+import com.lpzahd.atool.keeper.storage.internal.ProgressDao;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,10 +26,14 @@ public class DownloadTask implements Task {
     private RealDownloadTask task;
     private CallBack callBack;
 
+    private ProgressDao dao;
+
     public DownloadTask(Storage storage, Config config) {
         this.storage = storage;
         this.config = config;
         progress = new Progress();
+        progress.tag = config.getTag();
+        dao = config.getDao();
     }
 
     @Override
@@ -38,9 +42,19 @@ public class DownloadTask implements Task {
     }
 
     @Override
+    public Progress progress() {
+        return progress;
+    }
+
+    @Override
+    public ProgressDao dao() {
+        return dao;
+    }
+
+    @Override
     public Result execute() throws IOException {
         synchronized (this) {
-            if (executed) throw new IllegalStateException("Already Executed");
+//            if (executed) throw new IllegalStateException("Already Executed");
             executed = true;
         }
         try {
@@ -56,12 +70,35 @@ public class DownloadTask implements Task {
     @Override
     public void enqueue(CallBack callBack) {
         synchronized (this) {
-            if (executed) throw new IllegalStateException("Already Executed");
+//            if (executed) throw new IllegalStateException("Already Executed");
             executed = true;
         }
 
         this.callBack = callBack;
         storage.dispatcher().enqueue(new DownloadTask.AsyncTask());
+    }
+
+    @Override
+    public void pause() {
+        progress.status = Progress.Status.PAUSE;
+    }
+
+    @Override
+    public boolean isPause() {
+        return progress.status == Progress.Status.PAUSE;
+    }
+
+    @Override
+    public void resume() {
+        progress.status = Progress.Status.NONE;
+        enqueue(callBack);
+    }
+
+    @Override
+    public void restore(Progress progress, CallBack callBack) {
+        this.progress = progress;
+        this.callBack = callBack;
+        enqueue(callBack);
     }
 
     @Override
@@ -87,14 +124,14 @@ public class DownloadTask implements Task {
 
     @Override
     public Task clone() {
-        return null;
+        return new DownloadTask(storage, config);
     }
 
     private Result getFileWithInterceptorConvert(CallBack callBack) throws IOException {
         List<Interceptor> interceptors = new ArrayList<>();
         interceptors.addAll(storage.interceptors());
 
-        task = new RealDownloadTask(this, progress, interceptors, callBack);
+        task = new RealDownloadTask(this, interceptors, callBack);
         return task.exec();
     }
 

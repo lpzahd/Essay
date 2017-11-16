@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
@@ -22,6 +23,7 @@ import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.imagepipeline.image.ImageInfo;
 import com.hanks.htextview.HTextView;
 import com.hanks.htextview.HTextViewType;
+import com.jakewharton.rxbinding2.view.RxView;
 import com.lpzahd.Lists;
 import com.lpzahd.atool.keeper.Downloads;
 import com.lpzahd.atool.keeper.Files;
@@ -85,6 +87,9 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
 
     @BindView(R.id.h_text_view)
     HTextView hTextView;
+
+    @BindView(R.id.batch_iv)
+    AppCompatImageView batchIv;
 
     private Transmitter<List<PreviewBean>> mTransmitter;
 
@@ -199,7 +204,7 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
                     @Override
                     public Publisher<Integer> apply(List<PreviewBean> previewBeans) throws Exception {
                         mAdapter.setData(previewBeans);
-
+                        showBatchIv(previewBeans.size());
 
                         Flowable<Integer> indexObservable = RxTaxi.get().<Integer>pull(TAG_INDEX).transmit();
                         return indexObservable != null ? indexObservable : Flowable.just(0);
@@ -216,14 +221,69 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
                     }
                 });
 
-        RxTaxi.get().<Integer>pull(TAG_INDEX).transmit()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Integer>() {
-                    @Override
-                    public void accept(Integer integer) throws Exception {
+    }
 
+    private void showBatchIv(int size) {
+        if(size < 1) {
+            batchIv.setVisibility(View.GONE);
+            return ;
+        }
+
+        batchIv.setVisibility(View.VISIBLE);
+        RxView.clicks(batchIv)
+                .throttleFirst(1, TimeUnit.SECONDS)
+                .subscribe(new Consumer<Object>() {
+                    @Override
+                    public void accept(Object o) throws Exception {
+                        if(mAdapter == null || Lists.empty(mAdapter.getData())) {
+                            T.t("暂无图片哦！");
+                        } else {
+                            List<PreviewBean> pics = mAdapter.getData();
+
+                            String[] urls = new String[pics.size()];
+
+                            for(int i = 0, size = pics.size(); i < size; i++) {
+                                urls[i] = pics.get(i).uri.toString();
+                            }
+                            mFileDownloadWaiter.showDownLoadDialog(urls);
+                        }
                     }
                 });
+
+        if(size > 9) {
+            batchIv.setImageResource(R.drawable.ic_filter_9_plus_white_24dp);
+            return ;
+        }
+
+        switch (size) {
+            case 1:
+                batchIv.setImageResource(R.drawable.ic_filter_1_white_24dp);
+                break;
+            case 2:
+                batchIv.setImageResource(R.drawable.ic_filter_2_white_24dp);
+                break;
+            case 3:
+                batchIv.setImageResource(R.drawable.ic_filter_3_white_24dp);
+                break;
+            case 4:
+                batchIv.setImageResource(R.drawable.ic_filter_4_white_24dp);
+                break;
+            case 5:
+                batchIv.setImageResource(R.drawable.ic_filter_5_white_24dp);
+                break;
+            case 6:
+                batchIv.setImageResource(R.drawable.ic_filter_6_white_24dp);
+                break;
+            case 7:
+                batchIv.setImageResource(R.drawable.ic_filter_7_white_24dp);
+                break;
+            case 8:
+                batchIv.setImageResource(R.drawable.ic_filter_8_white_24dp);
+                break;
+            case 9:
+                break;
+        }
+
     }
 
     public static class PreviewBean {

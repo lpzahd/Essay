@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 
 import com.lpzahd.atool.ui.L;
+import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.waiter.agency.WindowWaiter;
 
@@ -36,6 +37,7 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
                 if(state == RefreshProcessor.STATE_NO_MORE || state == RefreshProcessor.STATE_HAS_MORE) {
                     ToneAdapter adapter = (ToneAdapter) recyclerView.getAdapter();
                     adapter.setData(getData());
+                    T.t("刷新%s条数据", getData().size());
                 }
             }
 
@@ -46,7 +48,20 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
                 if(state == RefreshProcessor.STATE_NO_MORE || state == RefreshProcessor.STATE_HAS_MORE) {
                     ToneAdapter adapter = (ToneAdapter) recyclerView.getAdapter();
                     adapter.addAll(getData());
+                    T.t("新增%s条数据", getData().size());
                 }
+            }
+
+            @Override
+            public void onPtrError(int errorCode, String errorMessage) {
+                super.onPtrError(errorCode, errorMessage);
+                T.t(errorMessage);
+            }
+
+            @Override
+            public void onLoadError(int errorCode, String errorMessage) {
+                super.onLoadError(errorCode, errorMessage);
+                T.t(errorMessage);
             }
         };
         processor.attach();

@@ -1,5 +1,7 @@
 package com.lpzahd.atool.keeper.storage;
 
+import com.lpzahd.atool.keeper.storage.internal.ProgressDao;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -12,9 +14,21 @@ public interface Task extends Cloneable {
 
     Config config();
 
+    Progress progress();
+
+    ProgressDao dao();
+
     Result execute() throws IOException;
 
     void enqueue(CallBack responseCallback);
+
+    void pause();
+
+    boolean isPause();
+
+    void resume();
+
+    void restore(Progress progress, CallBack callBack);
 
     void cancel();
 

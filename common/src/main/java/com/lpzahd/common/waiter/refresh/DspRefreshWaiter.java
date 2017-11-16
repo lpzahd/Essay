@@ -3,6 +3,7 @@ package com.lpzahd.common.waiter.refresh;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 
+import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.waiter.agency.WindowWaiter;
 
@@ -43,6 +44,7 @@ public abstract class DspRefreshWaiter<E, D> extends WindowWaiter {
                     ToneAdapter adapter = (ToneAdapter) recyclerView.getAdapter();
                     adapter.setData(getData());
                     dataSource = getSource();
+                    T.t("刷新%s条数据", getData().size());
                 }
             }
 
@@ -54,7 +56,20 @@ public abstract class DspRefreshWaiter<E, D> extends WindowWaiter {
                     ToneAdapter adapter = (ToneAdapter) recyclerView.getAdapter();
                     adapter.addAll(getData());
                     dataSource.addAll(getSource());
+                    T.t("新增%s条数据", getData().size());
                 }
+            }
+
+            @Override
+            public void onPtrError(int errorCode, String errorMessage) {
+                super.onPtrError(errorCode, errorMessage);
+                T.t(errorMessage);
+            }
+
+            @Override
+            public void onLoadError(int errorCode, String errorMessage) {
+                super.onLoadError(errorCode, errorMessage);
+                T.t(errorMessage);
             }
         };
         processor.attach();

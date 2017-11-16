@@ -24,7 +24,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -37,11 +36,13 @@ import okhttp3.ResponseBody;
  * 作者 : 迪
  * 时间 : 2017/11/6.
  * 描述 ： 命里有时终须有，命里无时莫强求
+ *
+ * TODO 忘记考虑单线程处理了···
  */
 public class RealDownloadTask {
 
     // 小文件尺寸 10M
-    private static final long SIZE_MINI_FILE = 10 * 1024 * 1024 * 8;
+    private static final long SIZE_MINI_FILE = 1 * 1024 * 1024;
 
     private final Task task;
     private final Progress progress;
@@ -49,9 +50,9 @@ public class RealDownloadTask {
     private List<Interceptor> interceptors;
     private CallBack callBack;
 
-    public RealDownloadTask(Task task, Progress progress, List<Interceptor> interceptors, CallBack callBack) {
+    public RealDownloadTask(Task task, List<Interceptor> interceptors, CallBack callBack) {
         this.task = task;
-        this.progress = progress;
+        this.progress = task.progress();
         this.interceptors = interceptors;
         this.callBack = callBack;
     }
@@ -91,6 +92,8 @@ public class RealDownloadTask {
         OkHttpClient client = new OkHttpClient();
 
         final String url = singleTask.getUrl();
+        progress.url = url;
+
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("Accept-Encoding", "identity")
@@ -117,18 +120,24 @@ public class RealDownloadTask {
             String fileName = singleTask.getName();
             if (Strings.empty(fileName))
                 fileName = getNetFileName(response, url);
+            progress.fileName = fileName;
 
             String folder = singleTask.getFolder();
             if (Strings.empty(folder))
                 folder = getDefaultFolder(fileName);
+            progress.folder = folder;
 
             File file = new File(folder, fileName);
+            progress.filePath = file.getAbsolutePath();
+
             if (file.exists()) {
                 if(singleTask.isReplace()) {
                     boolean success = file.delete();
                     if(!success) throw new IllegalStateException("该文件删除失败");
                 } else {
-                    throw new IllegalStateException("该文件已存在");
+                    if(progress.currentSize == progress.totalSize) {
+                        throw new IllegalStateException("该文件已存在");
+                    }
                 }
             }
 
@@ -145,12 +154,11 @@ public class RealDownloadTask {
             byte[] buffer = new byte[8192];
 
             int len;
-            fileOutputStream = new FileOutputStream(file);
 
             progress.status = Progress.Status.LOADING;
 
             if (isCountType) {
-
+                fileOutputStream = new FileOutputStream(file);
                 while ((len = bodyStream.read(buffer)) != -1) {
                     fileOutputStream.write(buffer, 0, len);
                 }
@@ -159,14 +167,17 @@ public class RealDownloadTask {
 
             } else {
 
-                while ((len = bodyStream.read(buffer)) != -1 && progress.status == Progress.Status.LOADING) {
-                    fileOutputStream.write(buffer, 0, len);
+                progress.totalSize = contentLength;
 
-                    boolean write = Progress.write(progress, len, progress.totalSize);
-                    if (write && callBack != null) {
-                        callBack.onProgress(task, progress);
-                    }
-                }
+                BlockDowloadTask blockDowloadTask = new BlockDowloadTask(
+                        task, progress, url, contentLength, file.getAbsolutePath()
+                );
+
+                file = blockDowloadTask.exec();
+            }
+
+            if(progress.status == Progress.Status.PAUSE) {
+                throw new IllegalStateException("Paused!");
             }
 
             if(progress.status == Progress.Status.CANCEL) {
@@ -203,6 +214,7 @@ public class RealDownloadTask {
 
         for (Config.SingleTask config : tasks) {
             String url = config.getUrl();
+            progress.url = url;
             Request request = new Request.Builder()
                     .url(url)
                     .addHeader("Accept-Encoding", "identity")
@@ -230,12 +242,15 @@ public class RealDownloadTask {
                 String fileName = config.getName();
                 if (Strings.empty(fileName))
                     fileName = getNetFileName(response, url);
+                progress.fileName = fileName;
 
                 String folder = config.getFolder();
                 if (Strings.empty(folder))
                     folder = getDefaultFolder(fileName);
+                progress.folder = folder;
 
                 File file = new File(folder, fileName);
+                progress.fileName = file.getAbsolutePath();
                 if (file.exists()) {
                     if(config.isReplace()) {
                         boolean success = file.delete();

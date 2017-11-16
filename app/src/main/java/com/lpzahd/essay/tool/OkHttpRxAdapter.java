@@ -1,5 +1,7 @@
 package com.lpzahd.essay.tool;
 
+import com.lpzahd.atool.ui.T;
+
 import java.io.IOException;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -54,6 +56,7 @@ public class OkHttpRxAdapter extends Observable<Response> {
 
         @Override
         public void onFailure(Call call, IOException e) {
+            T.t(e.getMessage());
             dispose();
         }
 

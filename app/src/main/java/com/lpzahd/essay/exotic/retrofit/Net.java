@@ -209,9 +209,9 @@ public class Net {
      * @param page 页码从第二页开始，第一页的时候不知道返回的是啥
      */
     public Observable<Bx6644> pureList(int page) {
-        return it("http:/www.6666bx.com")
+        return it("http:/www.8888ez.com")
                 .create(PureListApi.class)
-                .pureList("http://www.6666bx.com/html/artlist/qingchunweimei/26_" + page + ".json");
+                .pureList("http://www.8888ez.com/html/artlist/qingchunweimei/26_" + page + ".json");
     }
 
     public interface PureListApi {
@@ -229,9 +229,9 @@ public class Net {
      * @param id 图片id
      */
     public Observable<BxPhotos> purePhotos(String id) {
-        return it("http:/www.6666bx.com")
+        return it("http:/www.8888ez.com")
                 .create(PurePhotosApi.class)
-                .purePhotos("http://www.6666bx.com/html/artdata/" + id + ".json");
+                .purePhotos("http://www.8888ez.com/html/artdata/" + id + ".json");
     }
 
     public interface PurePhotosApi {

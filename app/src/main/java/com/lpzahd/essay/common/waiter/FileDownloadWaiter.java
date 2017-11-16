@@ -364,7 +364,6 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
                 @Override
                 public void onShow(DialogInterface dialog) {
                     Storage.getDefaultFileName(DownLoadDialog.this.url, future);
-                    dialog.dismiss();
                 }
             });
         }

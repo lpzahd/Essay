@@ -247,6 +247,8 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
                             return Collections.emptyList();
 
                         String htmlStr = body.string();
+                        body.close();
+
                         List<VideoBean> videos = new ArrayList<>();
 
                         Pattern videoPattern = Pattern.compile(YiyiBoxMediaWaiter.REGEX_TAG_VIDEO, Pattern.CASE_INSENSITIVE);
@@ -452,13 +454,14 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
                 .doOnSubscribe(new Consumer<Disposable>() {
                     @Override
                     public void accept(Disposable disposable) throws Exception {
-                        context.showKangNaDialog();
+                        T.t("开始检索图片");
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<SinglePicWaiter.PicBean>>() {
                     @Override
                     public void accept(List<SinglePicWaiter.PicBean> picBeans) throws Exception {
+                        T.t("发现%s张图片", picBeans.size());
                         mAdapter.setData(picBeans);
 
                         if(!Lists.empty(picBeans)) {
@@ -469,13 +472,10 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
                             zoomableDraweeView.setController(draweeController);
                         }
 
-
-                        context.dismissKangNaDialog();
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
-                        context.dismissKangNaDialog();
                         T.t(throwable.getMessage());
                     }
                 });
