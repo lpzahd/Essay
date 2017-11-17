@@ -232,7 +232,7 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
 
     static class RecyclerViewOnScroll extends RecyclerView.OnScrollListener {
 
-        private static final long MIN_DURATION_TIME = 1000;
+        private static final long MIN_DURATION_TIME = 3000;
 
         RecyclerView mRecyclerView;
 

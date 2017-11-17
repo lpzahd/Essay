@@ -56,7 +56,7 @@ public class OkHttpRxAdapter extends Observable<Response> {
 
         @Override
         public void onFailure(Call call, IOException e) {
-            T.t(e.getMessage());
+            T.post(e.getMessage());
             dispose();
         }
 

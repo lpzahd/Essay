@@ -307,14 +307,14 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
                 .doOnSubscribe(new Consumer<Disposable>() {
                     @Override
                     public void accept(Disposable disposable) throws Exception {
-                        context.showKangNaDialog();
+                        T.t("查找视频中...");
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<SinglePicWaiter.PicBean>>() {
                     @Override
                     public void accept(List<SinglePicWaiter.PicBean> pics) throws Exception {
-
+                        T.t("发现视频 ：" + videos.get(displayPosition).video);
                         mAdapter.setData(pics);
 
                         if(!Lists.empty(videos)) {
@@ -322,13 +322,10 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
                             stepVideo(videos.get(displayPosition));
                         }
 
-
-                        context.dismissKangNaDialog();
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
-                        context.dismissKangNaDialog();
                         T.t(throwable.getMessage());
                     }
                 });

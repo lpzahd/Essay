@@ -12,7 +12,8 @@
         android:layout_width="120dp"
         android:layout_height="120dp"
         app:roundedCornerRadius="4dp"
-        app:actualImageScaleType="focusCrop"/>
+        app:actualImageScaleType="focusCrop"
+        app:placeholderImage="@android:color/darker_gray"/>
 
 </FrameLayout>
 
