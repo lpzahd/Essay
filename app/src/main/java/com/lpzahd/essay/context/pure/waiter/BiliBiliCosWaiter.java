@@ -6,6 +6,8 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -34,33 +36,32 @@ import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.common.waiter.FileDownloadWaiter;
 import com.lpzahd.essay.context.instinct.waiter.YiyiBoxMediaWaiter;
+import com.lpzahd.essay.context.instinct.waiter.YiyiBoxWaiter;
 import com.lpzahd.essay.context.preview.PreviewPicActivity;
 import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
-import com.lpzahd.essay.context.pure.PurePhotoActivity;
-import com.lpzahd.essay.context.pure.bx6644.Bx6644;
-import com.lpzahd.essay.context.pure.bx6644.BxPhotos;
+import com.lpzahd.essay.context.pure.BiliBiliCosActivity;
+import com.lpzahd.essay.context.pure.bilibili.BiliBiliCos;
 import com.lpzahd.essay.exotic.retrofit.Net;
+import com.lpzahd.waiter.consumer.State;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /**
  * 作者 : 迪
- * 时间 : 2017/11/1.
+ * 时间 : 2017/11/17.
  * 描述 ： 命里有时终须有，命里无时莫强求
  */
-public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> implements View.OnClickListener {
+public class BiliBiliCosWaiter extends ToneActivityWaiter<BiliBiliCosActivity> implements View.OnClickListener{
 
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
@@ -91,14 +92,14 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
 
     private FileDownloadWaiter mFileDownloadWaiter;
 
-    private Bx6644RefreshWaiter mRefreshWaiter;
+    private CosRefreshWaiter mRefreshWaiter;
 
     private PureAdapter mAdapter;
 
-    private int QUERY_COUNT = 30;
+    private int QUERY_COUNT = 20;
 
-    public PurePhotoWaiter(PurePhotoActivity purePhotoActivity) {
-        super(purePhotoActivity);
+    public BiliBiliCosWaiter(BiliBiliCosActivity activity) {
+        super(activity);
     }
 
     @Override
@@ -108,8 +109,37 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
     }
 
     @Override
+    protected int createOptionsMenu(Menu menu) {
+        context.getMenuInflater().inflate(R.menu.menu_bilibili, menu);
+        return super.createOptionsMenu(menu);
+    }
+
+    @Override
+    protected int optionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if(id == R.id.action_hot) {
+            toolBar.setTitle(R.string.cos_hot);
+            mRefreshWaiter.setType(Net.BiliPhotosApi.HOT);
+            mRefreshWaiter.autoRefresh();
+            recyclerView.scrollToPosition(0);
+            return State.STATE_TRUE;
+        }
+
+        if (id == R.id.action_new) {
+            toolBar.setTitle(R.string.cos_new);
+            mRefreshWaiter.setType(Net.BiliPhotosApi.NEW);
+            mRefreshWaiter.autoRefresh();
+            recyclerView.scrollToPosition(0);
+            return State.STATE_TRUE;
+        }
+
+        return super.optionsItemSelected(item);
+    }
+
+    @Override
     protected void initView() {
-        toolBar.setTitle("清纯唯美");
+        toolBar.setTitle("Cos");
         context.setSupportActionBar(toolBar);
 
         pageFab.setOnClickListener(this);
@@ -143,7 +173,7 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
             }
         });
 
-        mRefreshWaiter = new Bx6644RefreshWaiter(swipeRefreshLayout, recyclerView);
+        mRefreshWaiter = new CosRefreshWaiter(swipeRefreshLayout, recyclerView);
         mRefreshWaiter.setSwipeRefreshCallBack(new SwipeRefreshWaiter.SimpleCallBack() {
             @Override
             public void onPtrComplete(int start, int page, @RefreshProcessor.LoadState int loadState) {
@@ -223,9 +253,7 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
         RxTaxi.get().unregist(YiyiBoxMediaWaiter.TAG);
     }
 
-    private static class Bx6644RefreshWaiter extends DspRefreshWaiter<BxPhotos, List<Photo>> {
-
-        private static final String REGEX_TAG_IMG = "<img\\b[^>]*\\bsrc\\b\\s*=\\s*('|\")?([^'\"\n\r\f>]+(\\.jpg|\\.bmp|\\.eps|\\.gif|\\.mif|\\.miff|\\.png|\\.tif|\\.tiff|\\.svg|\\.wmf|\\.jpe|\\.jpeg|\\.dib|\\.ico|\\.tga|\\.cut|\\.pic|\\.webp)\\b)[^>]*>";
+    private static class CosRefreshWaiter extends DspRefreshWaiter<BiliBiliCos.DataBean.ItemsBean, List<Photo>> {
 
         private int countPages = 10;
 
@@ -233,44 +261,32 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
             return countPages;
         }
 
-        Bx6644RefreshWaiter(SwipeRefreshLayout swipeRefreshLayout, RecyclerView recyclerView) {
+        private String type = Net.BiliPhotosApi.HOT;
+
+        CosRefreshWaiter(SwipeRefreshLayout swipeRefreshLayout, RecyclerView recyclerView) {
             super(swipeRefreshLayout, recyclerView);
         }
 
+        void setType(String type) {
+            this.type = type;
+        }
+
         @Override
-        public Flowable<List<BxPhotos>> doRefresh(final int page) {
-            return Net.get().pureList(page + 2)
-                    .map(new Function<Bx6644, List<Bx6644.ListBean>>() {
+        public Flowable<List<BiliBiliCos.DataBean.ItemsBean>> doRefresh(final int page) {
+            return Net.get().searchCos(type, page, 20)
+                    .map(new Function<BiliBiliCos, List<BiliBiliCos.DataBean.ItemsBean>>() {
                         @Override
-                        public List<Bx6644.ListBean> apply(Bx6644 bx6644) throws Exception {
-                            int total = bx6644.getMaxpage();
+                        public List<BiliBiliCos.DataBean.ItemsBean> apply(BiliBiliCos biliBiliCos) throws Exception {
+                            if(biliBiliCos.getCode() != 0)
+                                return Collections.emptyList();
+
+                            int total = biliBiliCos.getData().getTotal_count();
                             if(total > 0)
                                 countPages = total;
                             else
                                 countPages = page;
 
-                            return bx6644.getList();
-                        }
-                    })
-                    .flatMap(new Function<List<Bx6644.ListBean>, Observable<List<BxPhotos>>>() {
-                        @Override
-                        public Observable<List<BxPhotos>> apply(List<Bx6644.ListBean> listBeans) throws Exception {
-                            List<Observable<BxPhotos>> photos = new ArrayList<>();
-
-                            for (Bx6644.ListBean bean : listBeans) {
-                                photos.add(Net.get().purePhotos(bean.getS_id()));
-                            }
-
-                            return Observable.zip(photos, new Function<Object[], List<BxPhotos>>() {
-                                @Override
-                                public List<BxPhotos> apply(Object[] objects) throws Exception {
-                                    List<BxPhotos> bxPhotos = new ArrayList<>(objects.length);
-                                    for (Object photo : objects) {
-                                        bxPhotos.add((BxPhotos) photo);
-                                    }
-                                    return bxPhotos;
-                                }
-                            });
+                            return biliBiliCos.getData().getItems();
                         }
                     })
                     .subscribeOn(Schedulers.io())
@@ -278,20 +294,13 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
         }
 
         @Override
-        public List<Photo> process(BxPhotos bxPhotos) {
-            String body = bxPhotos.getS_body();
-
+        public List<Photo> process(BiliBiliCos.DataBean.ItemsBean itemBean) {
+            List<BiliBiliCos.DataBean.ItemsBean.ItemBean.PicturesBean> picList = itemBean.getItem().getPictures();
             List<Photo> photos = new ArrayList<>();
-            Pattern p = Pattern.compile(REGEX_TAG_IMG, Pattern.CASE_INSENSITIVE);
-            Matcher m = p.matcher(body);
-            String quote;
-            String src;
-            while (m.find()) {
-                quote = m.group(1);
-                src = (quote == null || quote.trim().length() == 0) ? m.group(2).split("\\s+")[0] : m.group(2);
 
+            for (BiliBiliCos.DataBean.ItemsBean.ItemBean.PicturesBean bean : picList) {
                 Photo photo = new Photo();
-                photo.uri = Frescoer.uri(src, ImageSource.SOURCE_NET);
+                photo.uri = Frescoer.uri(bean.getImg_src(), ImageSource.SOURCE_NET);
                 photos.add(photo);
             }
             return photos;
@@ -407,4 +416,5 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
             holder.imageDraweeView.setController(controller);
         }
     }
+    
 }

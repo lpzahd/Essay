@@ -2,6 +2,7 @@ package com.lpzahd.essay.exotic.retrofit;
 
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
+import com.lpzahd.essay.context.pure.bilibili.BiliBiliCos;
 import com.lpzahd.essay.context.pure.bx6644.Bx6644;
 import com.lpzahd.essay.context.pure.bx6644.BxPhotos;
 import com.lpzahd.essay.context.turing.turing123.Turing123;
@@ -242,6 +243,33 @@ public class Net {
          */
         @GET
         Observable<BxPhotos> purePhotos(@Url String url);
+
+    }
+
+    /**
+     * bilibili cos 图片查询接口
+     */
+    public Observable<BiliBiliCos> searchCos(String type, int page, int size) {
+        return it("http://api.vc.bilibili.com")
+                .create(BiliPhotosApi.class)
+                .searchCos(type, page, size);
+    }
+
+
+    public interface BiliPhotosApi {
+
+        String HOT = "hot";
+        String NEW = "new";
+
+        /**
+         * bilibili cos 图片接口
+         *
+         * http://api.vc.bilibili.com/link_draw/v2/Photo/list?type=hot&category=cos&page_num=0&page_size=20
+         *
+         * @param page  页码(从第0页开始)
+         */
+        @GET("/link_draw/v2/Photo/list?type=hot&category=cos")
+        Observable<BiliBiliCos> searchCos(@Query("type") String type, @Query("page_num") int page, @Query("page_size") int size);
 
     }
 }

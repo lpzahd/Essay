@@ -148,14 +148,6 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
         final LinearSnapHelper snapHelper = new LinearSnapHelper();
         snapHelper.attachToRecyclerView(recyclerView);
 
-        recyclerView.addOnItemTouchListener(new OnItemHolderTouchListener<PreviewHolder>(recyclerView) {
-            @Override
-            public void onLongClick(RecyclerView rv, PreviewHolder previewHolder) {
-                mFileDownloadWaiter.showDownLoadDialog(
-                        mAdapter.getItem(previewHolder.getAdapterPosition()).uri.toString());
-            }
-        });
-
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             Disposable dispose;
@@ -281,6 +273,7 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
                 batchIv.setImageResource(R.drawable.ic_filter_8_white_24dp);
                 break;
             case 9:
+                batchIv.setImageResource(R.drawable.ic_filter_9_white_24dp);
                 break;
         }
 
@@ -290,20 +283,29 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
         public Uri uri;
     }
 
-    public static class PreviewHolder extends ToneAdapter.ToneHolder {
+    class PreviewHolder extends ToneAdapter.ToneHolder {
 
         @BindView(R.id.photo_drawee_view)
         PhotoDraweeView photoDraweeView;
 
-        public PreviewHolder(View itemView) {
+        PreviewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+
+            photoDraweeView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    mFileDownloadWaiter.showDownLoadDialog(
+                            mAdapter.getItem(getAdapterPosition()).uri.toString());
+                    return true;
+                }
+            });
         }
     }
 
-    public static class PreviewAdapter extends ToneAdapter<PreviewBean, PreviewHolder> {
+    public class PreviewAdapter extends ToneAdapter<PreviewBean, PreviewHolder> {
 
-        public PreviewAdapter(Context context) {
+        PreviewAdapter(Context context) {
             super(context);
         }
 
