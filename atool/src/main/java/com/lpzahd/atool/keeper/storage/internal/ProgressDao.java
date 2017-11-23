@@ -1,7 +1,5 @@
 package com.lpzahd.atool.keeper.storage.internal;
 
-import com.lpzahd.atool.keeper.storage.Progress;
-
 /**
  * 作者 : 迪
  * 时间 : 2017/11/15.

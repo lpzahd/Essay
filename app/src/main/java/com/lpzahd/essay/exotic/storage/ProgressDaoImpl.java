@@ -1,6 +1,6 @@
 package com.lpzahd.essay.exotic.storage;
 
-import com.lpzahd.atool.keeper.storage.Progress;
+import com.lpzahd.atool.keeper.storage.internal.Progress;
 import com.lpzahd.atool.keeper.storage.internal.ProgressDao;
 import com.lpzahd.atool.ui.L;
 

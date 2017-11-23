@@ -1,8 +1,9 @@
-package com.lpzahd.atool.keeper.storage;
+package com.lpzahd.atool.keeper.storage.internal;
 
 import android.app.Activity;
 
-import java.io.File;
+import com.lpzahd.atool.keeper.storage.Response;
+import com.lpzahd.atool.keeper.storage.task.Task;
 
 /**
  * 作者 : 迪
@@ -24,7 +25,7 @@ public interface CallBack {
 
     void onFailure(Task task, Exception e);
 
-    void onSuccess(Task task, Result result) throws Exception;
+    void onSuccess(Task task, Response response) throws Exception;
 
     class SimpleCallBack<T extends Activity> implements CallBack {
 
@@ -77,16 +78,16 @@ public interface CallBack {
         }
 
         @Override
-        final public void onSuccess(final Task task, final Result result) throws Exception {
+        final public void onSuccess(final Task task, final Response response) throws Exception {
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    onSuccess(activity, task, result);
+                    onSuccess(activity, task, response);
                 }
             });
         }
 
-        public void onSuccess(T activity, Task task, Result result) {
+        public void onSuccess(T activity, Task task, Response response) {
 
         }
     }

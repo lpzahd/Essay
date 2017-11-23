@@ -44,8 +44,8 @@ public abstract class DspRefreshWaiter<E, D> extends WindowWaiter {
                     ToneAdapter adapter = (ToneAdapter) recyclerView.getAdapter();
                     adapter.setData(getData());
                     dataSource = getSource();
-                    T.t("刷新%s条数据", getData().size());
                 }
+                T.t("刷新%s条数据", getData().size());
             }
 
             @SuppressWarnings("unchecked")
@@ -56,8 +56,8 @@ public abstract class DspRefreshWaiter<E, D> extends WindowWaiter {
                     ToneAdapter adapter = (ToneAdapter) recyclerView.getAdapter();
                     adapter.addAll(getData());
                     dataSource.addAll(getSource());
-                    T.t("新增%s条数据", getData().size());
                 }
+                T.t("新增%s条数据", getData().size());
             }
 
             @Override

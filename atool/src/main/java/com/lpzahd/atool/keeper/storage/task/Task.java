@@ -1,8 +1,11 @@
-package com.lpzahd.atool.keeper.storage;
+package com.lpzahd.atool.keeper.storage.task;
 
+import com.lpzahd.atool.keeper.storage.Request;
+import com.lpzahd.atool.keeper.storage.Response;
+import com.lpzahd.atool.keeper.storage.internal.CallBack;
+import com.lpzahd.atool.keeper.storage.internal.Progress;
 import com.lpzahd.atool.keeper.storage.internal.ProgressDao;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -12,13 +15,13 @@ import java.io.IOException;
  */
 public interface Task extends Cloneable {
 
-    Config config();
+    Request config();
 
     Progress progress();
 
     ProgressDao dao();
 
-    Result execute() throws IOException;
+    Response execute() throws IOException;
 
     void enqueue(CallBack responseCallback);
 
@@ -41,6 +44,6 @@ public interface Task extends Cloneable {
     Task clone();
 
     interface Factory {
-        Task newTask(Config config);
+        Task newTask(Request request);
     }
 }

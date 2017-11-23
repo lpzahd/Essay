@@ -1,4 +1,4 @@
-package com.lpzahd.atool.keeper.storage.interceptor;
+package com.lpzahd.atool.keeper.storage.task;
 
 import android.support.annotation.NonNull;
 
@@ -7,12 +7,10 @@ import com.lpzahd.Strings;
 import com.lpzahd.atool.io.IO;
 import com.lpzahd.atool.keeper.Files;
 import com.lpzahd.atool.keeper.Keeper;
-import com.lpzahd.atool.keeper.storage.CallBack;
-import com.lpzahd.atool.keeper.storage.Config;
-import com.lpzahd.atool.keeper.storage.Interceptor;
-import com.lpzahd.atool.keeper.storage.Progress;
-import com.lpzahd.atool.keeper.storage.Result;
-import com.lpzahd.atool.keeper.storage.Task;
+import com.lpzahd.atool.keeper.storage.Request;
+import com.lpzahd.atool.keeper.storage.Response;
+import com.lpzahd.atool.keeper.storage.internal.CallBack;
+import com.lpzahd.atool.keeper.storage.internal.Progress;
 import com.lpzahd.atool.ui.L;
 
 import java.io.File;
@@ -28,21 +26,17 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
  * 作者 : 迪
  * 时间 : 2017/11/6.
  * 描述 ： 命里有时终须有，命里无时莫强求
- *
- * TODO 忘记考虑单线程处理了···
  */
 public class RealDownloadTask {
 
     // 小文件尺寸 10M
-    private static final long SIZE_MINI_FILE = 1 * 1024 * 1024;
+    private static final long SIZE_MINI_FILE = 10 * 1024 * 1024;
 
     private final Task task;
     private final Progress progress;
@@ -61,11 +55,11 @@ public class RealDownloadTask {
         this.callBack = callBack;
     }
 
-    public Result exec() {
+    public Response exec() {
 
-        Config config = task.config();
+        Request request = task.config();
 
-        Config.SingleTask[] tasks = config.getTasks();
+        Request.SingleTask[] tasks = request.getTasks();
 
         File[] files;
         if (tasks.length == 1) {
@@ -78,8 +72,8 @@ public class RealDownloadTask {
             files = downloadUrls(tasks, progress);
         }
 
-        return new Result.Builder()
-                .config(config)
+        return new Response.Builder()
+                .config(request)
                 .files(files)
                 .progresses(progress)
                 .build();
@@ -88,13 +82,13 @@ public class RealDownloadTask {
     /**
      * 下载单个文件
      */
-    private File downloadUrl(Config.SingleTask singleTask, Progress progress) {
+    private File downloadUrl(Request.SingleTask singleTask, Progress progress) {
         OkHttpClient client = new OkHttpClient();
 
         final String url = singleTask.getUrl();
         progress.url = url;
 
-        Request request = new Request.Builder()
+        okhttp3.Request request = new okhttp3.Request.Builder()
                 .url(url)
                 .addHeader("Accept-Encoding", "identity")
                 .addHeader("referer", getHost(url))
@@ -111,7 +105,7 @@ public class RealDownloadTask {
         InputStream bodyStream = null;
         FileOutputStream fileOutputStream = null;
         try {
-            Response response = call.execute();
+            okhttp3.Response response = call.execute();
 
             ResponseBody body = response.body();
             if (body == null)
@@ -203,7 +197,7 @@ public class RealDownloadTask {
     /**
      * 串行下载
      */
-    private File[] downloadUrls(Config.SingleTask[] tasks, Progress progress) {
+    private File[] downloadUrls(Request.SingleTask[] tasks, Progress progress) {
         OkHttpClient client = new OkHttpClient();
 
         File[] files = new File[tasks.length];
@@ -212,10 +206,10 @@ public class RealDownloadTask {
 
         progress.status = Progress.Status.LOADING;
 
-        for (Config.SingleTask config : tasks) {
+        for (Request.SingleTask config : tasks) {
             String url = config.getUrl();
             progress.url = url;
-            Request request = new Request.Builder()
+            okhttp3.Request request = new okhttp3.Request.Builder()
                     .url(url)
                     .addHeader("Accept-Encoding", "identity")
                     .addHeader("referer", getHost(url))
@@ -232,7 +226,7 @@ public class RealDownloadTask {
             InputStream bodyStream = null;
             FileOutputStream fileOutputStream = null;
             try {
-                Response response = call.execute();
+                okhttp3.Response response = call.execute();
 
                 ResponseBody body = response.body();
                 if (body == null)
@@ -324,7 +318,7 @@ public class RealDownloadTask {
 
         OkHttpClient client = new OkHttpClient();
 
-        final Request request = new Request.Builder()
+        final okhttp3.Request request = new okhttp3.Request.Builder()
                 .url(url)
                 .addHeader("Accept-Encoding", "identity")
                 .addHeader("referer", getHost(url))
@@ -341,7 +335,7 @@ public class RealDownloadTask {
             }
 
             @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull okhttp3.Response response) throws IOException {
                 String fileName = getNetFileName(response, url);
                 String folder = getDefaultFolder(fileName);
                 FutureResult result = new FutureResult();
@@ -416,7 +410,7 @@ public class RealDownloadTask {
         return "";
     }
 
-    private static String getNetFileName(Response response, String url) {
+    private static String getNetFileName(okhttp3.Response response, String url) {
         String fileName = getHeaderFileName(response);
         if (Strings.empty(fileName)) fileName = getUrlFileName(url);
         if (Strings.empty(fileName)) fileName = "lpz_" + System.currentTimeMillis();
@@ -434,7 +428,7 @@ public class RealDownloadTask {
      * Content-Disposition:attachment;filename=FileName.txt
      * Content-Disposition: attachment; filename*="UTF-8''%E6%9B%BF%E6%8D%A2%E5%AE%9E%E9%AA%8C%E6%8A%A5%E5%91%8A.pdf"
      */
-    private static String getHeaderFileName(Response response) {
+    private static String getHeaderFileName(okhttp3.Response response) {
         String dispositionHeader = response.header("Content-Disposition");
         if (dispositionHeader != null) {
             //文件名可能包含双引号，需要去除

@@ -32,6 +32,8 @@ public class SimpleVideo extends StandardGSYVideoPlayer {
 
     private TextView mChangeRotate;
 
+
+
     private TextView mChangeTransform;
 
     private List<Video> mUrlList = new ArrayList<>();
@@ -69,6 +71,15 @@ public class SimpleVideo extends StandardGSYVideoPlayer {
     protected void init(Context context) {
         super.init(context);
         initView();
+    }
+
+    public void start() {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                clickStartIcon();
+            }
+        });
     }
 
     private void initView() {

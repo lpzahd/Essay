@@ -1,7 +1,9 @@
-package com.lpzahd.atool.keeper.storage;
+package com.lpzahd.atool.keeper.storage.internal;
 
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+
+import com.lpzahd.atool.keeper.storage.Storage;
 
 import java.io.Serializable;
 import java.util.ArrayList;

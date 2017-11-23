@@ -2,14 +2,12 @@ package com.lpzahd.essay.common.waiter;
 
 import android.content.DialogInterface;
 import android.os.Handler;
-import android.support.annotation.UiThread;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -21,14 +19,13 @@ import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
-import com.lpzahd.atool.keeper.storage.CallBack;
-import com.lpzahd.atool.keeper.storage.Config;
-import com.lpzahd.atool.keeper.storage.Progress;
-import com.lpzahd.atool.keeper.storage.Result;
+import com.lpzahd.atool.keeper.storage.internal.CallBack;
+import com.lpzahd.atool.keeper.storage.Request;
+import com.lpzahd.atool.keeper.storage.internal.Progress;
+import com.lpzahd.atool.keeper.storage.Response;
 import com.lpzahd.atool.keeper.storage.Storage;
-import com.lpzahd.atool.keeper.storage.Task;
-import com.lpzahd.atool.keeper.storage.interceptor.RealDownloadTask;
-import com.lpzahd.atool.ui.L;
+import com.lpzahd.atool.keeper.storage.task.Task;
+import com.lpzahd.atool.keeper.storage.task.RealDownloadTask;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
@@ -76,7 +73,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
     public void down(String url, CallBack callBack, int auto) {
         Task task = Storage.newStorage()
-                .newTask(Config.Builder.newBuilder(url).build());
+                .newTask(Request.Builder.newBuilder(url).build());
 
         getTaskMap().put(task, auto);
         task.enqueue(callBack);
@@ -97,19 +94,19 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
     public void down(String[] urls, CallBack callBack, int auto) {
         Task task = Storage.newStorage()
-                .newTask(Config.Builder.newBuilder(urls).build());
+                .newTask(Request.Builder.newBuilder(urls).build());
 
         getTaskMap().put(task, auto);
         task.enqueue(callBack);
     }
 
-    public void down(Config.SingleTask[] tasks) {
+    public void down(Request.SingleTask[] tasks) {
         down(tasks, defaultAppCallBack(), AUTO_NONE);
     }
 
-    public void down(Config.SingleTask[] tasks, CallBack callBack, int auto) {
+    public void down(Request.SingleTask[] tasks, CallBack callBack, int auto) {
         Task task = Storage.newStorage()
-                .newTask(Config.Builder.newBuilder()
+                .newTask(Request.Builder.newBuilder()
                         .tasks(tasks)
                         .build());
 
@@ -117,13 +114,13 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
         task.enqueue(callBack);
     }
 
-    public void down(Config.SingleTask singleTask) {
+    public void down(Request.SingleTask singleTask) {
         down(singleTask, defaultAppCallBack(), AUTO_NONE);
     }
 
-    public void down(Config.SingleTask singleTask, CallBack callBack, int auto) {
+    public void down(Request.SingleTask singleTask, CallBack callBack, int auto) {
         Task task = Storage.newStorage()
-                .newTask(Config.Builder.newBuilder()
+                .newTask(Request.Builder.newBuilder()
                         .task(singleTask)
                         .build());
         getTaskMap().put(task, auto);
@@ -208,7 +205,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
             }
 
             @Override
-            public void onSuccess(AppCompatActivity activity, Task task, Result result) {
+            public void onSuccess(AppCompatActivity activity, Task task, Response response) {
                 T.t("图片下载完成");
             }
 
@@ -229,7 +226,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
             }
 
             @Override
-            public void runOnSuccess(Task task, Result result) {
+            public void runOnSuccess(Task task, Response response) {
                 T.t("图片下载完成");
             }
 
@@ -256,7 +253,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
         }
 
-        public void runOnSuccess(Task task, Result result) {
+        public void runOnSuccess(Task task, Response response) {
 
         }
 
@@ -291,11 +288,11 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
         }
 
         @Override
-        final public void onSuccess(final Task task, final Result result) throws Exception {
+        final public void onSuccess(final Task task, final Response response) throws Exception {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    runOnSuccess(task, result);
+                    runOnSuccess(task, response);
                 }
             });
         }
@@ -424,7 +421,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
                positiveBtn.setOnClickListener(new View.OnClickListener() {
                    @Override
                    public void onClick(View v) {
-                       down(new Config.SingleTask.Builder()
+                       down(new Request.SingleTask.Builder()
                                 .url(url)
                                .build());
                    }
@@ -484,7 +481,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
                        if(Strings.equals(positiveBtn.getText(), "确定")) {
                            // 重命名下载
-                           down(new Config.SingleTask.Builder()
+                           down(new Request.SingleTask.Builder()
                                    .url(url)
                                    .name(edt.getText() + "." + mimeType)
                                    .build());
@@ -495,7 +492,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
                        if(Strings.equals(positiveBtn.getText(), "覆盖")) {
                            // 覆盖下载
-                           down(new Config.SingleTask.Builder()
+                           down(new Request.SingleTask.Builder()
                                    .url(url)
                                    .replace(true)
                                    .build());

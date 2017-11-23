@@ -231,6 +231,7 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
 
         loadDispose = OkHttpRxAdapter.adapter(client.newCall(request))
                 .subscribeOn(Schedulers.io())
+                .retry()
                 .filter(new Predicate<Response>() {
                     @Override
                     public boolean test(@NonNull Response response) throws Exception {
@@ -377,6 +378,8 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
                 context.onBackPressed();
             }
         });
+
+        simpleVideo.start();
 
     }
 

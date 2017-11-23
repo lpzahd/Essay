@@ -15,8 +15,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.BaseControllerListener;
 import com.facebook.drawee.interfaces.DraweeController;
@@ -25,24 +23,14 @@ import com.hanks.htextview.HTextView;
 import com.hanks.htextview.HTextViewType;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.lpzahd.Lists;
-import com.lpzahd.atool.keeper.Downloads;
-import com.lpzahd.atool.keeper.Files;
-import com.lpzahd.atool.keeper.Keeper;
-import com.lpzahd.atool.keeper.storage.CallBack;
-import com.lpzahd.atool.keeper.storage.Result;
-import com.lpzahd.atool.keeper.storage.Task;
-import com.lpzahd.atool.ui.L;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
-import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.common.waiter.FileDownloadWaiter;
 import com.lpzahd.essay.context.preview.PreviewPicActivity;
-import com.lpzahd.essay.tool.OkHttpRxAdapter;
-import com.lpzahd.gallery.context.PreviewActivity;
 
 import org.reactivestreams.Publisher;
 
@@ -55,19 +43,13 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import me.relex.photodraweeview.PhotoDraweeView;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 /**
  * Author : Lpzahd

@@ -1,7 +1,7 @@
 package com.lpzahd.essay.exotic.storage;
 
 import com.lpzahd.Lists;
-import com.lpzahd.atool.keeper.storage.Progress;
+import com.lpzahd.atool.keeper.storage.internal.Progress;
 
 import io.realm.Realm;
 import io.realm.RealmList;

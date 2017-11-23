@@ -1,7 +1,10 @@
-package com.lpzahd.atool.keeper.storage;
+package com.lpzahd.atool.keeper.storage.task;
 
-import com.lpzahd.atool.keeper.storage.interceptor.RealDownloadTask;
-import com.lpzahd.atool.keeper.storage.internal.NamedRunnable;
+import com.lpzahd.atool.keeper.storage.Request;
+import com.lpzahd.atool.keeper.storage.Response;
+import com.lpzahd.atool.keeper.storage.Storage;
+import com.lpzahd.atool.keeper.storage.internal.CallBack;
+import com.lpzahd.atool.keeper.storage.internal.Progress;
 import com.lpzahd.atool.keeper.storage.internal.ProgressDao;
 
 import java.io.IOException;
@@ -16,10 +19,7 @@ import java.util.List;
 public class DownloadTask implements Task {
 
     private final Storage storage;
-    private final Config config;
-
-    // Guarded by this.
-    private boolean executed;
+    private final Request request;
 
     private Progress progress;
 
@@ -28,17 +28,17 @@ public class DownloadTask implements Task {
 
     private ProgressDao dao;
 
-    public DownloadTask(Storage storage, Config config) {
+    public DownloadTask(Storage storage, Request request) {
         this.storage = storage;
-        this.config = config;
+        this.request = request;
         progress = new Progress();
-        progress.tag = config.getTag();
-        dao = config.getDao();
+        progress.tag = request.getTag();
+        dao = request.getDao();
     }
 
     @Override
-    public Config config() {
-        return config;
+    public Request config() {
+        return request;
     }
 
     @Override
@@ -52,16 +52,17 @@ public class DownloadTask implements Task {
     }
 
     @Override
-    public Result execute() throws IOException {
+    public Response execute() throws IOException {
         synchronized (this) {
-//            if (executed) throw new IllegalStateException("Already Executed");
-            executed = true;
+            if(progress.status != Progress.Status.NONE)
+                throw new IllegalStateException("Already Executed");
         }
+
         try {
             storage.dispatcher().executed(this);
-            Result result = getFileWithInterceptorConvert(null);
-            if (result == null) throw new IOException("Failed");
-            return result;
+            Response response = getFileWithInterceptorConvert(null);
+            if (response == null) throw new IOException("Failed");
+            return response;
         } finally {
             storage.dispatcher().finished(this);
         }
@@ -70,8 +71,8 @@ public class DownloadTask implements Task {
     @Override
     public void enqueue(CallBack callBack) {
         synchronized (this) {
-//            if (executed) throw new IllegalStateException("Already Executed");
-            executed = true;
+            if(progress.status != Progress.Status.NONE)
+                throw new IllegalStateException("Already Executed");
         }
 
         this.callBack = callBack;
@@ -108,7 +109,7 @@ public class DownloadTask implements Task {
 
     @Override
     public boolean isExecuted() {
-        return executed;
+        return progress.status != Progress.Status.NONE;
     }
 
     @Override
@@ -124,10 +125,10 @@ public class DownloadTask implements Task {
 
     @Override
     public Task clone() {
-        return new DownloadTask(storage, config);
+        return new DownloadTask(storage, request);
     }
 
-    private Result getFileWithInterceptorConvert(CallBack callBack) throws IOException {
+    private Response getFileWithInterceptorConvert(CallBack callBack) throws IOException {
         List<Interceptor> interceptors = new ArrayList<>();
         interceptors.addAll(storage.interceptors());
 
@@ -138,15 +139,15 @@ public class DownloadTask implements Task {
     final class AsyncTask extends NamedRunnable {
 
         AsyncTask() {
-            super("OkHttp %s", config.getTask().getUrl());
+            super("OkHttp %s", request.getTask().getUrl());
         }
 
-        Config config() {
-            return config;
+        Request request() {
+            return request;
         }
 
         String name() {
-            return config.getTask().getUrl();
+            return request.getTask().getUrl();
         }
 
 
@@ -158,12 +159,12 @@ public class DownloadTask implements Task {
             if(callBack != null) callBack.onStart(DownloadTask.this);
 
             try {
-                Result result = getFileWithInterceptorConvert(callBack);
+                Response response = getFileWithInterceptorConvert(callBack);
                 if(callBack != null) {
-                    if (result == null) {
+                    if (response == null) {
                         callBack.onFailure(DownloadTask.this, new IOException("Failed"));
                     } else {
-                        callBack.onSuccess(DownloadTask.this, result);
+                        callBack.onSuccess(DownloadTask.this, response);
                     }
                 }
 

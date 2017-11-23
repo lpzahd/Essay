@@ -1,6 +1,10 @@
 package com.lpzahd.atool.keeper.storage;
 
-import com.lpzahd.atool.keeper.storage.interceptor.RealDownloadTask;
+import com.lpzahd.atool.keeper.storage.task.Interceptor;
+import com.lpzahd.atool.keeper.storage.task.RealDownloadTask;
+import com.lpzahd.atool.keeper.storage.task.Dispatcher;
+import com.lpzahd.atool.keeper.storage.task.DownloadTask;
+import com.lpzahd.atool.keeper.storage.task.Task;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,8 +40,8 @@ public class Storage {
         interceptors = builder.interceptors;
     }
 
-    public Task newTask(Config config) {
-        return new DownloadTask(this, config);
+    public Task newTask(Request request) {
+        return new DownloadTask(this, request);
     }
 
 

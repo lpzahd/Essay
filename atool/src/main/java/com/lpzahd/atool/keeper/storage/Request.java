@@ -8,7 +8,7 @@ import com.lpzahd.atool.keeper.storage.internal.ProgressDao;
  * 时间 : 2017/11/6.
  * 描述 ： 命里有时终须有，命里无时莫强求
  */
-public class Config {
+public class Request {
 
     private final SingleTask[] tasks;
     private final String tag;
@@ -91,7 +91,7 @@ public class Config {
         }
     }
 
-    private Config(Builder builder) {
+    private Request(Builder builder) {
         tasks = builder.tasks;
         tag = builder.tag;
         dao = builder.dao;
@@ -147,11 +147,11 @@ public class Config {
             return this;
         }
 
-        public Config build() {
+        public Request build() {
             if (Lists.empty(tasks))
                 throw new NullPointerException("没有任务！");
 
-            return new Config(this);
+            return new Request(this);
         }
 
         public Builder urls(String... urls) {

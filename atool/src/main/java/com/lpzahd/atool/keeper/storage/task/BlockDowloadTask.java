@@ -1,21 +1,17 @@
-package com.lpzahd.atool.keeper.storage.interceptor;
+package com.lpzahd.atool.keeper.storage.task;
 
 import com.lpzahd.atool.io.IO;
-import com.lpzahd.atool.keeper.storage.CallBack;
-import com.lpzahd.atool.keeper.storage.Progress;
-import com.lpzahd.atool.keeper.storage.Task;
+import com.lpzahd.atool.keeper.storage.internal.CallBack;
+import com.lpzahd.atool.keeper.storage.internal.Progress;
 import com.lpzahd.atool.keeper.storage.internal.ProgressDao;
 import com.lpzahd.atool.ui.L;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;

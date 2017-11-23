@@ -30,7 +30,7 @@ public class Image extends RealmObject {
     /**
      * 来源
      *
-     * @link Config com.lpzahd.image
+     * @link Request com.lpzahd.image
      */
     private
     @ImageSource.SOURCE

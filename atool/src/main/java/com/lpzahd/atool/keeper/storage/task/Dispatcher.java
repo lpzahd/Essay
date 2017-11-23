@@ -1,6 +1,9 @@
-package com.lpzahd.atool.keeper.storage;
+package com.lpzahd.atool.keeper.storage.task;
 
 import android.support.annotation.Nullable;
+
+import com.lpzahd.atool.keeper.storage.task.DownloadTask;
+import com.lpzahd.atool.keeper.storage.task.Task;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
