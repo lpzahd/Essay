@@ -89,7 +89,7 @@ public class Files {
         return builder.toString();
     }
 
-    @StringDef({Scope.DATABASE, Scope.VIDEO_RAW, Scope.VIDEO_THUMB, Scope.AUDIO_RAW, Scope.AUDIO_THUMB, Scope.PHOTO_RAW, Scope.PHOTO_THUMB})
+    @StringDef({Scope.CACHE, Scope.FRESCO, Scope.DATABASE, Scope.VIDEO_RAW, Scope.VIDEO_THUMB, Scope.AUDIO_RAW, Scope.AUDIO_THUMB, Scope.PHOTO_RAW, Scope.PHOTO_THUMB})
     @Retention(RetentionPolicy.SOURCE)
     public @interface FileScope {
     }
@@ -120,6 +120,9 @@ public class Files {
         public static final String FILE_RAW = FILE + "/" + "raw";
 
         public static final String DATABASE = ROOT + "/" + "database";
+
+        public static final String CACHE = ROOT + "/" + "cache";
+        public static final String FRESCO = CACHE + "/" + "fresco";
 
     }
 

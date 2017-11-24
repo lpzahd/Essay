@@ -3,10 +3,14 @@ package com.lpzahd.essay.exotic.fresco;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.facebook.cache.disk.DiskCacheConfig;
+import com.facebook.common.util.ByteConstants;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.imagepipeline.backends.okhttp3.OkHttpImagePipelineConfigFactory;
 import com.facebook.imagepipeline.core.ImagePipelineConfig;
 import com.lpzahd.Objects;
+import com.lpzahd.atool.keeper.Files;
+import com.lpzahd.atool.keeper.Keeper;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -46,9 +50,16 @@ public class FrescoInit {
 
         initCount++;
         final Context app = context.getApplicationContext();
+
+        DiskCacheConfig diskCacheConfig = DiskCacheConfig.newBuilder(app)
+                .setBaseDirectoryPath(Keeper.getF().getScopeFile(Files.Scope.FRESCO))
+                .setMaxCacheSize(100 * ByteConstants.MB)
+                .build();
+
         ImagePipelineConfig pipelineConfig = OkHttpImagePipelineConfigFactory
                 .newBuilder(app, mOkHttpClient)
                 .setDownsampleEnabled(true)
+                .setMainDiskCacheConfig(diskCacheConfig)
                 .build();
 
         Fresco.initialize(app, pipelineConfig);

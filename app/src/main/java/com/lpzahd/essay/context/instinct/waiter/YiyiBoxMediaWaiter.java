@@ -133,7 +133,11 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
         zoomableDraweeView.setTapListener(new DoubleTapGestureListener(zoomableDraweeView) {
             @Override
             public void onLongPress(MotionEvent e) {
-                mFileDownloadWaiter.downloadWithCheckFile(pics.get(displayPosition).uri.toString());
+                if(type == TYPE_PHOTO) {
+                    mFileDownloadWaiter.downloadWithCheckFile(pics.get(displayPosition).uri.toString());
+                } else if(type == TYPE_VIDEO) {
+                    mFileDownloadWaiter.down(videos.get(displayPosition).video);
+                }
             }
         });
 
