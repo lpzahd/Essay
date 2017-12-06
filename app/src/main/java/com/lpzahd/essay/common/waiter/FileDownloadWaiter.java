@@ -424,6 +424,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
                        down(new Request.SingleTask.Builder()
                                 .url(url)
                                .build());
+                       dialog.dismiss();
                    }
                });
            } else {
