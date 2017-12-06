@@ -3,12 +3,12 @@ apply plugin: 'com.jakewharton.butterknife'
 apply plugin: com.lpzahd.plugin.AopPlugin
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
 
@@ -37,7 +37,7 @@ dependencies {
     compile project(':jtool')
     compile project(':config')
     compile project(':common')
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.facebook.fresco:fresco:1.5.0'

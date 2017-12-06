@@ -226,11 +226,11 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
         simpleVideo.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
 
-        String url = "http://www.yiyihezi.com/video/" + source.getId();
+        String url = "http://www.jilehezi.com/video/" + source.getId();
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("referer", "http://www.yiyihezi.com")
+                .addHeader("referer", "http://www.jilehezi.com")
                 .build();
 
         loadDispose = OkHttpRxAdapter.adapter(client.newCall(request))
@@ -287,7 +287,7 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
                 .map(new Function<List<VideoBean>, List<VideoBean>>() {
                     @Override
                     public List<VideoBean> apply(@NonNull List<VideoBean> videos) throws Exception {
-                        URL fromUrl = new URL("http://www.yiyihezi.com");
+                        URL fromUrl = new URL("http://www.jilehezi.com");
                         for (int i = 0, size = videos.size(); i < size; i++) {
                             VideoBean video = videos.get(i);
                             video.video = new URL(fromUrl, video.video).toExternalForm();
@@ -391,11 +391,11 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
         simpleVideo.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
 
-        String url = "http://www.yiyihezi.com/photo/" + source.getId();
+        String url = "http://www.jilehezi.com/photo/" + source.getId();
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("referer", "http://www.yiyihezi.com")
+                .addHeader("referer", "http://www.jilehezi.com")
                 .build();
 
         loadDispose = OkHttpRxAdapter.adapter(client.newCall(request))
@@ -434,7 +434,7 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
                 .map(new Function<List<String>, List<String>>() {
                     @Override
                     public List<String> apply(@NonNull List<String> strings) throws Exception {
-                        URL fromUrl = new URL("http://www.yiyibox.com");
+                        URL fromUrl = new URL("http://www.jilehezi.com");
                         for (int i = 0, size = strings.size(); i < size; i++) {
                             String img = strings.get(i);
                             strings.set(i, new URL(fromUrl, img).toExternalForm());

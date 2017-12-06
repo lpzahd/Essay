@@ -1,12 +1,19 @@
 package com.lpzahd.essay.context.guide;
 
 import android.Manifest;
+import android.content.ComponentName;
+import android.os.RemoteException;
+import android.support.annotation.Nullable;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.session.MediaControllerCompat;
 import android.view.ViewGroup;
 
 import com.lpzahd.common.waiter.permission.PermissionsWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.guide.waiter.GuideStyleIWaiter;
 import com.lpzahd.common.tone.activity.RxActivity;
+import com.lpzahd.essay.context.music.client.MediaBrowserAdapter;
+import com.lpzahd.essay.context.music.service.MusicService;
 import com.lpzahd.essay.exotic.realm.Realmer;
 
 import butterknife.BindView;
@@ -38,11 +45,60 @@ public class GuideActivity extends RxActivity {
         addActivityWaiter(new GuideStyleIWaiter(this));
     }
 
+    private MediaBrowserAdapter mMediaBrowserAdapter;
+    private boolean isConnected = false;
+
     @Override
     public void onCreate() {
         setContentView(R.layout.activity_guide_style_01);
         ButterKnife.bind(this);
+
+        mMediaBrowserAdapter = new MediaBrowserAdapter(this);
+        mMediaBrowserAdapter.addListener(new MediaBrowserAdapter.MediaBrowserChangeListener() {
+            @Override
+            public void onConnected(@Nullable MediaControllerCompat mediaController) {
+                mMediaBrowserAdapter.getTransportControls().play();
+                isConnected = true;
+            }
+        });
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        mMediaBrowserAdapter.onStart();
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(isConnected) {
+            mMediaBrowserAdapter.getTransportControls().play();
+        }
+//        MediaControllerCompat.getMediaController(this).getTransportControls().play();
+//        int pbState = MediaControllerCompat.getMediaController(this).getPlaybackState().getState();
+//        if (pbState == PlaybackState.STATE_PLAYING)
+//            MediaControllerCompat.getMediaController(this).getTransportControls().pause();
+//        else
+//            MediaControllerCompat.getMediaController(this).getTransportControls().play();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(isConnected) {
+            mMediaBrowserAdapter.getTransportControls().pause();
+        }
+//        int pbState = MediaControllerCompat.getMediaController(this).getPlaybackState().getState();
+//        if (pbState == PlaybackState.STATE_PLAYING)
+//            MediaControllerCompat.getMediaController(this).getTransportControls().pause();
+//        else
+//            MediaControllerCompat.getMediaController(this).getTransportControls().play();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mMediaBrowserAdapter.onStop();
+    }
 }

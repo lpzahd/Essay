@@ -19,4 +19,11 @@
     <string name="box_video_ranking">视频排行</string>
     <string name="cos_hot">最热</string>
     <string name="cos_new">最新</string>
+
+    <string name="music_label_play">播放</string>
+    <string name="music_label_pause">暂停</string>
+    <string name="music_label_stop">停止</string>
+    <string name="music_label_previous">上一首</string>
+    <string name="music_label_next">下一首</string>
+
 </resources>

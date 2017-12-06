@@ -18,5 +18,6 @@
     <color name="color_primary_text_inverted">#ffffff</color>
     <color name="color_secondary_text_inverted">#8affffff</color>
 
-
+    <!-- notification color -->
+    <color name="color_notification_bg">#e91e63</color>
 </resources>
