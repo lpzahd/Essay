@@ -39,6 +39,8 @@ public class MusicService extends MediaBrowserServiceCompat {
     public void onCreate() {
         super.onCreate();
 
+        MusicLibrary.initMusicLibrary(this);
+
         mSession = new MediaSessionCompat(this, "MusicService");
         mCallback = new MediaSessionCallback();
         mSession.setCallback(mCallback);
@@ -50,6 +52,7 @@ public class MusicService extends MediaBrowserServiceCompat {
 
         mMediaNotificationManager = new MediaNotificationManager(this);
         mPlayback = new MediaPlayerAdapter(this, new MediaPlayerListener());
+
     }
 
     @Override
@@ -131,6 +134,7 @@ public class MusicService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSkipToNext() {
+
             mQueueIndex = (++mQueueIndex % mPlaylist.size());
             mPreparedMedia = null;
             onPlay();

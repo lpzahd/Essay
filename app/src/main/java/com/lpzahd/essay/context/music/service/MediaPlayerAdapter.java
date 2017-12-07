@@ -1,7 +1,6 @@
 package com.lpzahd.essay.context.music.service;
 
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
@@ -83,11 +82,12 @@ public final class MediaPlayerAdapter extends PlayerAdapter {
         initializeMediaPlayer();
 
         try {
-            AssetFileDescriptor assetFileDescriptor = mContext.getAssets().openFd(mFilename);
-            mMediaPlayer.setDataSource(
-                    assetFileDescriptor.getFileDescriptor(),
-                    assetFileDescriptor.getStartOffset(),
-                    assetFileDescriptor.getLength());
+            mMediaPlayer.setDataSource(mFilename);
+//            AssetFileDescriptor assetFileDescriptor = mContext.getAssets().openFd(mFilename);
+//            mMediaPlayer.setDataSource(
+//                    assetFileDescriptor.getFileDescriptor(),
+//                    assetFileDescriptor.getStartOffset(),
+//                    assetFileDescriptor.getLength());
         } catch (Exception e) {
             throw new RuntimeException("Failed to open file: " + mFilename, e);
         }
