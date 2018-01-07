@@ -55,14 +55,16 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
 
     private static final int QUERY_COUNT = 366;
 
-    @BindView(R.id.recycler_view)
-    RecyclerView recyclerView;
-    @BindView(R.id.swipe_refresh_layout)
-    SwipeRefreshLayout swipeRefreshLayout;
     @BindView(R.id.tool_bar)
     Toolbar toolBar;
     @BindView(R.id.tool_bar_layout)
     FrameLayout toolBarLayout;
+
+    @BindView(R.id.recycler_view)
+    RecyclerView recyclerView;
+    @BindView(R.id.swipe_refresh_layout)
+    SwipeRefreshLayout swipeRefreshLayout;
+
     @BindView(R.id.toggle_fab)
     FloatingActionButton toggleFab;
     @BindView(R.id.page_fab)
@@ -175,7 +177,7 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
 
             @Override
             public void onLongClick(RecyclerView rv, LeisureWaiter.LeisureHolder holder) {
-                mFileDownloadWaiter.showDownLoadDialog(mAdapter.getItem(holder.getAdapterPosition()).uri.toString());
+                mFileDownloadWaiter.downloadWithCheckFile(mAdapter.getItem(holder.getAdapterPosition()).uri.toString());
             }
 
         });
@@ -219,28 +221,7 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
 
     private void toggleShowModel() {
         menuFab.collapse();
-        //这里还是用门面模式好，先懒得写
-        RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
-        if (manager == null) return;
-
-        if (manager instanceof StaggeredGridLayoutManager) {
-            mAdapter.reloadTag();
-            int[] lastPositions = new int[((StaggeredGridLayoutManager) manager).getSpanCount()];
-            int firstVisibleItem = ((StaggeredGridLayoutManager) manager).findFirstVisibleItemPositions(lastPositions)[0];
-            manager = new LinearLayoutManager(context);
-            recyclerView.setLayoutManager(manager);
-            manager.scrollToPosition(firstVisibleItem);
-            return;
-        }
-
-        if (manager instanceof LinearLayoutManager) {
-            mAdapter.reloadTag();
-            int firstVisibleItem = ((LinearLayoutManager) manager).findFirstVisibleItemPosition();
-            manager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
-            recyclerView.setLayoutManager(manager);
-            manager.scrollToPosition(firstVisibleItem);
-            return;
-        }
+        mAdapter.toggle(recyclerView);
     }
 
 

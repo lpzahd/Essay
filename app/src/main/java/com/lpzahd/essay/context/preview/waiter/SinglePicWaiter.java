@@ -115,7 +115,7 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
         zoomableDraweeView.setTapListener(new DoubleTapGestureListener(zoomableDraweeView) {
             @Override
             public void onLongPress(MotionEvent e) {
-                mFileDownloadWaiter.showDownLoadDialog(displayBean.uri.toString());
+                mFileDownloadWaiter.downloadWithCheckFile(displayBean.uri.toString());
             }
         });
 

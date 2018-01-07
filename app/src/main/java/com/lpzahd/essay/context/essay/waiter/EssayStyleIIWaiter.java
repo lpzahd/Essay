@@ -14,7 +14,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.common.ResizeOptions;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.lpzahd.Lists;
 import com.lpzahd.Objects;
 import com.lpzahd.Strings;
@@ -335,7 +340,15 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
                 holder.simpleDraweeView.setVisibility(View.GONE);
             } else {
                 holder.simpleDraweeView.setVisibility(View.VISIBLE);
-                holder.simpleDraweeView.setImageURI(model.uri);
+                ImageRequest request = ImageRequestBuilder.newBuilderWithSource(model.uri)
+                        .setResizeOptions(new ResizeOptions(200, 200))
+                        .build();
+                DraweeController controller = Fresco.newDraweeControllerBuilder()
+                        .setOldController(holder.simpleDraweeView.getController())
+                        .setImageRequest(request)
+                        .setAutoPlayAnimations(true)
+                        .build();
+                holder.simpleDraweeView.setController(controller);
             }
         }
     }

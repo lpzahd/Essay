@@ -53,7 +53,7 @@ public class FrescoInit {
 
         DiskCacheConfig diskCacheConfig = DiskCacheConfig.newBuilder(app)
                 .setBaseDirectoryPath(Keeper.getF().getScopeFile(Files.Scope.FRESCO))
-                .setMaxCacheSize(100 * ByteConstants.MB)
+                .setMaxCacheSize(500 * ByteConstants.MB)
                 .build();
 
         ImagePipelineConfig pipelineConfig = OkHttpImagePipelineConfigFactory

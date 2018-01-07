@@ -342,18 +342,18 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
             neutralBtn = dialog.getActionButton(DialogAction.NEUTRAL);
 
-            progressLayout = (ViewGroup) customView.findViewById(R.id.progress_layout);
+            progressLayout = customView.findViewById(R.id.progress_layout);
 
-            progressBar = (ProgressBar) customView.findViewById(R.id.progress_bar);
+            progressBar = customView.findViewById(R.id.progress_bar);
 
-            contentTv = (TextView) customView.findViewById(R.id.content_tv);
+            contentTv = customView.findViewById(R.id.content_tv);
             contentTv.setText("正在校验图片是否存在...");
 
-            draweeLayout = (ViewGroup) customView.findViewById(R.id.drawee_layout);
+            draweeLayout = customView.findViewById(R.id.drawee_layout);
 
-            zoomableDraweeView = (ZoomableDraweeView) customView.findViewById(R.id.zoomable_drawee_view);
+            zoomableDraweeView = customView.findViewById(R.id.zoomable_drawee_view);
 
-            inputLayout = (TextInputLayout) customView.findViewById(R.id.title_input_layout);
+            inputLayout = customView.findViewById(R.id.title_input_layout);
 
             edt = inputLayout.getEditText();
 

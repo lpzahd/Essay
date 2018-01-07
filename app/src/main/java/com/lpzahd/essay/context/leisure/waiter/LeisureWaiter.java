@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
@@ -20,7 +21,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.andexert.library.RippleView;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.AbstractDraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -53,6 +53,7 @@ import com.lpzahd.essay.db.leisure.WordQuery;
 import com.lpzahd.essay.exotic.fresco.FrescoInit;
 import com.lpzahd.essay.exotic.retrofit.Net;
 import com.lpzahd.essay.tool.DateTime;
+import com.lpzahd.view.RippleView;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.Collections;
@@ -176,28 +177,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
     private void toggleShowModel() {
         menuFab.collapse();
-        //这里还是用门面模式好，先懒得写
-        RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
-        if (manager == null) return;
-
-        if (manager instanceof StaggeredGridLayoutManager) {
-            mAdapter.reloadTag();
-            int[] lastPositions = new int[((StaggeredGridLayoutManager) manager).getSpanCount()];
-            int firstVisibleItem = ((StaggeredGridLayoutManager) manager).findFirstVisibleItemPositions(lastPositions)[0];
-            manager = new LinearLayoutManager(context);
-            recyclerView.setLayoutManager(manager);
-            manager.scrollToPosition(firstVisibleItem);
-            return;
-        }
-
-        if (manager instanceof LinearLayoutManager) {
-            mAdapter.reloadTag();
-            int firstVisibleItem = ((LinearLayoutManager) manager).findFirstVisibleItemPosition();
-            manager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
-            recyclerView.setLayoutManager(manager);
-            manager.scrollToPosition(firstVisibleItem);
-            return;
-        }
+        mAdapter.toggle(recyclerView);
     }
 
     private void searchRandomWordQuery() {
@@ -355,7 +335,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
             @Override
             public void onLongClick(RecyclerView rv, LeisureHolder leisureHolder) {
-                mFileDownloadWaiter.showDownLoadDialog(mRefreshWaiter.getSource()
+                mFileDownloadWaiter.downloadWithCheckFile(mRefreshWaiter.getSource()
                         .get(leisureHolder.getAdapterPosition()).getMiddleURL());
             }
         });
@@ -470,8 +450,6 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         private int sharpMaxWidth = 80;
         private int offset = 4;
 
-        public final Path mPath = new Path();
-
         SharpShape() {}
 
         @Override
@@ -507,6 +485,9 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
     public static class LeisureAdapter extends ToneAdapter<LeisureModel, LeisureHolder> {
 
+        // 垂直排列, 定宽
+        private int orientation = OrientationHelper.VERTICAL;
+
         int IMG_SIZE_WIDTH;
         int IMG_SIZE_HEIGH;
 
@@ -517,10 +498,45 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
             IMG_SIZE_HEIGH = Ui.dip2px(context, 160);
         }
 
-        public void reloadTag() {
-            IMG_SIZE_WIDTH = -1;
+        public LeisureAdapter(Context context, int orientation) {
+            super(context);
+            this.orientation = orientation;
+            if(orientation == OrientationHelper.VERTICAL) {
+                IMG_SIZE_HEIGH = Ui.dip2px(context, 160);
+            } else if(orientation == OrientationHelper.HORIZONTAL) {
+                IMG_SIZE_WIDTH = Ui.dip2px(context, 160);
+            }
         }
 
+        public void reloadTag() {
+            if(orientation == OrientationHelper.VERTICAL) {
+                IMG_SIZE_WIDTH = -1;
+            } else if(orientation == OrientationHelper.HORIZONTAL) {
+                IMG_SIZE_HEIGH = -1;
+            }
+        }
+
+        // 瀑布流 与 普通方式 切换
+        public void toggle(RecyclerView recyclerView) {
+            RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
+            if (manager == null) return;
+
+            final Context context = getContext();
+            if (manager instanceof StaggeredGridLayoutManager) {
+                this.reloadTag();
+                int[] lastPositions = new int[((StaggeredGridLayoutManager) manager).getSpanCount()];
+                int firstVisibleItem = ((StaggeredGridLayoutManager) manager).findFirstVisibleItemPositions(lastPositions)[0];
+                manager = new LinearLayoutManager(context, orientation, false);
+                recyclerView.setLayoutManager(manager);
+                manager.scrollToPosition(firstVisibleItem);
+            } else if (manager instanceof LinearLayoutManager) {
+                this.reloadTag();
+                int firstVisibleItem = ((LinearLayoutManager) manager).findFirstVisibleItemPosition();
+                manager = new StaggeredGridLayoutManager(2, orientation);
+                recyclerView.setLayoutManager(manager);
+                manager.scrollToPosition(firstVisibleItem);
+            }
+        }
 
         @Override
         public LeisureHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -542,33 +558,63 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         }
 
         private void displayDraweeView(final SimpleDraweeView v, final LeisureModel model) {
-            if (IMG_SIZE_WIDTH == 0)
-                IMG_SIZE_WIDTH = v.getWidth();
+            if(orientation == OrientationHelper.VERTICAL) {
+                if (IMG_SIZE_WIDTH == 0)
+                    IMG_SIZE_WIDTH = v.getWidth();
 
-            if (IMG_SIZE_WIDTH <= 0) {
-                v.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        IMG_SIZE_WIDTH = v.getWidth();
-                        setLayout(v, model);
-                    }
-                });
-                return;
+                if (IMG_SIZE_WIDTH <= 0) {
+                    v.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            IMG_SIZE_WIDTH = v.getWidth();
+                            setLayout(v, model, orientation);
+                        }
+                    });
+                    return;
+                }
+
+                setLayout(v, model, orientation);
+
+            } else if(orientation == OrientationHelper.HORIZONTAL) {
+                if (IMG_SIZE_HEIGH == 0)
+                    IMG_SIZE_HEIGH = v.getHeight();
+
+                if (IMG_SIZE_HEIGH <= 0) {
+                    v.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            IMG_SIZE_HEIGH = v.getHeight();
+                            setLayout(v, model, orientation);
+                        }
+                    });
+                    return;
+                }
+
+                setLayout(v, model, orientation);
             }
 
-            setLayout(v, model);
         }
 
-        private void setLayout(SimpleDraweeView v, LeisureModel model) {
+        private void setLayout(SimpleDraweeView v, LeisureModel model, int orientation) {
             ViewGroup.LayoutParams pamras = v.getLayoutParams();
 
             final int w = model.width;
             final int h = model.height;
-            if (w <= 0 || h <= 0) {
-                pamras.height = IMG_SIZE_HEIGH;
 
-            } else {
-                pamras.height = (int) ((float) IMG_SIZE_WIDTH * (float) h / (float) w);
+            if(orientation == OrientationHelper.VERTICAL) {
+                if (w <= 0 || h <= 0) {
+                    pamras.height = IMG_SIZE_HEIGH;
+                } else {
+                    pamras.height = (int) ((float) IMG_SIZE_WIDTH * (float) h / (float) w);
+                }
+
+            } else if(orientation == OrientationHelper.HORIZONTAL) {
+                if (w <= 0 || h <= 0) {
+                    pamras.width = IMG_SIZE_WIDTH;
+                } else {
+                    pamras.width = (int) ((float) IMG_SIZE_HEIGH * (float) w / (float) h);
+                }
+
             }
 
             v.setLayoutParams(pamras);

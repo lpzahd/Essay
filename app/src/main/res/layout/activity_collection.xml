@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:app="http://schemas.android.com/apk/res-auto"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:id="@+id/activity_instinct"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:fitsSystemWindows="true"
-             tools:context="com.lpzahd.essay.context.instinct.InstinctActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_collection"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="com.lpzahd.essay.context.collection.CollectionActivity">
 
     <FrameLayout
         android:id="@+id/tool_bar_layout"
@@ -60,39 +60,37 @@
             app:fab_title="切换浏览模式" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/page_fab"
+            android:id="@+id/index_scroll_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:fab_colorNormal="@color/fab_white"
             app:fab_colorPressed="@color/fab_white_pressed"
             app:fab_icon="@drawable/ic_star_black_24dp"
             app:fab_size="mini"
-            app:fab_title="指定页码搜索" />
-
+            app:fab_title="指定位置滚动" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/random_page_fab"
+            android:id="@+id/random_scroll_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:fab_colorNormal="@color/fab_white"
             app:fab_colorPressed="@color/fab_white_pressed"
             app:fab_icon="@drawable/ic_star_black_24dp"
             app:fab_size="mini"
-            app:fab_title="乱序搜索" />
-
+            app:fab_title="乱序滚动" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/current_page_fab"
+            android:id="@+id/current_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:fab_colorNormal="@color/fab_white"
             app:fab_colorPressed="@color/fab_white_pressed"
             app:fab_icon="@drawable/ic_star_black_24dp"
             app:fab_size="mini"
-            app:fab_title="page" />
+            app:fab_title="position" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/total_page_fab"
+            android:id="@+id/total_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:fab_colorNormal="@color/fab_white"

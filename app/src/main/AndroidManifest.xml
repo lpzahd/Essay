@@ -52,6 +52,8 @@
         <activity android:name=".context.pure.BiliBiliCosActivity"/>
         <activity android:name=".context.turing.TuringActivity"/>
 
+        <activity android:name=".context.collection.CollectionActivity"/>
+
         <service
             android:name=".context.music.service.MusicService"
             android:enabled="true"

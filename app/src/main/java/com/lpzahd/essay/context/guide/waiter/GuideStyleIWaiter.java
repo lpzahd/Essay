@@ -16,6 +16,7 @@ import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.common.waiter.TintBarWaiter;
+import com.lpzahd.essay.context.collection.CollectionActivity;
 import com.lpzahd.essay.context.essay.EssayActivity;
 import com.lpzahd.essay.context.guide.GuideActivity;
 import com.lpzahd.essay.context.instinct.InstinctActivity;
@@ -26,6 +27,7 @@ import com.lpzahd.essay.context.turing.TuringActivity;
 import com.lpzahd.gallery.Gallery;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -93,6 +95,9 @@ public class GuideStyleIWaiter extends ToneActivityWaiter<GuideActivity> {
                     case 7:
                         BiliBiliCosActivity.startActivity(context);
                         break;
+                    case 8:
+                        CollectionActivity.startActivity(context);
+                        break;
                 }
             }
         });
@@ -109,6 +114,7 @@ public class GuideStyleIWaiter extends ToneActivityWaiter<GuideActivity> {
                 new GuideModel(5, "荷尔蒙", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
                 new GuideModel(6, "清纯唯美", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
                 new GuideModel(7, "Cos", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
+                new GuideModel(8, "Photo", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
 
         };
         mAdapter.setData(Arrays.asList(models));

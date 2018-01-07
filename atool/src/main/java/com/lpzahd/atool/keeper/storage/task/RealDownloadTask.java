@@ -346,22 +346,31 @@ public class RealDownloadTask {
 
     }
 
+    public static String getPhotoDefaultPath() {
+        return Keeper.getF().getScopePath(Files.Scope.PHOTO_RAW);
+    }
+
+    public static String getVideoDefaultPath() {
+        return Keeper.getF().getScopePath(Files.Scope.VIDEO_RAW);
+    }
+
+    public static String getFileDefaultPath() {
+        return Keeper.getF().getScopePath(Files.Scope.FILE_RAW);
+    }
 
     private static String getDefaultFolder(String fileName) {
-        Files files = Keeper.getF();
-
         String mimeType = getMimeType(fileName);
 
         if (isPicture(mimeType)) {
-            return files.getScopePath(Files.Scope.PHOTO_RAW);
+            return getPhotoDefaultPath();
         } else if (isVideo(mimeType)) {
-            return files.getScopePath(Files.Scope.VIDEO_RAW);
+            return getVideoDefaultPath();
         } else {
-            return files.getScopePath(Files.Scope.FILE_RAW);
+            return getFileDefaultPath();
         }
     }
 
-    private static boolean isPicture(String mimeType) {
+    public static boolean isPicture(String mimeType) {
         String[] pictures = new String[]{
                 "jpg", "bmp", "eps", "gif", "mif",
                 "miff", "png", "tif", "tiff", "svg",
@@ -376,7 +385,7 @@ public class RealDownloadTask {
         return false;
     }
 
-    private static boolean isVideo(String mimeType) {
+    public static boolean isVideo(String mimeType) {
         String[] pictures = new String[]{
                 "mp3", "mp4", "flv", "avi", "rm",
                 "rmvb", "wmv", "3gp", "mkv"

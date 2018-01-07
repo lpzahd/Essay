@@ -277,7 +277,7 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
             photoDraweeView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    mFileDownloadWaiter.showDownLoadDialog(
+                    mFileDownloadWaiter.downloadWithCheckFile(
                             mAdapter.getItem(getAdapterPosition()).uri.toString());
                     return true;
                 }

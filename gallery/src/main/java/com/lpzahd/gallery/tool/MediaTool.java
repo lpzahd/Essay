@@ -8,7 +8,6 @@ import android.os.Build;
 import android.provider.MediaStore;
 import android.support.v4.content.ContentResolverCompat;
 import android.support.v4.os.CancellationSignal;
-import android.text.TextUtils;
 
 import com.lpzahd.Strings;
 import com.lpzahd.atool.ui.L;
@@ -77,7 +76,7 @@ public class MediaTool extends NoInstance {
         String selection = null;
         String[] selectionArgs = null;
         if (!Strings.equals(bucketId, String.valueOf(Integer.MIN_VALUE))) {
-            selection = MediaStore.Video.Media.BUCKET_ID + "=?";
+            selection = MediaStore.Images.Media.BUCKET_ID + "=?";
             selectionArgs = new String[]{bucketId};
         }
 
