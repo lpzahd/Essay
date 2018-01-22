@@ -13,7 +13,11 @@
         android:layout_height="56dp"
         app:roundedCornerRadius="4dp"
         app:actualImageScaleType="focusCrop"
-        app:placeholderImage="@android:color/darker_gray"/>
+        app:placeholderImage="@android:color/darker_gray"
+        app:failureImage="@mipmap/ic_fresco_error"
+        app:failureImageScaleType="centerInside"
+        app:retryImage="@mipmap/ic_fresco_empty"
+        app:retryImageScaleType="centerInside"/>
 
 </FrameLayout>
 

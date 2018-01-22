@@ -180,8 +180,8 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
                         mAdapter.setData(previewBeans);
                         showBatchIv(previewBeans.size());
 
-                        Flowable<Integer> indexObservable = RxTaxi.get().<Integer>pull(TAG_INDEX).transmit();
-                        return indexObservable != null ? indexObservable : Flowable.just(0);
+                        Transmitter<Integer> transmitter = RxTaxi.get().pull(TAG_INDEX);
+                        return transmitter == null ? Flowable.just(0) : transmitter.transmit();
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())

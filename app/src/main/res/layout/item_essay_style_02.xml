@@ -37,7 +37,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:viewAspectRatio="1.00"
-            app:actualImageScaleType="focusCrop"/>
+            app:actualImageScaleType="focusCrop"
+            app:failureImage="@mipmap/ic_fresco_error"
+            app:failureImageScaleType="centerInside"
+            app:retryImage="@mipmap/ic_fresco_empty"
+            app:retryImageScaleType="centerInside"/>
 
         <android.support.v7.widget.AppCompatTextView
             android:id="@+id/title_tv"

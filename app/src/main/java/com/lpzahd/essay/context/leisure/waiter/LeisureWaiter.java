@@ -626,6 +626,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                         .build();
                 AbstractDraweeController controller = Fresco.newDraweeControllerBuilder()
                         .setOldController(v.getController())
+                        .setTapToRetryEnabled(true)
                         .setImageRequest(request)
                         .setAutoPlayAnimations(true)
                         .build();
@@ -633,6 +634,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
             } else {
                 AbstractDraweeController controller = Fresco.newDraweeControllerBuilder()
                         .setOldController(v.getController())
+                        .setTapToRetryEnabled(true)
                         .setAutoPlayAnimations(true)
                         .setUri(model.uri)
                         .build();

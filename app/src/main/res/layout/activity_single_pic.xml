@@ -9,7 +9,11 @@
     <com.lpzahd.fresco.zoomable.ZoomableDraweeView
         android:id="@+id/zoomable_drawee_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        app:failureImage="@mipmap/ic_fresco_error"
+        app:failureImageScaleType="centerInside"
+        app:retryImage="@mipmap/ic_fresco_empty"
+        app:retryImageScaleType="centerInside"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
