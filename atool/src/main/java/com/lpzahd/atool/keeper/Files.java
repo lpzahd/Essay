@@ -89,7 +89,9 @@ public class Files {
         return builder.toString();
     }
 
-    @StringDef({Scope.CACHE, Scope.FRESCO, Scope.DATABASE, Scope.VIDEO_RAW, Scope.VIDEO_THUMB, Scope.AUDIO_RAW, Scope.AUDIO_THUMB, Scope.PHOTO_RAW, Scope.PHOTO_THUMB})
+    @StringDef({Scope.CACHE, Scope.FRESCO, Scope.DATABASE,
+            Scope.VIDEO_RAW, Scope.VIDEO_THUMB, Scope.AUDIO_RAW, Scope.AUDIO_THUMB,
+            Scope.PHOTO_RAW, Scope.PHOTO_THUMB, Scope.PHOTO_PRIVATE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface FileScope {
     }
@@ -116,6 +118,12 @@ public class Files {
 
         public static final String PHOTO_RAW = PHOTO + "/" + "raw";
         public static final String PHOTO_THUMB = PHOTO + "/" + "thumb";
+
+        /**
+         * 私人图库,图片格式一律隐藏，不希望被系统扫描到
+         */
+        public static final String PHOTO_PRIVATE = PHOTO + "/" + "private";
+
 
         public static final String FILE_RAW = FILE + "/" + "raw";
 

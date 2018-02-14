@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_collection"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="com.lpzahd.essay.context.collection.PhotoEditActivity">
+
+    <FrameLayout
+        android:id="@+id/tool_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary" />
+
+    </FrameLayout>
+
+    <com.lpzahd.fresco.zoomable.ZoomableDraweeView
+        android:id="@+id/zoomable_drawee_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tool_bar_layout"
+        app:failureImage="@mipmap/ic_fresco_error"
+        app:failureImageScaleType="centerInside"
+        app:retryImage="@mipmap/ic_fresco_empty"
+        app:retryImageScaleType="centerInside"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="84dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp"/>
+
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/desc_tv"
+        android:layout_width="wrap_content"
+        android:maxWidth="200dp"
+        android:layout_height="wrap_content"
+        android:padding="2dp"
+        android:gravity="bottom"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/s12"
+        android:background="#66333333"
+        android:layout_alignLeft="@+id/zoomable_drawee_view"
+        android:layout_alignBottom="@+id/zoomable_drawee_view"
+        tools:text="名称：123456.jpg"/>
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/private_drawee_view"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        app:actualImageScaleType="fitXY"
+        app:actualImageResource="@mipmap/ic_photo_edit_grey"
+        android:layout_alignBottom="@+id/zoomable_drawee_view"
+        android:layout_alignRight="@+id/zoomable_drawee_view"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_marginBottom="12dp"
+        android:clipToPadding="false"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:layout_alignParentBottom="true"/>
+
+</RelativeLayout>
