@@ -47,6 +47,10 @@ public class RefreshProcessor implements IPullToRefresh, ILoadMore {
     @Retention(RetentionPolicy.SOURCE)
     protected @interface RefreshState {}
 
+    public static boolean hasmore(@LoadState int state) {
+        return state == STATE_HAS_MORE;
+    }
+
     @Override
     public void onStartPtr() {
         adv = start;

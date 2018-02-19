@@ -9,8 +9,6 @@ import android.view.MenuItem;
 import com.lpzahd.common.tone.activity.RxActivity;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.collection.waiter.CollectionWaiter;
-import com.lpzahd.essay.context.essay_.EssayAddActivity;
-import com.lpzahd.essay.context.pure.BiliBiliCosActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -50,7 +48,7 @@ public class CollectionActivity extends RxActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_essay, menu);
+        getMenuInflater().inflate(R.menu.menu_collection, menu);
         return true;
     }
 
@@ -59,17 +57,17 @@ public class CollectionActivity extends RxActivity {
         int id = item.getItemId();
 
         if(id == R.id.action_add) {
-            EssayAddActivity.startActivity(context);
+            CollectionEditActivity.startActivity(context);
             return true;
         }
 
-        if (id == R.id.action_edit) {
-            return true;
-        }
-
-        if (id == R.id.action_settings) {
-            return true;
-        }
+//        if (id == R.id.action_edit) {
+//            return true;
+//        }
+//
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }

@@ -6,7 +6,7 @@ import android.support.v7.widget.Toolbar;
 
 import com.lpzahd.common.tone.activity.RxActivity;
 import com.lpzahd.essay.R;
-import com.lpzahd.essay.context.collection.waiter.PhotoEditWaiter;
+import com.lpzahd.essay.context.collection.waiter.CollectionEditWaiter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -17,12 +17,12 @@ import butterknife.ButterKnife;
  * @time 2018/2/13 17:05
  * @change
  */
-public class PhotoEditActivity extends RxActivity {
+public class CollectionEditActivity extends RxActivity {
 
-    public static final String TAG = "com.lpzahd.essay.context.collection.PhotoEditWaiter";
+    public static final String TAG = "com.lpzahd.essay.context.collection.CollectionEditWaiter";
 
     public static void startActivity(Context context) {
-        Intent intent = new Intent(context, PhotoEditActivity.class);
+        Intent intent = new Intent(context, CollectionEditActivity.class);
         context.startActivity(intent);
     }
 
@@ -32,13 +32,13 @@ public class PhotoEditActivity extends RxActivity {
     @Override
     public void init() {
         super.init();
-        addActivityWaiter(new PhotoEditWaiter(this));
+        addActivityWaiter(new CollectionEditWaiter(this));
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        setContentView(R.layout.activity_photo_edit);
+        setContentView(R.layout.activity_collection_edit);
         ButterKnife.bind(this);
         toolBar.setTitle("收藏");
         setSupportActionBar(toolBar);

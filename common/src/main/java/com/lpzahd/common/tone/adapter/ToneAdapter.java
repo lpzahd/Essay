@@ -102,8 +102,7 @@ public abstract class ToneAdapter<T, VH extends ToneAdapter.ToneHolder> extends 
     }
 
     private int index() {
-        int index = getData().size();
-        return index == 0 ? 0 : index;
+        return getData().size();
     }
 
     public void remove(int index) {

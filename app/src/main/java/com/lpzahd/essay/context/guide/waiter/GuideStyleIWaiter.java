@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v7.widget.AppCompatTextView;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -15,7 +14,6 @@ import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
-import com.lpzahd.essay.common.waiter.TintBarWaiter;
 import com.lpzahd.essay.context.collection.CollectionActivity;
 import com.lpzahd.essay.context.essay.EssayActivity;
 import com.lpzahd.essay.context.guide.GuideActivity;
@@ -27,7 +25,6 @@ import com.lpzahd.essay.context.turing.TuringActivity;
 import com.lpzahd.gallery.Gallery;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

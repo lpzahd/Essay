@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.lpzahd.essay.context.collection.PhotoEditActivity">
+    tools:context="com.lpzahd.essay.context.collection.CollectionEditActivity">
 
     <FrameLayout
         android:id="@+id/tool_bar_layout"
@@ -49,15 +49,6 @@
         android:layout_alignLeft="@+id/zoomable_drawee_view"
         android:layout_alignBottom="@+id/zoomable_drawee_view"
         tools:text="名称：123456.jpg"/>
-
-    <com.facebook.drawee.view.SimpleDraweeView
-        android:id="@+id/private_drawee_view"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        app:actualImageScaleType="fitXY"
-        app:actualImageResource="@mipmap/ic_photo_edit_grey"
-        android:layout_alignBottom="@+id/zoomable_drawee_view"
-        android:layout_alignRight="@+id/zoomable_drawee_view"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"

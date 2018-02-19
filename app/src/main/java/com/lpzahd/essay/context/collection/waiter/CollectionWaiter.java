@@ -10,14 +10,21 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.lpzahd.Lists;
+import com.lpzahd.aop.api.Log;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.keeper.Files;
+import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.keeper.storage.task.RealDownloadTask;
 import com.lpzahd.atool.ui.L;
 import com.lpzahd.atool.ui.T;
+import com.lpzahd.common.bus.Receiver;
+import com.lpzahd.common.bus.RxBus;
+import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.common.waiter.refresh.DspRefreshWaiter;
@@ -26,6 +33,9 @@ import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.collection.CollectionActivity;
 import com.lpzahd.essay.context.leisure.waiter.LeisureWaiter;
+import com.lpzahd.essay.db.collection.Collection;
+import com.lpzahd.essay.db.file.Image;
+import com.lpzahd.gallery.tool.MediaTool;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,14 +46,18 @@ import java.util.Random;
 
 import butterknife.BindView;
 import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
+import io.realm.Realm;
 
 /**
  * 作者 : 迪
  * 时间 : 2018/1/7.
  * 描述 ： 命里有时终须有，命里无时莫强求
+ * TODO 长按修改图片信息 和 还原数据操作
  */
 public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> implements View.OnClickListener {
 
@@ -73,8 +87,17 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
     private LeisureWaiter.LeisureAdapter mAdapter;
     private CollectionRefreshWaiter mRefreshWaiter;
 
+    private Realm mRealm;
+    private RxBus.BusService mBusService;
+
     public CollectionWaiter(CollectionActivity collectionActivity) {
         super(collectionActivity);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        mRealm = Realm.getDefaultInstance();
     }
 
     @Override
@@ -95,12 +118,14 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
         mRefreshWaiter.setSwipeRefreshCallBack(new SwipeRefreshWaiter.SimpleCallBack() {
             @Override
             public void onPtrComplete(int start, int page, @RefreshProcessor.LoadState int loadState) {
-                totalFab.setTitle(String.format("一共%s张", mRefreshWaiter.getSource().size()));
+                if(RefreshProcessor.hasmore(loadState))
+                    totalFab.setTitle(String.format("一共%s张", mRefreshWaiter.getSource().size()));
             }
 
             @Override
             public void onLoadComplete(int start, int page, @RefreshProcessor.LoadState int loadState) {
-                totalFab.setTitle(String.format("一共%s张", mRefreshWaiter.getSource().size()));
+                if(RefreshProcessor.hasmore(loadState))
+                    totalFab.setTitle(String.format("一共%s张", mRefreshWaiter.getSource().size()));
             }
         });
 
@@ -123,6 +148,70 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
                 }
             }
         });
+
+        recyclerView.addOnItemTouchListener(
+                new OnItemHolderTouchListener<LeisureWaiter.LeisureHolder>(recyclerView) {
+                    @Override
+                    public void onLongClick(RecyclerView rv, LeisureWaiter.LeisureHolder holder) {
+                        super.onLongClick(rv, holder);
+                        showEditPhotoDialog(holder.getAdapterPosition());
+
+                    }
+        });
+
+        mBusService = new RxBus.BusService(CollectionActivity.TAG, new Receiver<Boolean>() {
+            @Override
+            public void receive(Flowable<Boolean> flowable) {
+                flowable.observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<Boolean>() {
+                            @Override
+                            public void accept(Boolean aBoolean) throws Exception {
+                                if(aBoolean)
+                                    mRefreshWaiter.autoRefresh();
+                            }
+                        });
+            }
+        });
+        mBusService.regist();
+    }
+
+    private void showEditPhotoDialog(final int position) {
+        final Collection collection = mRefreshWaiter.getSource().get(position);
+        String name = new File(collection.getImage().getPath()).getName();
+        new MaterialDialog.Builder(context)
+                .title("还原图片")
+                .content("图片" + name + "将被还原，收藏图会被移除，确定？")
+                .negativeText(R.string.tip_negative)
+                .positiveText(R.string.tip_positive)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+
+                        boolean restore = restorePhoto(collection);
+                        if(restore) {
+                            mAdapter.remove(position);
+                        }
+                    }
+                })
+                .show();
+    }
+
+    private boolean restorePhoto(Collection collection) {
+        String originalPath = collection.getOriginalPath();
+        File originalFile = new File(originalPath);
+        if(originalFile.exists() && originalFile.isFile()) {
+            T.t("在%s位置已存在同文件名的文件,还原操作被取消!", originalPath);
+            return false;
+        }
+
+        Image image = collection.getImage();
+        Files.copy(image.getPath(), originalPath);
+        mRealm.beginTransaction();
+        collection.deleteFromRealm();
+        mRealm.commitTransaction();
+
+        Files.delete(image.getPath());
+        return true;
     }
 
     @Override
@@ -186,62 +275,58 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
         recyclerView.getLayoutManager().scrollToPosition(random.nextInt(size));
     }
 
-    private static class CollectionRefreshWaiter extends DspRefreshWaiter<LeisureWaiter.LeisureModel, LeisureWaiter.LeisureModel> {
+    @Override
+    protected void destroy() {
+        super.destroy();
+        if (mRealm != null && !mRealm.isClosed())
+            mRealm.close();
+
+        mBusService.unregist();
+    }
+
+    private static class CollectionRefreshWaiter extends DspRefreshWaiter<Collection, LeisureWaiter.LeisureModel> {
+
+        private Realm realm;
 
         CollectionRefreshWaiter(SwipeRefreshLayout swipeRefreshLayout, RecyclerView recyclerView) {
             super(swipeRefreshLayout, recyclerView);
             setCount(Integer.MAX_VALUE);
+            realm = Realm.getDefaultInstance();
         }
 
         @Override
-        public Flowable<List<LeisureWaiter.LeisureModel>> doRefresh(int page) {
-            return Flowable.just(new File(RealDownloadTask.getPhotoDefaultPath()))
-                    .filter(new Predicate<File>() {
+        public Flowable<List<Collection>> doRefresh(int page) {
+            return Flowable.just(page)
+                    .map(new Function<Integer, List<Collection>>() {
                         @Override
-                        public boolean test(File file) throws Exception {
-                            return file.exists();
-                        }
-                    })
-                    .map(new Function<File, File[]>() {
-                        @Override
-                        public File[] apply(File file) throws Exception {
-                            return file.listFiles();
-                        }
-                    })
-                    .subscribeOn(Schedulers.io())
-                    .map(new Function<File[], List<LeisureWaiter.LeisureModel>>() {
-                        @Override
-                        public List<LeisureWaiter.LeisureModel> apply(File[] files) throws Exception {
-                            if(Lists.empty(files)) return Collections.emptyList();
+                        @Log
+                        public List<Collection> apply(Integer integer) throws Exception {
+                            List<Collection> collections = realm.where(Collection.class)
+                                    .findAll();
 
-                            List<LeisureWaiter.LeisureModel> models = new ArrayList<>(files.length);
-                            for (File file : files) {
-                                String path = file.getAbsolutePath();
+                            if(Lists.empty(collections))
+                                collections = Collections.emptyList();
 
-                                LeisureWaiter.LeisureModel model = new LeisureWaiter.LeisureModel();
-                                model.uri = Frescoer.uri(path, ImageSource.SOURCE_FILE);
-                                try {
-                                    ExifInterface exifInterface = new ExifInterface(path);
-                                    int width = exifInterface.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH, 0);
-                                    int height = exifInterface.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH, 0);
-                                    model.width = width;
-                                    model.height = height;
-
-//                                    String orientation = exifInterface.getAttribute(ExifInterface.TAG_ORIENTATION);
-                                } catch (IOException e) {
-                                    L.e(e.getMessage());
-                                }
-                                models.add(model);
-                            }
-                            return models;
+                            return collections;
                         }
                     });
         }
 
         @Override
-        public LeisureWaiter.LeisureModel process(LeisureWaiter.LeisureModel model) {
+        public LeisureWaiter.LeisureModel process(Collection collection) {
+            Image image = collection.getImage();
+            LeisureWaiter.LeisureModel model = new LeisureWaiter.LeisureModel();
+            model.uri = Frescoer.uri(image.getPath(), ImageSource.SOURCE_FILE);
+            model.width = image.getWidth();
+            model.height = image.getHeight();
             return model;
         }
 
+        @Override
+        protected void destroy() {
+            super.destroy();
+            if(!realm.isClosed())
+                realm.close();
+        }
     }
 }

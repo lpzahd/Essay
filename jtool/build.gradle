@@ -5,6 +5,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.googlecode.juniversalchardet/juniversalchardet
     compile 'com.googlecode.juniversalchardet:juniversalchardet:1.0.3'
+//    compile 'commons-codec:commons-codec:1.4'
 }
 
 sourceCompatibility = "1.7"

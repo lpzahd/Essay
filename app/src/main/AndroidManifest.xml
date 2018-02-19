@@ -53,6 +53,7 @@
         <activity android:name=".context.turing.TuringActivity"/>
 
         <activity android:name=".context.collection.CollectionActivity"/>
+        <activity android:name=".context.collection.CollectionEditActivity"/>
 
         <service
             android:name=".context.music.service.MusicService"

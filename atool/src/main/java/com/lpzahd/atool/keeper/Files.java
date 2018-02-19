@@ -5,14 +5,17 @@ import android.os.Environment;
 
 import com.lpzahd.Objects;
 import com.lpzahd.atool.constant.Constance;
+import com.lpzahd.atool.io.IO;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.RetentionPolicy;
 
 import java.lang.annotation.Retention;
+import java.nio.channels.FileChannel;
 
 import android.support.annotation.StringDef;
 
@@ -91,7 +94,7 @@ public class Files {
 
     @StringDef({Scope.CACHE, Scope.FRESCO, Scope.DATABASE,
             Scope.VIDEO_RAW, Scope.VIDEO_THUMB, Scope.AUDIO_RAW, Scope.AUDIO_THUMB,
-            Scope.PHOTO_RAW, Scope.PHOTO_THUMB, Scope.PHOTO_PRIVATE})
+            Scope.PHOTO_RAW, Scope.PHOTO_THUMB, Scope.PHOTO_COLLECTION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface FileScope {
     }
@@ -122,7 +125,7 @@ public class Files {
         /**
          * 私人图库,图片格式一律隐藏，不希望被系统扫描到
          */
-        public static final String PHOTO_PRIVATE = PHOTO + "/" + "private";
+        public static final String PHOTO_COLLECTION = PHOTO + "/" + "collection";
 
 
         public static final String FILE_RAW = FILE + "/" + "raw";
@@ -154,6 +157,52 @@ public class Files {
                 if (fos != null) fos.close();
             } catch (IOException ignored) {
             }
+        }
+    }
+
+    public static void delete(String file) {
+        new File(file).delete();
+    }
+
+    public static String copyToScope(String source, String scope) {
+        return copyToScope(source, scope, new File(source).getName());
+    }
+
+    public static String copyToScope(String source, String scope, String name) {
+        FileChannel inputChannel = null;
+        FileChannel outputChannel = null;
+
+        Files files = Keeper.getF();
+        File dest = files.getFile(scope, name);
+        try {
+            inputChannel = new FileInputStream(source).getChannel();
+            outputChannel = new FileOutputStream(dest).getChannel();
+            outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+        } catch (IOException ignore) {
+
+        } finally {
+            IO.closeQuietly(inputChannel);
+            IO.closeQuietly(outputChannel);
+        }
+        return dest.getAbsolutePath();
+    }
+
+    public static void copy(String source, String dest) {
+        copy(new File(source), new File(dest));
+    }
+
+    public static void copy(File source, File dest) {
+        FileChannel inputChannel = null;
+        FileChannel outputChannel = null;
+        try {
+            inputChannel = new FileInputStream(source).getChannel();
+            outputChannel = new FileOutputStream(dest).getChannel();
+            outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+        } catch (IOException ignore) {
+
+        } finally {
+            IO.closeQuietly(inputChannel);
+            IO.closeQuietly(outputChannel);
         }
     }
 }
