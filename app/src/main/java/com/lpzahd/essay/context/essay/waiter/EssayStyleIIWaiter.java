@@ -100,6 +100,7 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
     protected void initView() {
         super.initView();
 
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark, R.color.colorAccent);
         recyclerView.setPadding(16, 0, 16, 0);
 
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));

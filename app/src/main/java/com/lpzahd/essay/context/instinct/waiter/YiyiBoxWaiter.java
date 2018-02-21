@@ -156,6 +156,7 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
         pageFab.setOnClickListener(this);
         randomPageFab.setOnClickListener(this);
 
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark, R.color.colorAccent);
 
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         mAdapter = new LeisureWaiter.LeisureAdapter(context);

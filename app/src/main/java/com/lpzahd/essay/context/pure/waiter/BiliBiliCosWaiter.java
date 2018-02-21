@@ -145,6 +145,7 @@ public class BiliBiliCosWaiter extends ToneActivityWaiter<BiliBiliCosActivity> i
         pageFab.setOnClickListener(this);
         randomPageFab.setOnClickListener(this);
 
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark, R.color.colorAccent);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         mAdapter = new PureAdapter(context);

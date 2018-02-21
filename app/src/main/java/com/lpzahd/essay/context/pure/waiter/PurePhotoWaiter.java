@@ -115,6 +115,7 @@ public class PurePhotoWaiter extends ToneActivityWaiter<PurePhotoActivity> imple
         pageFab.setOnClickListener(this);
         randomPageFab.setOnClickListener(this);
 
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark, R.color.colorAccent);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         mAdapter = new PureAdapter(context);

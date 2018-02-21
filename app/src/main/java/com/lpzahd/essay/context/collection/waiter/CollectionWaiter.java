@@ -52,6 +52,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
+import io.realm.Sort;
 
 /**
  * 作者 : 迪
@@ -103,6 +104,8 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
     @Override
     protected void initView() {
         super.initView();
+
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark, R.color.colorAccent);
 
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, OrientationHelper.HORIZONTAL));
         mAdapter = new LeisureWaiter.LeisureAdapter(context, OrientationHelper.HORIZONTAL);
@@ -302,7 +305,8 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
                         @Log
                         public List<Collection> apply(Integer integer) throws Exception {
                             List<Collection> collections = realm.where(Collection.class)
-                                    .findAll();
+                                    .findAllSorted("date", Sort.DESCENDING);
+//                                    .findAll();
 
                             if(Lists.empty(collections))
                                 collections = Collections.emptyList();

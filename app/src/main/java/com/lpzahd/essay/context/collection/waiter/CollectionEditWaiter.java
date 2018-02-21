@@ -14,6 +14,7 @@ import com.lpzahd.Codec;
 import com.lpzahd.Lists;
 import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.keeper.Files;
+import com.lpzahd.atool.ui.L;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.bus.RxBus;
 import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
@@ -108,8 +109,20 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                 remove(position);
 
                 // 最多提醒三次
-                if(mDeleteTimes > 3)
+                if(mDeleteTimes > 3) {
+                    if(mDisplayPosition == position) {
+                        if(position < getItemCount()) {
+                            displayPhoto(position);
+                        } else {
+                            int index = getItemCount() - 1;
+                            displayPhoto(index < 0 ? 0 : index);
+                        }
+                    }
+
+                    Files.delete(mediaBean.getOriginalPath());
                     return;
+                }
+
 
                 String name = new File(mediaBean.getOriginalPath()).getName();
                 new MaterialDialog.Builder(context)
@@ -130,7 +143,6 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                                         int index = getItemCount() - 1;
                                         displayPhoto(index < 0 ? 0 : index);
                                     }
-
                                 }
 
                                 Files.delete(mediaBean.getOriginalPath());
@@ -158,7 +170,10 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
 
         });
 
-        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(new ToneItemTouchHelperCallback(mAdapter));
+        ToneItemTouchHelperCallback touchCallback = new ToneItemTouchHelperCallback(mAdapter);
+        touchCallback.setCanDrag(false);
+        touchCallback.setCanSwipe(true);
+        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(touchCallback);
         mItemTouchHelper.attachToRecyclerView(recyclerView);
 
         queryMedias();
@@ -185,6 +200,7 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
         DraweeController draweeController = Fresco.newDraweeControllerBuilder()
                 .setOldController(zoomableDraweeView.getController())
                 .setUri(displayBean.uri)
+                .setAutoPlayAnimations(true)
                 .setTapToRetryEnabled(true)
                 .build();
         zoomableDraweeView.setController(draweeController);
@@ -260,6 +276,8 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
             T.t("图片收藏成功！");
             return true;
         } else {
+            Image image = photo.getImage();
+            L.e("image : " + image);
             // 修改
             mRealm.beginTransaction();
             photo.setCount(photo.getCount() + 1);
