@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".context.preview.TranstionPicActivity">
+
+    <com.lpzahd.fresco.zoomable.ZoomableDraweeView
+        android:id="@+id/zoomable_drawee_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:failureImage="@mipmap/ic_fresco_error"
+        app:failureImageScaleType="centerInside"
+        app:retryImage="@mipmap/ic_fresco_empty"
+        app:retryImageScaleType="centerInside"
+        app:actualImageScaleType="fitCenter"/>
+
+</RelativeLayout>

@@ -1,6 +1,9 @@
 package com.lpzahd.essay.context.collection.waiter;
 
-import android.media.ExifInterface;
+import android.graphics.PointF;
+import android.net.Uri;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
@@ -12,18 +15,18 @@ import android.widget.FrameLayout;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.facebook.drawee.drawable.ScalingUtils;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.lpzahd.Lists;
 import com.lpzahd.aop.api.Log;
 import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.keeper.Files;
-import com.lpzahd.atool.keeper.Keeper;
-import com.lpzahd.atool.keeper.storage.task.RealDownloadTask;
-import com.lpzahd.atool.ui.L;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.bus.Receiver;
 import com.lpzahd.common.bus.RxBus;
+import com.lpzahd.common.taxi.RxTaxi;
+import com.lpzahd.common.taxi.Transmitter;
 import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
@@ -33,13 +36,11 @@ import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.collection.CollectionActivity;
 import com.lpzahd.essay.context.leisure.waiter.LeisureWaiter;
+import com.lpzahd.essay.context.preview.TranstionPicActivity;
 import com.lpzahd.essay.db.collection.Collection;
 import com.lpzahd.essay.db.file.Image;
-import com.lpzahd.gallery.tool.MediaTool;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -49,8 +50,6 @@ import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
-import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import io.realm.Sort;
 
@@ -158,9 +157,37 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
                     public void onLongClick(RecyclerView rv, LeisureWaiter.LeisureHolder holder) {
                         super.onLongClick(rv, holder);
                         showEditPhotoDialog(holder.getAdapterPosition());
-
                     }
-        });
+
+                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+                    @Override
+                    public void onClick(RecyclerView rv, LeisureWaiter.LeisureHolder leisureHolder) {
+                        super.onClick(rv, leisureHolder);
+
+                        leisureHolder.simpleDraweeView.setLegacyVisibilityHandlingEnabled(true);
+                        leisureHolder.simpleDraweeView.getHierarchy().setActualImageScaleType(ScalingUtils.ScaleType.FOCUS_CROP);
+                        leisureHolder.simpleDraweeView.getHierarchy().setActualImageFocusPoint(new PointF(1, 0.5f));
+
+                        final int position = leisureHolder.getAdapterPosition();
+
+//                        Intent intent = ImageDetailsActivity.getStartIntent(getContext(), mAdapter.getItem(position).uri);
+//                        final String transitionName = "transition_name";
+//                        final ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(
+//                                context,
+//                                leisureHolder.simpleDraweeView,
+//                                transitionName);
+//                        context.startActivity(intent, options.toBundle());
+
+                        TranstionPicActivity.startActivity(context, leisureHolder.simpleDraweeView);
+
+                        RxTaxi.get().regist(TranstionPicActivity.TAG, new Transmitter() {
+                            @Override
+                            public Flowable<Uri> transmit() {
+                                return Flowable.just(mAdapter.getItem(position).uri);
+                            }
+                        });
+                    }
+                });
 
         mBusService = new RxBus.BusService(CollectionActivity.TAG, new Receiver<Boolean>() {
             @Override
@@ -285,6 +312,8 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
             mRealm.close();
 
         mBusService.unregist();
+
+        RxTaxi.get().unregist(TranstionPicActivity.TAG);
     }
 
     private static class CollectionRefreshWaiter extends DspRefreshWaiter<Collection, LeisureWaiter.LeisureModel> {

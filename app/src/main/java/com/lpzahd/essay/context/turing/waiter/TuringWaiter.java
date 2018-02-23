@@ -38,6 +38,7 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Author : Lpzahd
@@ -121,6 +122,7 @@ public class TuringWaiter extends ToneActivityWaiter<TuringActivity> {
 
     private void requestTuring(String message) {
         Disposable turingDispose = Net.get().turing(message)
+                .subscribeOn(Schedulers.io())
                 .map(new Function<Turing123, TuringModel>() {
                     @Override
                     public TuringModel apply(@NonNull Turing123 turing123) throws Exception {

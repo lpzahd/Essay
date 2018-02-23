@@ -19,6 +19,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 import retrofit2.http.Url;
@@ -99,6 +100,7 @@ public class Net {
          * @param message 消息内容
          */
         @POST("/openapi/api")
+        @Headers({"Content-Type: application/json","Accept: application/json"})
         Observable<Turing123> sendMessage(@Body RequestBody message);
     }
 

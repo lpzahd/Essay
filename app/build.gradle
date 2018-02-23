@@ -16,7 +16,22 @@ android {
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
     }
+
+    signingConfigs {
+        release {
+            storeFile file("lpzahd.jks")
+            storePassword "lpzahd"
+            keyAlias "lpzahd"
+            keyPassword "lpzahd"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+//            shrinkResources true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

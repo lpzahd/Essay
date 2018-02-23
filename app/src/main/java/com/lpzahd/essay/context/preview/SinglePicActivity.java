@@ -38,5 +38,4 @@ public class SinglePicActivity extends RxActivity {
         setContentView(R.layout.activity_single_pic);
     }
 
-
 }

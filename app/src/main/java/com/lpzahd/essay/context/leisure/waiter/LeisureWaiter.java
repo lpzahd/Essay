@@ -242,7 +242,8 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         Random random = new Random();
         mRefreshWaiter.setStart(random.nextInt(QUERY_COUNT));
         mRefreshWaiter.autoRefresh();
-        recyclerView.getLayoutManager().scrollToPosition(0);
+        recyclerView.scrollToPosition(0);
+//        recyclerView.getLayoutManager().scrollToPosition(0);
     }
 
     @Override
@@ -255,6 +256,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
         // 下拉刷新
         mRefreshWaiter.autoRefresh();
+        recyclerView.scrollToPosition(0);
 
         final WordQuery findWord = mRealm.where(WordQuery.class)
                 .equalTo("word", mWord)
@@ -430,7 +432,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
     public static class LeisureHolder extends ToneAdapter.ToneHolder {
 
         @BindView(R.id.simple_drawee_view)
-        SimpleDraweeView simpleDraweeView;
+        public SimpleDraweeView simpleDraweeView;
 
         @BindView(R.id.text_view)
         AppCompatTextView textView;
