@@ -221,13 +221,6 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
             @Override
             public void onSuccess(AppCompatActivity activity, Task task, Response response) {
                 T.t("图片下载完成");
-
-                final Context context = App.getApp().getApplicationContext();
-                if(response.single()) {
-                    Ui.scanSingleMedia(context, response.getFile());
-                } else {
-                    Ui.scanDirMedia(context, response.getFile().getParentFile());
-                }
             }
 
         };
@@ -249,6 +242,12 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
             @Override
             public void runOnSuccess(Task task, Response response) {
                 T.t("图片下载完成");
+                final Context context = App.getApp().getApplicationContext();
+                if(response.single()) {
+                    Ui.scanSingleMedia(context, response.getFile());
+                } else {
+                    Ui.scanDirMedia(context, response.getFile().getParentFile());
+                }
             }
 
         };
@@ -321,6 +320,10 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
     public void downloadWithCheckFile(String url) {
         new DownLoadDialog(url).show();
+    }
+
+    public void downloadWithCheckFiles(String... urls) {
+        new DownLoadBatchDialog(urls).show();
     }
 
     private class DownLoadDialog {
@@ -631,7 +634,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
         public DownLoadBatchDialog(String... urls) {
             this.urls = urls;
-            this.checkIndex = 0;
+            this.checkIndex = -1;
             this.tasks.clear();
 
             dialog = new MaterialDialog.Builder(context)
@@ -670,13 +673,15 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
          * 刷新下一个地址
          */
         private void invalidateNextUrl() {
+            checkIndex++;
             positiveBtn.setEnabled(false);
             contentTv.setText(Strings.format("正在校验%s是否存在...", urls[checkIndex]));
+            progressLayout.setVisibility(View.VISIBLE);
             inputLayout.setVisibility(View.GONE);
             neutralBtn.setVisibility(View.GONE);
+            draweeLayout.setVisibility(View.GONE);
             positiveBtn.setText("覆盖");
             neutralBtn.setText("取消");
-            Storage.getDefaultFileName(DownLoadBatchDialog.this.urls[checkIndex], future);
         }
 
         public void show() {
@@ -704,6 +709,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
                 // 校验失败
                 T.t(result.exc.getMessage());
 
+                neutralBtn.setVisibility(View.VISIBLE);
                 neutralBtn.setText("重新校验");
                 neutralBtn.setEnabled(true);
                 neutralBtn.setOnClickListener(new View.OnClickListener() {
@@ -750,6 +756,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
                 // 显示重命名输入框
                 showInputLayout(true, result.file);
 
+                neutralBtn.setVisibility(View.VISIBLE);
                 neutralBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -793,6 +800,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
                         if(checkIndex == urls.length - 1) {
                             // 校验完成
+                            contentTv.setText("校验全部完成");
                             down(tasks.toArray(new Request.SingleTask[tasks.size()]));
                             dialog.dismiss();
                         } else {
@@ -805,11 +813,16 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
                 });
 
             } else {
+                neutralBtn.setVisibility(View.GONE);
+                addTask(urls[checkIndex], null, false);
                 if(checkIndex == urls.length - 1) {
                     // 校验完成
+                    positiveBtn.setEnabled(true);
+                    positiveBtn.setText("确定");
                     positiveBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            contentTv.setText("校验全部完成");
                             down(tasks.toArray(new Request.SingleTask[tasks.size()]));
                             dialog.dismiss();
                         }

@@ -206,7 +206,8 @@ public class RealDownloadTask {
 
         progress.status = Progress.Status.LOADING;
 
-        for (Request.SingleTask config : tasks) {
+        for(int t = 0; t < tasks.length; t++) {
+            Request.SingleTask config = tasks[t];
             String url = config.getUrl();
             progress.url = url;
             okhttp3.Request request = new okhttp3.Request.Builder()
@@ -277,6 +278,7 @@ public class RealDownloadTask {
                     throw new IllegalStateException("Canceled!");
                 }
 
+                files[t] = file;
             } catch (IOException e) {
                 L.e(e);
                 progress.status = Progress.Status.FAIL;

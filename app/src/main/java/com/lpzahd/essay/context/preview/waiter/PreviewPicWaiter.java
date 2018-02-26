@@ -219,7 +219,7 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
                             for(int i = 0, size = pics.size(); i < size; i++) {
                                 urls[i] = pics.get(i).uri.toString();
                             }
-                            mFileDownloadWaiter.showDownLoadDialog(urls);
+                            mFileDownloadWaiter.downloadWithCheckFiles(urls);
                         }
                     }
                 });
