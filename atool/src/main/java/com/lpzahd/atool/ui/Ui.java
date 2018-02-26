@@ -2,9 +2,11 @@ package com.lpzahd.atool.ui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
@@ -14,6 +16,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import com.lpzahd.base.NoInstance;
 
+import java.io.File;
 import java.lang.reflect.Field;
 
 /**
@@ -125,5 +128,20 @@ public class Ui extends NoInstance {
         } else {
             v.setBackgroundDrawable(drawable);
         }
+    }
+
+
+    public static void scanSingleMedia(Context context, File file) {
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = Uri.fromFile(file);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
+    }
+
+    public static void scanDirMedia(Context context, File dir) {
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_STARTED);
+        Uri uri = Uri.fromFile(dir);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
     }
 }

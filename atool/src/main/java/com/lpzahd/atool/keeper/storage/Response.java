@@ -21,6 +21,10 @@ public class Response {
         progresses = builder.progresses;
     }
 
+    public boolean single() {
+        return files != null && files.length == 1;
+    }
+
     public File getFile() {
         return files[0];
     }

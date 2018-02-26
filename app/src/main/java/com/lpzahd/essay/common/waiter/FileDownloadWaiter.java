@@ -1,5 +1,6 @@
 package com.lpzahd.essay.common.waiter;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.support.design.widget.TextInputLayout;
@@ -27,6 +28,7 @@ import com.lpzahd.atool.keeper.storage.Storage;
 import com.lpzahd.atool.keeper.storage.task.Task;
 import com.lpzahd.atool.keeper.storage.task.RealDownloadTask;
 import com.lpzahd.atool.ui.T;
+import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.app.App;
@@ -34,7 +36,9 @@ import com.lpzahd.fresco.zoomable.ZoomableDraweeView;
 import com.lpzahd.waiter.agency.ActivityWaiter;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,8 +49,19 @@ import java.util.Set;
  */
 public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, ActivityWaiter>{
 
+    /**
+     * 不取消下载任务
+     */
     public static final int AUTO_NONE = 0x00;
+
+    /**
+     * 取消下载任务
+     */
     public static final int AUTO_CANCEL = 0x01;
+
+    /**
+     * 转后台继续执行下载任务（移除回调）
+     */
     public static final int AUTO_REMOVE_CALLBACK = 0x10;
 
     private Map<Task, Integer> taskMap;
@@ -83,7 +98,6 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
         down(urls, defaultAppCallBack(), AUTO_NONE);
     }
 
-
     public void down(String... urls) {
         down(urls, null, AUTO_NONE);
     }
@@ -100,7 +114,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
         task.enqueue(callBack);
     }
 
-    public void down(Request.SingleTask[] tasks) {
+    public void down(Request.SingleTask... tasks) {
         down(tasks, defaultAppCallBack(), AUTO_NONE);
     }
 
@@ -207,6 +221,13 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
             @Override
             public void onSuccess(AppCompatActivity activity, Task task, Response response) {
                 T.t("图片下载完成");
+
+                final Context context = App.getApp().getApplicationContext();
+                if(response.single()) {
+                    Ui.scanSingleMedia(context, response.getFile());
+                } else {
+                    Ui.scanDirMedia(context, response.getFile().getParentFile());
+                }
             }
 
         };
@@ -435,7 +456,9 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
                // 加载图片
                DraweeController draweeController = Fresco.newDraweeControllerBuilder()
+                       .setOldController(zoomableDraweeView.getController())
                        .setUri(Frescoer.uri(result.file.getAbsolutePath(), ImageSource.SOURCE_FILE))
+                       .setAutoPlayAnimations(true)
                        .build();
                zoomableDraweeView.setController(draweeController);
 
@@ -568,5 +591,280 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
         public void afterTextChanged(Editable s) {
 
         }
+    }
+
+    /**
+     * 逐个校验文件是否存在
+     */
+    private class DownLoadBatchDialog {
+
+        MaterialDialog dialog;
+
+        MDButton positiveBtn;
+        MDButton neutralBtn;
+
+        View customView;
+
+        ViewGroup progressLayout;
+        ProgressBar progressBar;
+        TextView contentTv;
+
+        ViewGroup draweeLayout;
+        ZoomableDraweeView zoomableDraweeView;
+        TextInputLayout inputLayout;
+        EditText edt;
+
+        private String[] urls;
+
+        // 校验索引
+        private int checkIndex;
+
+        private List<Request.SingleTask> tasks = new ArrayList<>();
+
+        private void addTask(String url, String name, boolean repalce) {
+            tasks.add(new Request.SingleTask.Builder()
+                    .url(url)
+                    .name(name)
+                    .replace(repalce)
+                    .build());
+        }
+
+        public DownLoadBatchDialog(String... urls) {
+            this.urls = urls;
+            this.checkIndex = 0;
+            this.tasks.clear();
+
+            dialog = new MaterialDialog.Builder(context)
+                    .title("图片下载")
+                    .customView(R.layout.dialog_custom_download_progress, false)
+                    .positiveText("覆盖")
+                    .negativeText("取消")
+                    .build();
+
+            customView = dialog.getCustomView();
+
+            if (customView == null)
+                throw new AssertionError("customView is null!");
+
+            positiveBtn = dialog.getActionButton(DialogAction.POSITIVE);
+            neutralBtn = dialog.getActionButton(DialogAction.NEUTRAL);
+            progressLayout = customView.findViewById(R.id.progress_layout);
+            progressBar = customView.findViewById(R.id.progress_bar);
+            contentTv = customView.findViewById(R.id.content_tv);
+            draweeLayout = customView.findViewById(R.id.drawee_layout);
+            zoomableDraweeView = customView.findViewById(R.id.zoomable_drawee_view);
+            inputLayout = customView.findViewById(R.id.title_input_layout);
+            edt = inputLayout.getEditText();
+
+            invalidateNextUrl();
+
+            dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow(DialogInterface dialog) {
+                    Storage.getDefaultFileName(DownLoadBatchDialog.this.urls[checkIndex], future);
+                }
+            });
+        }
+
+        /**
+         * 刷新下一个地址
+         */
+        private void invalidateNextUrl() {
+            positiveBtn.setEnabled(false);
+            contentTv.setText(Strings.format("正在校验%s是否存在...", urls[checkIndex]));
+            inputLayout.setVisibility(View.GONE);
+            neutralBtn.setVisibility(View.GONE);
+            positiveBtn.setText("覆盖");
+            neutralBtn.setText("取消");
+            Storage.getDefaultFileName(DownLoadBatchDialog.this.urls[checkIndex], future);
+        }
+
+        public void show() {
+            dialog.show();
+        }
+
+        RealDownloadTask.Future future = new RealDownloadTask.Future() {
+
+            @Override
+            public void get(final RealDownloadTask.FutureResult result) {
+                if(dialog == null || !dialog.isShowing()) return ;
+
+                customView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        postOnMainThread(result);
+                    }
+                });
+            }
+
+        };
+
+        private void postOnMainThread(final RealDownloadTask.FutureResult result) {
+            if(!result.isSuccess()) {
+                // 校验失败
+                T.t(result.exc.getMessage());
+
+                neutralBtn.setText("重新校验");
+                neutralBtn.setEnabled(true);
+                neutralBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        progressLayout.setVisibility(View.VISIBLE);
+                        draweeLayout.setVisibility(View.GONE);
+
+                        contentTv.setText("正在重新校验...");
+
+                        neutralBtn.setEnabled(false);
+                        positiveBtn.setText("覆盖");
+                        positiveBtn.setEnabled(false);
+
+                        Storage.getDefaultFileName(urls[checkIndex], future);
+                    }
+                });
+
+                return ;
+            }
+
+            if(result.file.exists()) {
+                // 文件已存在，显示输入框供用户操作
+                progressLayout.setVisibility(View.GONE);
+                draweeLayout.setVisibility(View.VISIBLE);
+
+                dialog.setTitle("发现图片");
+
+                // 加载图片
+                DraweeController draweeController = Fresco.newDraweeControllerBuilder()
+                        .setOldController(zoomableDraweeView.getController())
+                        .setUri(Frescoer.uri(result.file.getAbsolutePath(), ImageSource.SOURCE_FILE))
+                        .setAutoPlayAnimations(true)
+                        .build();
+                zoomableDraweeView.setController(draweeController);
+
+                String name = result.file.getName();
+                final String mimeType = Storage.getMimeType(name);
+                if(name.length() > (6 + mimeType.length())) {
+                    name = name.substring(0, 6) + "...(" + mimeType + ")";
+                }
+                inputLayout.setHint(name + "已存在,是否重命名？");
+
+                // 显示重命名输入框
+                showInputLayout(true, result.file);
+
+                neutralBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        toggleInputLayout(result.file);
+                    }
+                });
+
+                edt.addTextChangedListener(new SimpleTextWatcher() {
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        if(Strings.empty(s)) {
+                            positiveBtn.setEnabled(false);
+                            inputLayout.setErrorEnabled(false);
+                        } else {
+                            File file = Storage.getDefaultFileName(s + "." + mimeType);
+                            if(file.exists()) {
+                                positiveBtn.setEnabled(false);
+                                inputLayout.setErrorEnabled(true);
+                                inputLayout.setError("该文件名已存在！");
+                            } else {
+                                positiveBtn.setEnabled(true);
+                                inputLayout.setErrorEnabled(false);
+                            }
+                        }
+                    }
+                });
+
+                positiveBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        if(Strings.equals(positiveBtn.getText(), "确定")) {
+                            // 重命名下载
+                            addTask(urls[checkIndex], edt.getText() + "." + mimeType, false);
+                        }
+
+                        if(Strings.equals(positiveBtn.getText(), "覆盖")) {
+                            // 覆盖下载
+                            addTask(urls[checkIndex], null, true);
+                        }
+
+                        if(checkIndex == urls.length - 1) {
+                            // 校验完成
+                            down(tasks.toArray(new Request.SingleTask[tasks.size()]));
+                            dialog.dismiss();
+                        } else {
+                            // 继续校验
+                            invalidateNextUrl();
+                            Storage.getDefaultFileName(DownLoadBatchDialog.this.urls[checkIndex], future);
+                        }
+
+                    }
+                });
+
+            } else {
+                if(checkIndex == urls.length - 1) {
+                    // 校验完成
+                    positiveBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            down(tasks.toArray(new Request.SingleTask[tasks.size()]));
+                            dialog.dismiss();
+                        }
+                    });
+
+                } else {
+                    // 继续校验
+                    invalidateNextUrl();
+                    Storage.getDefaultFileName(DownLoadBatchDialog.this.urls[checkIndex], future);
+                }
+            }
+
+        }
+
+        private void toggleInputLayout(File file) {
+            if(inputLayout.getVisibility() == View.VISIBLE) {
+                showInputLayout(false, file);
+            } else {
+                showInputLayout(true, file);
+            }
+
+        }
+
+        private void showInputLayout(boolean isShow, File file) {
+            if(isShow) {
+                inputLayout.setVisibility(View.VISIBLE);
+                inputLayout.requestFocus();
+
+                neutralBtn.setText("返回");
+
+                positiveBtn.setText("确定");
+
+                if(Strings.empty(edt.getText().toString())) {
+                    positiveBtn.setEnabled(false);
+                } else {
+                    if(checkFileExit(edt.getText().toString(), Storage.getMimeType(file.getName()))) {
+                        positiveBtn.setEnabled(false);
+                    } else {
+                        positiveBtn.setEnabled(true);
+                    }
+                }
+
+            } else {
+                inputLayout.setVisibility(View.GONE);
+
+                neutralBtn.setText("重命名");
+                positiveBtn.setText("覆盖");
+                positiveBtn.setEnabled(true);
+            }
+
+        }
+
+        private boolean checkFileExit(String name, String mimeType) {
+            return Storage.getDefaultFileName(name + "." + mimeType).exists();
+        }
+
     }
 }

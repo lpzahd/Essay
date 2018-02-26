@@ -23,6 +23,7 @@ import com.lpzahd.aop.api.Log;
 import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.keeper.Files;
 import com.lpzahd.atool.ui.T;
+import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.bus.Receiver;
 import com.lpzahd.common.bus.RxBus;
 import com.lpzahd.common.taxi.RxTaxi;
@@ -39,6 +40,8 @@ import com.lpzahd.essay.context.leisure.waiter.LeisureWaiter;
 import com.lpzahd.essay.context.preview.TranstionPicActivity;
 import com.lpzahd.essay.db.collection.Collection;
 import com.lpzahd.essay.db.file.Image;
+
+import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.util.Collections;
@@ -57,7 +60,6 @@ import io.realm.Sort;
  * 作者 : 迪
  * 时间 : 2018/1/7.
  * 描述 ： 命里有时终须有，命里无时莫强求
- * TODO 长按修改图片信息 和 还原数据操作
  */
 public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> implements View.OnClickListener {
 
@@ -230,12 +232,25 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
         String originalPath = collection.getOriginalPath();
         File originalFile = new File(originalPath);
         if(originalFile.exists() && originalFile.isFile()) {
-            T.t("在%s位置已存在同文件名的文件,还原操作被取消!", originalPath);
-            return false;
+//            T.t("在%s位置已存在同文件名的文件,还原操作被取消!", originalPath);
+//            return false;
+            String name = originalFile.getName();
+            final int doitIndex = name.lastIndexOf(".");
+            String newName;
+            if(doitIndex != -1) {
+                newName = name.substring(0, doitIndex) + "_" + Instant.now().toString() + name.substring(doitIndex);
+            } else {
+                newName = name + "_" + Instant.now().toString();
+            }
+
+            originalFile = new File(originalFile.getParent(), newName);
+            T.t("在%s位置已存在同文件名的文件,自动更名为%s!", originalPath, originalFile.getName());
         }
 
         Image image = collection.getImage();
-        Files.copy(image.getPath(), originalPath);
+        Files.copy(image.getPath(), originalFile.getAbsolutePath());
+        Ui.scanSingleMedia(context, originalFile);
+
         mRealm.beginTransaction();
         collection.deleteFromRealm();
         mRealm.commitTransaction();
@@ -308,8 +323,12 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
     @Override
     protected void destroy() {
         super.destroy();
-        if (mRealm != null && !mRealm.isClosed())
+//        if (mRealm != null && !mRealm.isClosed()) {
+        if (mRealm != null) {
             mRealm.close();
+            mRealm = null;
+        }
+
 
         mBusService.unregist();
 
@@ -358,8 +377,10 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
         @Override
         protected void destroy() {
             super.destroy();
-            if(!realm.isClosed())
+            if(realm != null) {
                 realm.close();
+                realm = null;
+            }
         }
     }
 }

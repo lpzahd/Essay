@@ -16,6 +16,7 @@ import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.keeper.Files;
 import com.lpzahd.atool.ui.L;
 import com.lpzahd.atool.ui.T;
+import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.bus.RxBus;
 import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneItemTouchHelperCallback;
@@ -120,6 +121,7 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                     }
 
                     Files.delete(mediaBean.getOriginalPath());
+                    Ui.scanSingleMedia(context, new File(mediaBean.getOriginalPath()));
                     return;
                 }
 
@@ -146,6 +148,7 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                                 }
 
                                 Files.delete(mediaBean.getOriginalPath());
+                                Ui.scanSingleMedia(context, new File(mediaBean.getOriginalPath()));
 
                             }
                         })
@@ -249,8 +252,8 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
         // 查询
         Collection photo = mRealm.where(Collection.class)
                 .equalTo("MD5", md5)
-                .or()
-                .equalTo("originalPath", mediaBean.getOriginalPath())
+//                .or()
+//                .equalTo("originalPath", mediaBean.getOriginalPath())
                 .findFirst();
         if(photo == null) {
             // 文件复制操作
@@ -274,6 +277,7 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
 
             Files.delete(mediaBean.getOriginalPath());
             T.t("图片收藏成功！");
+            Ui.scanSingleMedia(context, new File(mediaBean.getOriginalPath()));
             return true;
         } else {
             Image image = photo.getImage();

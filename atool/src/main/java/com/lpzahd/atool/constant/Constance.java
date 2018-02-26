@@ -24,6 +24,7 @@ public class Constance extends NoInstance {
     public static int AppVersionCode;
     public static String AppName;
     public static String AppPackageName;
+    public static String AppSourceDir;
 
     public static void initApp(Context context) {
         initDeviceInfo(context);
@@ -53,6 +54,7 @@ public class Constance extends NoInstance {
             PackageInfo pi = packageManager.getPackageInfo(AppPackageName, 0);
             AppVersionName = pi.versionName;
             AppVersionCode = pi.versionCode;
+            AppSourceDir = pi.applicationInfo.sourceDir;
             applicationInfo = packageManager.getApplicationInfo(context.getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
             applicationInfo = null;

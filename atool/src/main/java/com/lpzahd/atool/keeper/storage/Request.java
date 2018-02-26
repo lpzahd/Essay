@@ -176,7 +176,7 @@ public class Request {
             return this;
         }
 
-        public Builder tasks(SingleTask[] tasks) {
+        public Builder tasks(SingleTask... tasks) {
             this.tasks = tasks;
             return this;
         }
