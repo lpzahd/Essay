@@ -25,6 +25,7 @@ import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.AbstractDraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.common.ResizeOptions;
+import com.facebook.imagepipeline.common.RotationOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -495,7 +496,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         int IMG_SIZE_WIDTH;
         int IMG_SIZE_HEIGH;
 
-        boolean STYLE_OPEN_RESIZE = false;
+        boolean STYLE_OPEN_RESIZE = true;
 
         public LeisureAdapter(Context context) {
             super(context);
@@ -627,6 +628,8 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                 // 开启智能压缩（暂时性能不好）
                 ImageRequest request = ImageRequestBuilder.newBuilderWithSource(model.uri)
                         .setResizeOptions(new ResizeOptions(w, pamras.height))
+                        .setLocalThumbnailPreviewsEnabled(true)
+                        .setRotationOptions(RotationOptions.autoRotateAtRenderTime())
                         .build();
                 AbstractDraweeController controller = Fresco.newDraweeControllerBuilder()
                         .setOldController(v.getController())
