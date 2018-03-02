@@ -200,7 +200,7 @@ public class EssayStyleIWaiter extends ToneActivityWaiter<EssayActivity> impleme
             holder.dateTv.setText(model.date);
 
             Bitmap bm = BitmapFactory
-                    .decodeResource(context.getResources(), R.mipmap.ic_failure_image);
+                    .decodeResource(context.getResources(), R.mipmap.ic_fresco_empty);
             Drawable[] array = new Drawable[3];
             array[0] = new PaintDrawable(Color.GRAY); // 黑色
             array[1] = new PaintDrawable(Color.GREEN); // 白色

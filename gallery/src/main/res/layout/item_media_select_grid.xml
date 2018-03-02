@@ -8,8 +8,7 @@
         android:id="@+id/image_drawee_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:actualImageScaleType="focusCrop"
-        app:failureImage="@mipmap/ic_failure_image"/>
+        app:actualImageScaleType="focusCrop"/>
 
     <android.support.v7.widget.AppCompatCheckBox
         android:id="@+id/check_box"

@@ -57,18 +57,15 @@ public class TranstionPicWaiter extends ToneActivityWaiter<TranstionPicActivity>
         ViewCompat.setTransitionName(zoomableDraweeView, TranstionPicActivity.SHARE_ELEMENT_NAME);
 
         zoomableDraweeView.setTapListener(new DoubleTapGestureListener(zoomableDraweeView) {
+
             @Override
-            public void onLongPress(MotionEvent e) {
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                context.onBackPressed();
+                return true;
             }
+
         });
         zoomableDraweeView.setIsLongpressEnabled(true);
-
-        zoomableDraweeView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                T.t("click");
-            }
-        });
     }
 
     @Override

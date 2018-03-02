@@ -543,9 +543,27 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
             }
         }
 
+//        private RecyclerView mRecyclerView;
+//
+//        @Override
+//        public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+//            super.onAttachedToRecyclerView(recyclerView);
+//            this.mRecyclerView = recyclerView;
+//        }
+
         @Override
         public LeisureHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new LeisureHolder(inflateItemView(R.layout.item_leisure, parent));
+            LeisureHolder holder = new LeisureHolder(inflateItemView(R.layout.item_leisure, parent));
+            ViewGroup.LayoutParams params = holder.itemView.getLayoutParams();
+            if(orientation == OrientationHelper.VERTICAL) {
+                params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            } else {
+                params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            }
+            holder.itemView.setLayoutParams(params);
+            return holder;
         }
 
         @Override
@@ -607,6 +625,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
             final int h = model.height;
 
             if(orientation == OrientationHelper.VERTICAL) {
+                pamras.width = IMG_SIZE_WIDTH;
                 if (w <= 0 || h <= 0) {
                     pamras.height = IMG_SIZE_HEIGH;
                 } else {
@@ -614,12 +633,12 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                 }
 
             } else if(orientation == OrientationHelper.HORIZONTAL) {
+                pamras.height = IMG_SIZE_HEIGH;
                 if (w <= 0 || h <= 0) {
                     pamras.width = IMG_SIZE_WIDTH;
                 } else {
                     pamras.width = (int) ((float) IMG_SIZE_HEIGH * (float) w / (float) h);
                 }
-
             }
 
             v.setLayoutParams(pamras);
@@ -627,7 +646,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
             if (STYLE_OPEN_RESIZE) {
                 // 开启智能压缩（暂时性能不好）
                 ImageRequest request = ImageRequestBuilder.newBuilderWithSource(model.uri)
-                        .setResizeOptions(new ResizeOptions(w, pamras.height))
+                        .setResizeOptions(new ResizeOptions(pamras.width, pamras.height))
                         .setLocalThumbnailPreviewsEnabled(true)
                         .setRotationOptions(RotationOptions.autoRotateAtRenderTime())
                         .build();

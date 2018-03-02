@@ -25,5 +25,11 @@
     <string name="music_label_stop">停止</string>
     <string name="music_label_previous">上一首</string>
     <string name="music_label_next">下一首</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
 
 </resources>

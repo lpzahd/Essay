@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.lpzahd.essay">
+    package="com.lpzahd.essay">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
 
     <application
         android:name=".app.App"
@@ -21,47 +21,52 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"/>
+                android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name=".context.note.NoteActivity">
-        </activity>
+        <activity android:name=".context.note.NoteActivity"/>
         <activity
             android:name=".context.note.NotesActivity"
             android:label="@string/title_activity_notes"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".context.note.StudyActivity"
             android:label="@string/title_activity_study"
-            android:theme="@style/AppTheme.NoActionBar"/>
-        <activity android:name=".context.guide.GuideActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <!--<activity android:name=".context.guide.GuideActivity">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        <!--</activity>-->
+        <activity android:name=".context.main.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".context.essay.EssayActivity"/>
-        <activity android:name=".context.essay_.EssayAddActivity"/>
-        <activity android:name=".context.preview.PreviewPicActivity"/>
-        <activity android:name=".context.preview.SinglePicActivity"/>
-        <activity android:name=".context.preview.TranstionPicActivity"/>
-        <activity android:name=".context.leisure.LeisureActivity"/>
-        <activity android:name=".context.instinct.InstinctActivity"/>
-        <activity android:name=".context.instinct.InstinctMediaActivity"/>
-        <activity android:name=".context.pure.PurePhotoActivity"/>
-        <activity android:name=".context.pure.BiliBiliCosActivity"/>
-        <activity android:name=".context.turing.TuringActivity"/>
-
-        <activity android:name=".context.collection.CollectionActivity"/>
-        <activity android:name=".context.collection.CollectionEditActivity"/>
+        <activity android:name=".context.essay.EssayActivity" />
+        <activity android:name=".context.essay_.EssayAddActivity" />
+        <activity android:name=".context.preview.PreviewPicActivity" />
+        <activity android:name=".context.preview.SinglePicActivity" />
+        <activity android:name=".context.preview.TranstionPicActivity" />
+        <activity android:name=".context.leisure.LeisureActivity" />
+        <activity android:name=".context.instinct.InstinctActivity" />
+        <activity android:name=".context.instinct.InstinctMediaActivity" />
+        <activity android:name=".context.pure.PurePhotoActivity" />
+        <activity android:name=".context.pure.BiliBiliCosActivity" />
+        <activity android:name=".context.turing.TuringActivity" />
+        <activity android:name=".context.collection.CollectionActivity" />
+        <activity android:name=".context.collection.CollectionEditActivity" />
 
         <service
             android:name=".context.music.service.MusicService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.media.browse.MediaBrowserService"/>
+                <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
 
@@ -75,9 +80,10 @@
         -->
         <receiver android:name="android.support.v4.media.session.MediaButtonReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
+
     </application>
 
 </manifest>

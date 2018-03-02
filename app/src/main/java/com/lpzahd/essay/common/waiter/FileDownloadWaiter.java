@@ -800,7 +800,6 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
                         if(checkIndex == urls.length - 1) {
                             // 校验完成
-                            contentTv.setText("校验全部完成");
                             down(tasks.toArray(new Request.SingleTask[tasks.size()]));
                             dialog.dismiss();
                         } else {
@@ -817,12 +816,12 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
                 addTask(urls[checkIndex], null, false);
                 if(checkIndex == urls.length - 1) {
                     // 校验完成
+                    contentTv.setText("校验全部完成");
                     positiveBtn.setEnabled(true);
                     positiveBtn.setText("确定");
                     positiveBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            contentTv.setText("校验全部完成");
                             down(tasks.toArray(new Request.SingleTask[tasks.size()]));
                             dialog.dismiss();
                         }
