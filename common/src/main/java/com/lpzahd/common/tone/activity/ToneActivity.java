@@ -24,6 +24,8 @@ public class ToneActivity extends WaiterActivity {
 
     @Override
     protected void inflaterView(@Nullable Bundle savedInstanceState) {
+        setTheme();
+
         if (!checkArgus(getIntent())) {
             return;
         }
@@ -34,6 +36,10 @@ public class ToneActivity extends WaiterActivity {
         initData();
 
         restoreActivity(savedInstanceState);
+    }
+
+    protected void setTheme() {
+
     }
 
     public void onCreate() {

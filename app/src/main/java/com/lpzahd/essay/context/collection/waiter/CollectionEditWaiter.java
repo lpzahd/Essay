@@ -33,6 +33,8 @@ import com.lpzahd.fresco.zoomable.ZoomableDraweeView;
 import com.lpzahd.gallery.tool.MediaTool;
 
 import org.threeten.bp.Instant;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.format.DateTimeFormatter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -216,14 +218,20 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                 .append("\n")
                 .append("mime : ").append(media.getMimeType())
                 .append("\n")
+                .append("size : ").append(Files.formatFileLength(media.getOriginalPath()))
+                .append("\n")
                 .append("width : ").append(media.getWidth())
                 .append("\n")
                 .append("height : ").append(media.getHeight())
                 .append("\n")
-                .append("createdate : ").append(media.getCreateDate())
+                .append("createdate : ").append(format(media.getCreateDate()))
                 .append("\n")
-                .append("modifydate : ").append(media.getModifiedDate())
+                .append("modifydate : ").append(format(media.getModifiedDate()))
                 .toString());
+    }
+
+    private String format(long second) {
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss").withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(second));
     }
 
     private void showCollectionDialog(String name) {

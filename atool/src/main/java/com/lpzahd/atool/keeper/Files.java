@@ -160,6 +160,44 @@ public class Files {
         }
     }
 
+    public static long getFileLength(String filePath) {
+        return getFileLength(new File(filePath));
+    }
+
+    public static long getFileLength(File file) {
+        if (file == null) {
+            return 0;
+        }
+
+        if (!file.isFile() || file.isHidden() || !file.canRead()) {
+            return 0;
+        }
+
+        return file.length();
+    }
+
+    public static String formatFileLength(String file) {
+        return formatFileLength(new File(file));
+    }
+
+    public static String formatFileLength(File file) {
+        long length = getFileLength(file);
+
+        if (length < 1024L)
+            return length + "B";
+
+        if (length < 1048576L)
+            return (length / 1024L) + "KB";
+
+        if (length < 1073741824L)
+            return (length / 1048576L) + "MB";
+
+        if (length < 1099511627776L)
+            return (length / 1073741824L) + "GB";
+
+        return (length / 1099511627776L) + "TB";
+    }
+
     public static void delete(String file) {
         new File(file).delete();
     }

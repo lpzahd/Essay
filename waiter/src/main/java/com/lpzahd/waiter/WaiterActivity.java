@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.lpzahd.waiter.agency.ActivityWaiter;
 import com.lpzahd.waiter.agency.WindowWaiter;

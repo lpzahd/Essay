@@ -73,12 +73,6 @@ public class PermissionsWaiter extends ToneActivityWaiter<AppCompatActivity> {
         if (isNeedCheck) {
             checkPermissions(needPermissions);
         }
-        if(!isAccept) {
-            if(mAccept != null) {
-                isAccept = true;
-                mAccept.accept();
-            }
-        }
     }
 
 
@@ -90,6 +84,11 @@ public class PermissionsWaiter extends ToneActivityWaiter<AppCompatActivity> {
                     needRequestPermissonList.toArray(
                             new String[needRequestPermissonList.size()]),
                     PERMISSON_REQUESTCODE);
+        } else {
+            if(mAccept != null && !isAccept) {
+                isAccept = true;
+                mAccept.accept();
+            }
         }
     }
 

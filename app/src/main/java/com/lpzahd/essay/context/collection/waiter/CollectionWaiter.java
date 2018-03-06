@@ -53,6 +53,7 @@ import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import io.realm.Sort;
 
@@ -348,10 +349,12 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
         @Override
         public Flowable<List<Collection>> doRefresh(int page) {
             return Flowable.just(page)
+                    .subscribeOn(Schedulers.computation())
                     .map(new Function<Integer, List<Collection>>() {
                         @Override
                         @Log
                         public List<Collection> apply(Integer integer) throws Exception {
+                            Realm realm = Realm.getDefaultInstance();
                             List<Collection> collections = realm.where(Collection.class)
                                     .findAllSorted("date", Sort.DESCENDING);
 //                                    .findAll();
