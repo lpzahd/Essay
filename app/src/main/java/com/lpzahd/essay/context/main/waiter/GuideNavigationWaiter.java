@@ -5,10 +5,14 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
+import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.main.MainActivity;
 import com.lpzahd.waiter.consumer.State;
@@ -45,6 +49,18 @@ public class GuideNavigationWaiter extends ToneActivityWaiter<MainActivity> impl
         toggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this);
+        navigationHeader(navigationView);
+    }
+
+    private void navigationHeader(NavigationView navigationView) {
+        LinearLayout headerView = (LinearLayout) navigationView.getHeaderView(0);
+        SimpleDraweeView headerDraweeView = (SimpleDraweeView) headerView.findViewById(R.id.header_drawee_view);
+        AppCompatTextView nameTv = (AppCompatTextView) headerView.findViewById(R.id.name_tv);
+        AppCompatTextView infoTv = (AppCompatTextView) headerView.findViewById(R.id.info_tv);
+
+        headerDraweeView.setImageURI(Frescoer.res(R.mipmap.ic_launcher));
+        nameTv.setText("Lpzahd");
+        infoTv.setText("lpzajs@gmail.com");
     }
 
     @Override

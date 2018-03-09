@@ -37,14 +37,6 @@ public class MainActivity extends RxActivity {
     }
 
     @Override
-    public void onCreate() {
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("Essay");
-        setSupportActionBar(toolbar);
-    }
-
-    @Override
     protected void setTheme() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
@@ -53,6 +45,14 @@ public class MainActivity extends RxActivity {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(Color.TRANSPARENT);
         }
+    }
+
+    @Override
+    public void onCreate() {
+        setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("Essay");
+        setSupportActionBar(toolbar);
     }
 
 }
