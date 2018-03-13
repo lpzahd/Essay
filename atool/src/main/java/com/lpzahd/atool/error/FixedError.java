@@ -53,11 +53,12 @@ public class FixedError extends Exception {
     public static class FixedErrorHandler {
 
         public static final int ERROR_NULL = 0;
+        public static final int ERROR_OTHER = 1;
 
         public static FixedError handleError(Throwable throwable) {
             if (throwable == null)
                 return nullError();
-            return new FixedError(ERROR_NULL, "the throwable is null!", throwable);
+            return new FixedError(ERROR_OTHER, throwable.getMessage(), throwable);
         }
 
 
