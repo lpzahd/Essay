@@ -64,7 +64,7 @@ import me.relex.photodraweeview.PhotoDraweeView;
  * 时间 : 2017/10/6.
  * 描述 ： 命里有时终须有，命里无时莫强求
  */
-public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> implements DataFactory.DataProcess<MediaTool.MediaBean,PreviewWaiter.PreviewBean> {
+public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> implements DataFactory.DataProcess<MediaTool.ImageBean,PreviewWaiter.PreviewBean> {
 
     private static final String EXTRA_DATA_MODE = "extra_data_mode";
     private static final String EXTRA_DATA_CURR_INDEX = "extra_data_curr_index";
@@ -136,7 +136,7 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> implement
     private PreviewAdapter mAdapter;
 
     private SwipeRefreshWaiter mRefreshWaiter;
-    private DataFactory<MediaTool.MediaBean, PreviewBean> mDataFactory;
+    private DataFactory<MediaTool.ImageBean, PreviewBean> mDataFactory;
 
     public PreviewWaiter(PreviewActivity previewActivity) {
         super(previewActivity);
@@ -208,22 +208,22 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> implement
 
                 @Override
                 public Flowable<? extends List> doRefresh(final int page) {
-                    return Flowable.create(new FlowableOnSubscribe<List<MediaTool.MediaBean>>() {
+                    return Flowable.create(new FlowableOnSubscribe<List<MediaTool.ImageBean>>() {
                         @Override
-                        public void subscribe(@NonNull FlowableEmitter<List<MediaTool.MediaBean>> e) throws Exception {
-                            List<MediaTool.MediaBean> mediaBeanList = MediaTool.getImageFromContext(context, bucketId);
-                            e.onNext(mediaBeanList);
+                        public void subscribe(@NonNull FlowableEmitter<List<MediaTool.ImageBean>> e) throws Exception {
+                            List<MediaTool.ImageBean> imageBeanList = MediaTool.getImageFromContext(context, bucketId);
+                            e.onNext(imageBeanList);
                         }
                     }, BackpressureStrategy.BUFFER)
-                            .filter(new Predicate<List<MediaTool.MediaBean>>() {
+                            .filter(new Predicate<List<MediaTool.ImageBean>>() {
                                 @Override
-                                public boolean test(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
+                                public boolean test(@NonNull List<MediaTool.ImageBean> mediaBeen) throws Exception {
                                     return !Lists.empty(mediaBeen);
                                 }
                             })
-                            .map(new Function<List<MediaTool.MediaBean>, List<PreviewBean>>() {
+                            .map(new Function<List<MediaTool.ImageBean>, List<PreviewBean>>() {
                                 @Override
-                                public List<PreviewBean> apply(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
+                                public List<PreviewBean> apply(@NonNull List<MediaTool.ImageBean> mediaBeen) throws Exception {
                                     return mDataFactory.processArray(mediaBeen);
                                 }
                             })
@@ -249,9 +249,9 @@ public class PreviewWaiter extends ToneActivityWaiter<PreviewActivity> implement
     }
 
     @Override
-    public PreviewBean process(MediaTool.MediaBean mediaBean) {
+    public PreviewBean process(MediaTool.ImageBean imageBean) {
         PreviewBean bean = new PreviewBean();
-        bean.uri = Frescoer.uri(mediaBean.getOriginalPath(), ImageSource.SOURCE_FILE);
+        bean.uri = Frescoer.uri(imageBean.getOriginalPath(), ImageSource.SOURCE_FILE);
         return bean;
     }
 

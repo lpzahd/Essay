@@ -15,7 +15,7 @@ import butterknife.BindView;
 
 public class NotesActivity extends ToneActivity {
 
-    @BindView(R.id.toolbar)
+    @BindView(R.id.tool_bar)
     Toolbar toolbar;
 
     @BindView(R.id.fab)

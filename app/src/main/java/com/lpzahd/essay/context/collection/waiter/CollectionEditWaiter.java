@@ -74,7 +74,7 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
     private SinglePicWaiter.PicAdapter mAdapter;
 
     // 原数据
-    private List<MediaTool.MediaBean> mMediaBeans;
+    private List<MediaTool.ImageBean> mImageBeans;
     // 展示中的数据
     private int mDisplayPosition;
 
@@ -105,10 +105,10 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                 final List<SinglePicWaiter.PicBean> data = getData();
                 if(data.isEmpty()) return;
 
-                final MediaTool.MediaBean mediaBean = mMediaBeans.get(position);
+                final MediaTool.ImageBean imageBean = mImageBeans.get(position);
                 final SinglePicWaiter.PicBean picBean = data.get(position);
 
-                mMediaBeans.remove(position);
+                mImageBeans.remove(position);
                 remove(position);
 
                 // 最多提醒三次
@@ -122,13 +122,13 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                         }
                     }
 
-                    Files.delete(mediaBean.getOriginalPath());
-                    Ui.scanSingleMedia(context, new File(mediaBean.getOriginalPath()));
+                    Files.delete(imageBean.getOriginalPath());
+                    Ui.scanSingleMedia(context, new File(imageBean.getOriginalPath()));
                     return;
                 }
 
 
-                String name = new File(mediaBean.getOriginalPath()).getName();
+                String name = new File(imageBean.getOriginalPath()).getName();
                 new MaterialDialog.Builder(context)
                         .title("删除图片")
                         .content("图片" + name + "将被移除，确定？")
@@ -149,15 +149,15 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                                     }
                                 }
 
-                                Files.delete(mediaBean.getOriginalPath());
-                                Ui.scanSingleMedia(context, new File(mediaBean.getOriginalPath()));
+                                Files.delete(imageBean.getOriginalPath());
+                                Ui.scanSingleMedia(context, new File(imageBean.getOriginalPath()));
 
                             }
                         })
                         .onNegative(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                                mMediaBeans.add(position, mediaBean);
+                                mImageBeans.add(position, imageBean);
                                 add(position, picBean);
                             }
                         })
@@ -187,13 +187,13 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
             @Override
             public void onLongPress(MotionEvent e) {
 
-                if(Lists.empty(mMediaBeans)) {
+                if(Lists.empty(mImageBeans)) {
                     T.t("图库空空如也");
                     return ;
                 }
 
-                MediaTool.MediaBean mediaBean = mMediaBeans.get(mDisplayPosition);
-                showCollectionDialog(new File(mediaBean.getOriginalPath()).getName());
+                MediaTool.ImageBean imageBean = mImageBeans.get(mDisplayPosition);
+                showCollectionDialog(new File(imageBean.getOriginalPath()).getName());
             }
         });
     }
@@ -210,7 +210,7 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                 .build();
         zoomableDraweeView.setController(draweeController);
 
-        MediaTool.MediaBean media = mMediaBeans.get(position);
+        MediaTool.ImageBean media = mImageBeans.get(position);
         descTv.setText(new StringBuilder()
                 .append("path : ").append(media.getOriginalPath())
                 .append("\n")
@@ -244,9 +244,9 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                     @Override
                     public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
 
-                        boolean collect = collectPhoto(mMediaBeans.get(mDisplayPosition));
+                        boolean collect = collectPhoto(mImageBeans.get(mDisplayPosition));
                         if(collect) {
-                            mMediaBeans.remove(mDisplayPosition);
+                            mImageBeans.remove(mDisplayPosition);
                             mAdapter.remove(mDisplayPosition);
                             displayPhoto(mDisplayPosition);
                         }
@@ -255,37 +255,37 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
         .show();
     }
 
-    private boolean collectPhoto(MediaTool.MediaBean mediaBean) {
-        String md5 = Codec.md5Hex(mediaBean.getOriginalPath());
+    private boolean collectPhoto(MediaTool.ImageBean imageBean) {
+        String md5 = Codec.md5Hex(imageBean.getOriginalPath());
         // 查询
         Collection photo = mRealm.where(Collection.class)
                 .equalTo("MD5", md5)
 //                .or()
-//                .equalTo("originalPath", mediaBean.getOriginalPath())
+//                .equalTo("originalPath", imageBean.getOriginalPath())
                 .findFirst();
         if(photo == null) {
             // 文件复制操作
-            String destPath = copy(mediaBean.getOriginalPath());
+            String destPath = copy(imageBean.getOriginalPath());
             // 插入
             mRealm.beginTransaction();
             Collection collection = new Collection();
             collection.setTrans(true);
             collection.setCount(1);
-            collection.setOriginalPath(mediaBean.getOriginalPath());
+            collection.setOriginalPath(imageBean.getOriginalPath());
             collection.setMD5(md5);
             Image image = new Image();
             image.setPath(destPath);
-            image.setWidth(mediaBean.getWidth());
-            image.setHeight(mediaBean.getHeight());
+            image.setWidth(imageBean.getWidth());
+            image.setHeight(imageBean.getHeight());
             image.setSource(ImageSource.SOURCE_FILE);
-            image.setSuffix(mediaBean.getMimeType());
+            image.setSuffix(imageBean.getMimeType());
             collection.setImage(image);
             mRealm.copyToRealm(collection);
             mRealm.commitTransaction();
 
-            Files.delete(mediaBean.getOriginalPath());
+            Files.delete(imageBean.getOriginalPath());
             T.t("图片收藏成功！");
-            Ui.scanSingleMedia(context, new File(mediaBean.getOriginalPath()));
+            Ui.scanSingleMedia(context, new File(imageBean.getOriginalPath()));
             return true;
         } else {
             Image image = photo.getImage();
@@ -303,26 +303,26 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
      * 获取媒体数据 并加载
      */
     private void queryMedias() {
-        Disposable mMediaDisposable = Flowable.create(new FlowableOnSubscribe<List<MediaTool.MediaBean>>() {
+        Disposable mMediaDisposable = Flowable.create(new FlowableOnSubscribe<List<MediaTool.ImageBean>>() {
             @Override
-            public void subscribe(@NonNull FlowableEmitter<List<MediaTool.MediaBean>> e) throws Exception {
-                List<MediaTool.MediaBean> mediaBeanList = MediaTool.getImageFromContext(context, MediaTool.MEDIA_NO_BUCKET);
-                e.onNext(mediaBeanList);
+            public void subscribe(@NonNull FlowableEmitter<List<MediaTool.ImageBean>> e) throws Exception {
+                List<MediaTool.ImageBean> imageBeanList = MediaTool.getImageFromContext(context, MediaTool.MEDIA_NO_BUCKET);
+                e.onNext(imageBeanList);
             }
         }, BackpressureStrategy.BUFFER)
-                .filter(new Predicate<List<MediaTool.MediaBean>>() {
+                .filter(new Predicate<List<MediaTool.ImageBean>>() {
                     @Override
-                    public boolean test(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
+                    public boolean test(@NonNull List<MediaTool.ImageBean> mediaBeen) throws Exception {
                         return !Lists.empty(mediaBeen);
                     }
                 })
                 .subscribeOn(Schedulers.io())
-                .map(new Function<List<MediaTool.MediaBean>, List<SinglePicWaiter.PicBean>>() {
+                .map(new Function<List<MediaTool.ImageBean>, List<SinglePicWaiter.PicBean>>() {
                     @Override
-                    public List<SinglePicWaiter.PicBean> apply(List<MediaTool.MediaBean> mediaBeans) throws Exception {
-                        mMediaBeans = mediaBeans;
+                    public List<SinglePicWaiter.PicBean> apply(List<MediaTool.ImageBean> mediaBeans) throws Exception {
+                        mImageBeans = mediaBeans;
                         List<SinglePicWaiter.PicBean> pics = new ArrayList<>(mediaBeans.size());
-                        for (MediaTool.MediaBean media : mediaBeans) {
+                        for (MediaTool.ImageBean media : mediaBeans) {
                             SinglePicWaiter.PicBean pic = new SinglePicWaiter.PicBean();
                             pic.uri = Frescoer.uri(media.getOriginalPath(), ImageSource.SOURCE_FILE);
                             pics.add(pic);

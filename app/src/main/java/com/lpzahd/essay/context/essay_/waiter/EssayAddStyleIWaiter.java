@@ -93,7 +93,7 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> i
     private Realm mRealm;
     private PicAdapter mAdapter;
 
-    private List<MediaTool.MediaBean> mPicSource;
+    private List<MediaTool.ImageBean> mPicSource;
 
     public EssayAddStyleIWaiter(EssayAddActivity essayAddActivity) {
         super(essayAddActivity);
@@ -151,7 +151,7 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> i
                 if(!Lists.empty(mPicSource)) {
                     RealmList<Image> images = new RealmList<>();
                     for(int i = 0, size = mPicSource.size(); i < size; i++) {
-                        MediaTool.MediaBean bean = mPicSource.get(i);
+                        MediaTool.ImageBean bean = mPicSource.get(i);
                         images.add(new Image.Builder()
                                 .path(bean.getOriginalPath())
                                 .width(bean.getWidth())
@@ -210,12 +210,12 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> i
         Gallery.with(context)
                 .image()
                 .maxSize(6)
-                .subscribe(new Receiver<List<MediaTool.MediaBean>>() {
+                .subscribe(new Receiver<List<MediaTool.ImageBean>>() {
                     @Override
-                    public void receive(Flowable<List<MediaTool.MediaBean>> flowable) {
-                        flowable.subscribe(new Consumer<List<MediaTool.MediaBean>>() {
+                    public void receive(Flowable<List<MediaTool.ImageBean>> flowable) {
+                        flowable.subscribe(new Consumer<List<MediaTool.ImageBean>>() {
                             @Override
-                            public void accept(List<MediaTool.MediaBean> mediaBeen) throws Exception {
+                            public void accept(List<MediaTool.ImageBean> mediaBeen) throws Exception {
                                 List<PicBean> pics = new ArrayList<>();
                                 for (int i = 0, size = mediaBeen.size(); i < size; i++) {
                                     PicBean pic = new PicBean();
@@ -236,9 +236,9 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> i
     public Flowable<List<PreviewPicWaiter.PreviewBean>> transmit() {
         if(Lists.empty(mPicSource)) return null;
         return Flowable.just(mPicSource)
-                .map(new Function<List<MediaTool.MediaBean>, List<PreviewPicWaiter.PreviewBean>>() {
+                .map(new Function<List<MediaTool.ImageBean>, List<PreviewPicWaiter.PreviewBean>>() {
                     @Override
-                    public List<PreviewPicWaiter.PreviewBean> apply(@NonNull List<MediaTool.MediaBean> mediaBeen) throws Exception {
+                    public List<PreviewPicWaiter.PreviewBean> apply(@NonNull List<MediaTool.ImageBean> mediaBeen) throws Exception {
                         List<PreviewPicWaiter.PreviewBean> pics = new ArrayList<>();
                         for (int i = 0, size = mediaBeen.size(); i < size; i++) {
                             PreviewPicWaiter.PreviewBean pic = new PreviewPicWaiter.PreviewBean();

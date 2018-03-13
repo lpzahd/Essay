@@ -324,12 +324,10 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
     @Override
     protected void destroy() {
         super.destroy();
-//        if (mRealm != null && !mRealm.isClosed()) {
         if (mRealm != null) {
             mRealm.close();
             mRealm = null;
         }
-
 
         mBusService.unregist();
 

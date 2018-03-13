@@ -35,6 +35,7 @@ import com.lpzahd.essay.view.SimpleVideo;
 import com.lpzahd.fresco.zoomable.DoubleTapGestureListener;
 import com.lpzahd.fresco.zoomable.ZoomableDraweeView;
 import com.lpzahd.waiter.consumer.State;
+import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.utils.OrientationUtils;
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoPlayer;
 
@@ -521,8 +522,8 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
             }
 
             //释放所有
-            simpleVideo.setStandardVideoAllCallBack(null);
-            GSYVideoPlayer.releaseAllVideos();
+            simpleVideo.setVideoAllCallBack(null);
+            GSYVideoManager.releaseAllVideos();
         }
 
         return super.backPressed();

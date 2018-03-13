@@ -138,6 +138,7 @@ public class Ui extends NoInstance {
         context.sendBroadcast(intent);
     }
 
+    @Deprecated
     public static void scanDirMedia(Context context, File dir) {
         Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_STARTED);
         Uri uri = Uri.fromFile(dir);

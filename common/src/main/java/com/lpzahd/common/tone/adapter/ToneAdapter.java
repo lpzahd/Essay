@@ -142,6 +142,7 @@ public abstract class ToneAdapter<T, VH extends ToneAdapter.ToneHolder> extends 
         public ToneHolder(View itemView) {
             super(itemView);
         }
+
     }
 
 }

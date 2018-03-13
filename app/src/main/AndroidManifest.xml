@@ -54,12 +54,16 @@
         <activity android:name=".context.preview.TranstionPicActivity" />
         <activity android:name=".context.leisure.LeisureActivity" />
         <activity android:name=".context.instinct.InstinctActivity" />
-        <activity android:name=".context.instinct.InstinctMediaActivity" />
+        <activity android:name=".context.instinct.InstinctMediaActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"/>
         <activity android:name=".context.pure.PurePhotoActivity" />
         <activity android:name=".context.pure.BiliBiliCosActivity" />
         <activity android:name=".context.turing.TuringActivity" />
         <activity android:name=".context.collection.CollectionActivity" />
         <activity android:name=".context.collection.CollectionEditActivity" />
+
+        <activity android:name=".context.video.VideoActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"/>
 
         <service
             android:name=".context.music.service.MusicService"

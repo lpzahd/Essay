@@ -21,7 +21,7 @@ import io.realm.Realm;
  */
 public class EssayAddWaiter extends ToneActivityWaiter<EssayAddActivity> implements DraweeForm.DraweeClickListener {
 
-    @BindView(R.id.toolbar)
+    @BindView(R.id.tool_bar)
     Toolbar toolbar;
 
     @BindView(R.id.title_edt)
@@ -35,14 +35,14 @@ public class EssayAddWaiter extends ToneActivityWaiter<EssayAddActivity> impleme
 
     private Realm realm;
 
-//    private DataFactory<MediaBean, DraweeForm.Photo> mpFactory = DataFactory.of(new DataFactory.DataProcess<MediaBean, DraweeForm.Photo>() {
+//    private DataFactory<ImageBean, DraweeForm.Photo> mpFactory = DataFactory.of(new DataFactory.DataProcess<ImageBean, DraweeForm.Photo>() {
 //        @Override
-//        public DraweeForm.Photo process(MediaBean mediaBean) {
+//        public DraweeForm.Photo process(ImageBean mediaBean) {
 //            return mediaBean == null ? null : new DraweeForm.Photo(mediaBean.getOriginalPath(), mediaBean.getWidth(), mediaBean.getHeight());
 //        }
 //    });
 //
-//    private List<MediaBean> medias;
+//    private List<ImageBean> medias;
 
 
     public EssayAddWaiter(EssayAddActivity essayAddActivity) {
@@ -146,9 +146,9 @@ public class EssayAddWaiter extends ToneActivityWaiter<EssayAddActivity> impleme
 //        realm.commitTransaction();
 //    }
 
-//    private DataFactory<MediaBean, Image> miFactory = DataFactory.of(new DataFactory.DataProcess<MediaBean, Image>() {
+//    private DataFactory<ImageBean, Image> miFactory = DataFactory.of(new DataFactory.DataProcess<ImageBean, Image>() {
 //        @Override
-//        public Image process(MediaBean mediaBean) {
+//        public Image process(ImageBean mediaBean) {
 //            if (mediaBean == null) return null;
 //
 //            Image image = new Image();

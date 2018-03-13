@@ -15,6 +15,7 @@ import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.main.MainActivity;
+import com.lpzahd.essay.context.video.VideoActivity;
 import com.lpzahd.waiter.consumer.State;
 
 import butterknife.BindView;
@@ -27,7 +28,7 @@ import butterknife.BindView;
  */
 public class GuideNavigationWaiter extends ToneActivityWaiter<MainActivity> implements NavigationView.OnNavigationItemSelectedListener {
 
-    @BindView(R.id.toolbar)
+    @BindView(R.id.tool_bar)
     Toolbar toolbar;
 
     @BindView(R.id.drawer_layout)
@@ -53,10 +54,11 @@ public class GuideNavigationWaiter extends ToneActivityWaiter<MainActivity> impl
     }
 
     private void navigationHeader(NavigationView navigationView) {
+        // 获取头文件布局
         LinearLayout headerView = (LinearLayout) navigationView.getHeaderView(0);
-        SimpleDraweeView headerDraweeView = (SimpleDraweeView) headerView.findViewById(R.id.header_drawee_view);
-        AppCompatTextView nameTv = (AppCompatTextView) headerView.findViewById(R.id.name_tv);
-        AppCompatTextView infoTv = (AppCompatTextView) headerView.findViewById(R.id.info_tv);
+        SimpleDraweeView headerDraweeView = headerView.findViewById(R.id.header_drawee_view);
+        AppCompatTextView nameTv = headerView.findViewById(R.id.name_tv);
+        AppCompatTextView infoTv = headerView.findViewById(R.id.info_tv);
 
         headerDraweeView.setImageURI(Frescoer.res(R.mipmap.ic_launcher));
         nameTv.setText("Lpzahd");
@@ -78,7 +80,7 @@ public class GuideNavigationWaiter extends ToneActivityWaiter<MainActivity> impl
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
-
+            VideoActivity.startActivity(context);
         }
 
         drawer.closeDrawer(GravityCompat.START);

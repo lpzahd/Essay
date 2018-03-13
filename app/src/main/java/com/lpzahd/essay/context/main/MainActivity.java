@@ -50,7 +50,7 @@ public class MainActivity extends RxActivity {
     @Override
     public void onCreate() {
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.tool_bar);
         toolbar.setTitle("Essay");
         setSupportActionBar(toolbar);
     }

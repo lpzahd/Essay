@@ -16,7 +16,7 @@ import butterknife.ButterKnife;
 
 public class StudyActivity extends ToneActivity {
 
-    @BindView(R.id.toolbar)
+    @BindView(R.id.tool_bar)
     Toolbar toolbar;
 
     @BindView(R.id.fab)

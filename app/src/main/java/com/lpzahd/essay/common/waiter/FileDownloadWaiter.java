@@ -243,11 +243,14 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
             public void runOnSuccess(Task task, Response response) {
                 T.t("图片下载完成");
                 final Context context = App.getApp().getApplicationContext();
-                if(response.single()) {
-                    Ui.scanSingleMedia(context, response.getFile());
-                } else {
-                    Ui.scanDirMedia(context, response.getFile().getParentFile());
+                for(File f : response.getFiles()) {
+                    Ui.scanSingleMedia(context, f);
                 }
+//                if(response.single()) {
+//                    Ui.scanSingleMedia(context, response.getFile());
+//                } else {
+//                    Ui.scanDirMedia(context, response.getFile().getParentFile());
+//                }
             }
 
         };

@@ -156,16 +156,6 @@ public class SimpleVideo extends StandardGSYVideoPlayer {
     }
 
     /**
-     * 需要在尺寸发生变化的时候重新处理
-     */
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        super.onSurfaceTextureSizeChanged(surface, width, height);
-        resolveTransform();
-    }
-
-
-    /**
      * 处理镜像旋转
      * 注意，暂停时
      */
@@ -277,16 +267,6 @@ public class SimpleVideo extends StandardGSYVideoPlayer {
             setUp(mUrlList, mCache, mCachePath, mTitle);
             resolveTypeUI();
         }
-    }
-
-    /**
-     * 处理显示逻辑
-     */
-    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        super.onSurfaceTextureAvailable(surface, width, height);
-        resolveRotateUI();
-        resolveTransform();
     }
 
     /**
