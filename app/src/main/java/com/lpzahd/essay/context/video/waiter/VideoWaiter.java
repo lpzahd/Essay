@@ -7,19 +7,25 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.keeper.Files;
 import com.lpzahd.atool.ui.L;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
+import com.lpzahd.common.tone.adapter.ToneItemTouchHelperCallback;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 import com.lpzahd.common.waiter.refresh.DspRefreshWaiter;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.context.preview.waiter.SinglePicWaiter;
 import com.lpzahd.essay.context.video.VideoActivity;
 import com.lpzahd.gallery.tool.MediaTool;
 import com.lpzahd.waiter.consumer.State;
@@ -62,6 +68,8 @@ public class VideoWaiter extends ToneActivityWaiter<VideoActivity> {
     private VideoAdapter mAdapter;
     private LinearLayoutManager mLinearLayoutManager;
 
+    private DspRefreshWaiter<MediaTool.VideoBean, Video> refreshWaiter;
+
     private int mFirstVisibleItem;
     private int mLastVisibleItem;
 
@@ -76,8 +84,61 @@ public class VideoWaiter extends ToneActivityWaiter<VideoActivity> {
         mLinearLayoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(mLinearLayoutManager);
 
-        mAdapter = new VideoAdapter(context);
+        mAdapter = new VideoAdapter(context) {
+            private int mDeleteTimes;
+
+            @Override
+            public void onSwiped(final int position) {
+                final List<Video> data = getData();
+                if(data.isEmpty()) return;
+
+                final List<MediaTool.VideoBean> videoList = refreshWaiter.getSource();
+                final MediaTool.VideoBean videoBean = videoList.get(position);
+                final Video video = data.get(position);
+
+                videoList.remove(position);
+                remove(position);
+
+                // 最多提醒三次
+                if(mDeleteTimes > 3) {
+                    Files.delete(videoBean.getOriginalPath());
+                    Ui.scanSingleMedia(context, new File(videoBean.getOriginalPath()));
+                    return;
+                }
+
+
+                String name = new File(videoBean.getOriginalPath()).getName();
+                new MaterialDialog.Builder(context)
+                        .title("删除视频")
+                        .content("视频" + name + "将被移除，确定？")
+                        .canceledOnTouchOutside(false)
+                        .cancelable(false)
+                        .negativeText(R.string.tip_negative)
+                        .positiveText(R.string.tip_positive)
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+                                mDeleteTimes++;
+                                Files.delete(videoBean.getOriginalPath());
+                                Ui.scanSingleMedia(context, new File(videoBean.getOriginalPath()));
+
+                            }
+                        })
+                        .onNegative(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+                                videoList.add(position, videoBean);
+                                add(position, video);
+                            }
+                        })
+                        .show();
+            }
+        };
         recyclerView.setAdapter(mAdapter);
+
+        ToneItemTouchHelperCallback touchCallback = new ToneItemTouchHelperCallback(mAdapter);
+        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(touchCallback);
+        mItemTouchHelper.attachToRecyclerView(recyclerView);
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
@@ -153,7 +214,6 @@ public class VideoWaiter extends ToneActivityWaiter<VideoActivity> {
     protected void initData() {
         super.initData();
 
-        DspRefreshWaiter<MediaTool.VideoBean, Video> refreshWaiter;
         addWindowWaiter(refreshWaiter = new DspRefreshWaiter<MediaTool.VideoBean, Video>(swipeRefreshLayout, recyclerView) {
 
             @Override

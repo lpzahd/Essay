@@ -80,7 +80,6 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
 
     private Realm mRealm;
 
-    private int mDeleteTimes;
 
     public CollectionEditWaiter(CollectionEditActivity collectionEditActivity) {
         super(collectionEditActivity);
@@ -100,6 +99,9 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
         recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
 
         mAdapter = new SinglePicWaiter.PicAdapter(context) {
+
+            private int mDeleteTimes;
+
             @Override
             public void onSwiped(final int position) {
                 final List<SinglePicWaiter.PicBean> data = getData();

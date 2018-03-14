@@ -141,6 +141,7 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
                         .setOldController(zoomableDraweeView.getController())
                         .setUri(displayBean.uri)
                         .setTapToRetryEnabled(true)
+                        .setAutoPlayAnimations(true)
                         .build();
                 zoomableDraweeView.setController(draweeController);
             }
@@ -161,6 +162,7 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
 
                         DraweeController draweeController = Fresco.newDraweeControllerBuilder()
                                 .setUri(been.getObjURL())
+                                .setAutoPlayAnimations(true)
                                 .build();
                         zoomableDraweeView.setController(draweeController);
 
