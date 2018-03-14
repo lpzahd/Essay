@@ -21,6 +21,12 @@ android {
         }
     }
 
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
     signingConfigs {
         release {
             storeFile file("lpzahd.jks")
@@ -41,6 +47,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 
 dependencies {
@@ -98,8 +105,10 @@ dependencies {
 //    compile 'com.shuyu:GSYVideoPlayer:4.1.0'
     compile 'com.shuyu:gsyVideoPlayer-java:4.1.0'
 //    compile 'com.shuyu:gsyVideoPlayer-arm64:4.1.0'
-    compile 'com.shuyu:gsyVideoPlayer-armv7a:4.1.0'
+//    compile 'com.shuyu:gsyVideoPlayer-armv7a:4.1.0'
 //    compile 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.4'
+//    compile 'com.shuyu:gsyVideoPlayer-java:4.1.0'
+    compile 'com.shuyu:gsyVideoPlayer-ex_so:4.1.0'
 
     // crash 处理
     compile 'cat.ereza:customactivityoncrash:1.5.0'

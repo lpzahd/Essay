@@ -347,12 +347,11 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
         @Override
         public Flowable<List<Collection>> doRefresh(int page) {
             return Flowable.just(page)
-                    .subscribeOn(Schedulers.computation())
+//                    .subscribeOn(Schedulers.computation())
                     .map(new Function<Integer, List<Collection>>() {
                         @Override
                         @Log
                         public List<Collection> apply(Integer integer) throws Exception {
-                            Realm realm = Realm.getDefaultInstance();
                             List<Collection> collections = realm.where(Collection.class)
                                     .findAllSorted("date", Sort.DESCENDING);
 //                                    .findAll();
