@@ -396,7 +396,9 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
 
     private void setupView() {
         RealmResults<WordQuery> query = mRealm.where(WordQuery.class)
-                .findAllSorted("date", Sort.DESCENDING);
+                .sort("date", Sort.DESCENDING)
+                .findAll();
+//                .findAllSorted("date", Sort.DESCENDING);
         if (query != null && query.size() != 0) {
 
             String[] suggestions = new String[query.size()];

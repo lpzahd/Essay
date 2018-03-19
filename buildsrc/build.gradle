@@ -6,11 +6,15 @@ dependencies {
 
     compile localGroovy()
 
-    compile 'com.android.tools.build:gradle:2.3.0'
+    compile 'com.android.tools.build:gradle:3.0.1'
     compile 'org.aspectj:aspectjtools:1.8.6'
     compile 'org.aspectj:aspectjrt:1.8.6'
 }
 
 repositories {
     jcenter()
+    maven {
+        url 'https://maven.google.com/'
+        name 'Google'
+    }
 }

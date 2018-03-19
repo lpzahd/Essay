@@ -44,6 +44,7 @@ import com.lpzahd.essay.db.file.Image;
 import org.threeten.bp.Instant;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -53,8 +54,10 @@ import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
+import io.realm.RealmResults;
 import io.realm.Sort;
 
 /**
@@ -346,22 +349,38 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
 
         @Override
         public Flowable<List<Collection>> doRefresh(int page) {
-            return Flowable.just(page)
-//                    .subscribeOn(Schedulers.computation())
-                    .map(new Function<Integer, List<Collection>>() {
+            return realm.where(Collection.class)
+                    .sort("date", Sort.DESCENDING)
+                    .findAllAsync()
+                    .asFlowable()
+                    .filter(new Predicate<RealmResults<Collection>>() {
                         @Override
-                        @Log
-                        public List<Collection> apply(Integer integer) throws Exception {
-                            List<Collection> collections = realm.where(Collection.class)
-                                    .findAllSorted("date", Sort.DESCENDING);
-//                                    .findAll();
-
-                            if(Lists.empty(collections))
-                                collections = Collections.emptyList();
-
-                            return collections;
+                        public boolean test(RealmResults<Collection> collections) throws Exception {
+                            return collections.isLoaded();
+                        }
+                    })
+                    .map(new Function<RealmResults<Collection>, List<Collection>>() {
+                        @Override
+                        public List<Collection> apply(RealmResults<Collection> collections) throws Exception {
+                            return new ArrayList<>(collections);
                         }
                     });
+//            return Flowable.just(page)
+////                    .subscribeOn(Schedulers.computation())
+//                    .map(new Function<Integer, List<Collection>>() {
+//                        @Override
+//                        @Log
+//                        public List<Collection> apply(Integer integer) throws Exception {
+//                            List<Collection> collections = realm.where(Collection.class)
+//                                    .findAllSorted("date", Sort.DESCENDING);
+////                                    .findAll();
+//
+//                            if(Lists.empty(collections))
+//                                collections = Collections.emptyList();
+//
+//                            return collections;
+//                        }
+//                    });
         }
 
         @Override

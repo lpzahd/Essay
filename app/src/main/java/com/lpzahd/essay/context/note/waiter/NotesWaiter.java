@@ -16,6 +16,7 @@ import com.lpzahd.common.tone.waiter.ToneWindowWaiter;
 import com.lpzahd.common.util.fresco.Frescoer;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -57,7 +58,9 @@ public class NotesWaiter extends ToneWindowWaiter {
 
     private void searchNotes() {
         RealmResults<NoteTypes> noteResults = realm.where(NoteTypes.class)
-                .findAllSorted("position");
+                .sort("position")
+                .findAll();
+//                .findAllSorted("position");
         adapter.setData(noteResults);
     }
 
@@ -102,6 +105,7 @@ public class NotesWaiter extends ToneWindowWaiter {
 
         public NotesHolder(View itemView) {
             super(itemView);
+            ButterKnife.bind(this, itemView);
         }
     }
 }
