@@ -89,6 +89,8 @@ public class VideoWaiter extends ToneActivityWaiter<VideoActivity> {
 
             @Override
             public void onSwiped(final int position) {
+                if(mPlayPosition == position) return;
+
                 final List<Video> data = getData();
                 if(data.isEmpty()) return;
 
@@ -285,6 +287,8 @@ public class VideoWaiter extends ToneActivityWaiter<VideoActivity> {
         private GSYVideoHelper mHelper;
         private GSYVideoHelper.GSYVideoHelperBuilder mBuilder;
 
+        int mPlayPosition = -1;
+
         VideoAdapter(Context context) {
             super(context);
         }
@@ -305,6 +309,7 @@ public class VideoWaiter extends ToneActivityWaiter<VideoActivity> {
                     Video video = getItem(position);
                     mBuilder.setVideoTitle(video.name).setUrl(video.url);
                     mHelper.startPlay();
+                    mPlayPosition = position;
                     notifyDataSetChanged();
                 }
             });
