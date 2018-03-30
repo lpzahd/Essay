@@ -55,6 +55,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import io.realm.RealmList;
@@ -78,10 +79,10 @@ public class RecyclerWaiter extends ToneActivityWaiter<EssayActivity> implements
 
     private SwipeRefreshWaiter refreshWaiter;
 
-    private DataFactory<Essay, Model> factory;
+    private DataFactory<Essay, Model> mFactory;
 
-    private Realm realm;
-    private RealmResults<Essay> essays;
+    private Realm mRealm;
+    private RealmResults<Essay> mEssays;
 
     public RecyclerWaiter(EssayActivity essayActivity) {
         super(essayActivity);
@@ -97,8 +98,8 @@ public class RecyclerWaiter extends ToneActivityWaiter<EssayActivity> implements
             }
         }));
 
-        factory = DataFactory.of(this);
-        realm = Realm.getDefaultInstance();
+        mFactory = DataFactory.of(this);
+        mRealm = Realm.getDefaultInstance();
     }
 
     @Override
@@ -114,15 +115,32 @@ public class RecyclerWaiter extends ToneActivityWaiter<EssayActivity> implements
 
             @Override
             public Flowable<? extends List> doRefresh(int page) {
-                essays = realm.where(Essay.class)
-                        .findAllSorted("date", Sort.DESCENDING);
-                return Flowable.just(essays)
+                return mRealm.where(Essay.class)
+                        .sort("date", Sort.DESCENDING)
+                        .findAllAsync()
+                        .asFlowable()
+                        .filter(new Predicate<RealmResults<Essay>>() {
+                            @Override
+                            public boolean test(RealmResults<Essay> essays) throws Exception {
+                                return essays.isLoaded();
+                            }
+                        })
                         .map(new Function<RealmResults<Essay>, List>() {
                             @Override
-                            public List apply(@io.reactivex.annotations.NonNull RealmResults<Essay> essays) throws Exception {
-                                return factory.processArray(essays);
+                            public List apply(RealmResults<Essay> essays) throws Exception {
+                                mEssays = essays;
+                                return mFactory.processArray(essays);
                             }
                         });
+//                essays = realm.where(Essay.class)
+//                        .findAllSorted("date", Sort.DESCENDING);
+//                return Flowable.just(essays)
+//                        .map(new Function<RealmResults<Essay>, List>() {
+//                            @Override
+//                            public List apply(@io.reactivex.annotations.NonNull RealmResults<Essay> essays) throws Exception {
+//                                return factory.processArray(essays);
+//                            }
+//                        });
             }
 
         });
@@ -151,11 +169,11 @@ public class RecyclerWaiter extends ToneActivityWaiter<EssayActivity> implements
                             model.title = title.toString();
                             model.content = content.toString();
 
-                            realm.beginTransaction();
-                            Essay essay = essays.get(position);
+                            mRealm.beginTransaction();
+                            Essay essay = mEssays.get(position);
                             essay.setTitle(model.title);
                             essay.setContent(model.content);
-                            realm.commitTransaction();
+                            mRealm.commitTransaction();
 
                             adapter.notifyItemChanged(position);
                         }
@@ -187,8 +205,8 @@ public class RecyclerWaiter extends ToneActivityWaiter<EssayActivity> implements
     @Override
     protected void destroy() {
         super.destroy();
-        if (realm != null && !realm.isClosed())
-            realm.close();
+        if (mRealm != null && !mRealm.isClosed())
+            mRealm.close();
     }
 
     @OnClick(R.id.fab)
@@ -201,7 +219,7 @@ public class RecyclerWaiter extends ToneActivityWaiter<EssayActivity> implements
         final Essay essay = new Essay();
         essay.setTitle(title.toString());
         essay.setContent(content.toString());
-        realm.executeTransactionAsync(new Realm.Transaction() {
+        mRealm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 realm.copyToRealm(essay);
@@ -210,7 +228,7 @@ public class RecyclerWaiter extends ToneActivityWaiter<EssayActivity> implements
             @Override
             public void onSuccess() {
                 recyclerView.scrollToPosition(0);
-                adapter.addFirst(factory.process(essay));
+                adapter.addFirst(mFactory.process(essay));
             }
         });
     }
@@ -404,10 +422,10 @@ public class RecyclerWaiter extends ToneActivityWaiter<EssayActivity> implements
                     .onPositive(new MaterialDialog.SingleButtonCallback() {
                         @Override
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            realm.executeTransaction(new Realm.Transaction() {
+                            mRealm.executeTransaction(new Realm.Transaction() {
                                 @Override
                                 public void execute(Realm realm) {
-                                    essays.get(position).deleteFromRealm();
+                                    mEssays.get(position).deleteFromRealm();
                                     adapter.remove(position);
                                 }
                             });

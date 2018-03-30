@@ -56,6 +56,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.realm.Realm;
 import io.realm.RealmList;
 import io.realm.RealmResults;
@@ -150,15 +151,34 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
 
             @Override
             public Flowable<? extends List> doRefresh(int page) {
-                mEssays = mRealm.where(Essay.class)
-                        .findAllSorted("date", Sort.DESCENDING);
-                return Flowable.just(mEssays)
+                return mRealm.where(Essay.class)
+                        .sort("date", Sort.DESCENDING)
+                        .findAllAsync()
+                        .asFlowable()
+                        .filter(new Predicate<RealmResults<Essay>>() {
+                            @Override
+                            public boolean test(RealmResults<Essay> essays) throws Exception {
+                                return essays.isLoaded();
+                            }
+                        })
                         .map(new Function<RealmResults<Essay>, List>() {
                             @Override
-                            public List apply(@io.reactivex.annotations.NonNull RealmResults<Essay> essays) throws Exception {
+                            public List apply(RealmResults<Essay> essays) throws Exception {
+                                mEssays = essays;
                                 return mFactoty.processArray(essays);
                             }
                         });
+//                mEssays = mRealm.where(Essay.class)
+//                        .sort("date", Sort.DESCENDING)
+//                        .findAllAsync();
+////                        .findAllSorted("date", Sort.DESCENDING);
+//                return Flowable.just(mEssays)
+//                        .map(new Function<RealmResults<Essay>, List>() {
+//                            @Override
+//                            public List apply(@io.reactivex.annotations.NonNull RealmResults<Essay> essays) throws Exception {
+//                                return mFactoty.processArray(essays);
+//                            }
+//                        });
             }
 
         });
