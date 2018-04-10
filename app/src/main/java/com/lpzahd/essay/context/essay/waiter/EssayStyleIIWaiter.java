@@ -4,12 +4,15 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
+import android.provider.ContactsContract;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -24,6 +27,7 @@ import com.lpzahd.Lists;
 import com.lpzahd.Objects;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.bus.Receiver;
 import com.lpzahd.common.bus.RxBus;
 import com.lpzahd.common.taxi.RxTaxi;
@@ -37,12 +41,15 @@ import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.essay.EssayActivity;
 import com.lpzahd.essay.context.essay.EssayStyleIIAddDialog;
-import com.lpzahd.essay.context.preview.PreviewPicActivity;
 import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
+import com.lpzahd.essay.db.collection.Collection;
+import com.lpzahd.essay.db.essay.EFile;
 import com.lpzahd.essay.db.essay.Essay;
 import com.lpzahd.essay.db.file.Image;
 import com.lpzahd.essay.tool.DateTime;
+import com.lpzahd.waiter.consumer.State;
 
+import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -53,12 +60,9 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Consumer;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
 import io.realm.Realm;
-import io.realm.RealmList;
 import io.realm.RealmResults;
 import io.realm.Sort;
 
@@ -76,8 +80,6 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
     RecyclerView recyclerView;
 
     private Realm mRealm;
-
-    private RealmResults<Essay> mEssays;
 
     private DataFactory<Essay, EssayStyleIIWaiter.EssayModel> mFactoty;
 
@@ -111,7 +113,7 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         recyclerView.addOnItemTouchListener(new OnItemChildTouchListener<EssayHolder>(recyclerView) {
             @Override
             public void onClick(RecyclerView rv, EssayHolder essayHolder, View child) {
-                if(child == essayHolder.simpleDraweeView) {
+                if (child == essayHolder.simpleDraweeView) {
 //                    PreviewPicActivity.startActivity(context);
                     PreviewPicWaiter.startActivity(context, child);
                     RxTaxi.get().regist(PreviewPicWaiter.TAG,
@@ -120,27 +122,22 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
             }
 
             private Transmitter<List<PreviewPicWaiter.PreviewBean>> transmit(final String id) {
-                return new Transmitter<List<PreviewPicWaiter.PreviewBean>>() {
-                    @Override
-                    public Flowable<List<PreviewPicWaiter.PreviewBean>> transmit() {
-                        Essay target = mRealm.where(Essay.class)
-                                .equalTo("id", id)
-                                .findFirst();
-                        if(Objects.isNull(target) || Lists.empty(target.getDefaultImages())) return null;
-                        return Flowable.just(target.getDefaultImages())
-                                .map(new Function<RealmList<Image>, List<PreviewPicWaiter.PreviewBean>>() {
-                                    @Override
-                                    public List<PreviewPicWaiter.PreviewBean> apply(@NonNull RealmList<Image> images) throws Exception {
-                                        List<PreviewPicWaiter.PreviewBean> pics = new ArrayList<>();
-                                        for (int i = 0, size = images.size(); i < size; i++) {
-                                            PreviewPicWaiter.PreviewBean pic = new PreviewPicWaiter.PreviewBean();
-                                            pic.uri = Frescoer.uri(images.get(i).getPath(), ImageSource.SOURCE_FILE);
-                                            pics.add(pic);
-                                        }
-                                        return pics;
-                                    }
-                                });
-                    }
+                return () -> {
+                    Essay target = mRealm.where(Essay.class)
+                            .equalTo("id", id)
+                            .findFirst();
+                    if (Objects.isNull(target) || Lists.empty(target.getDefaultImages()))
+                        return null;
+                    return Flowable.just(target.getDefaultImages())
+                            .map(images -> {
+                                List<PreviewPicWaiter.PreviewBean> pics = new ArrayList<>();
+                                for (int i = 0, size = images.size(); i < size; i++) {
+                                    PreviewPicWaiter.PreviewBean pic = new PreviewPicWaiter.PreviewBean();
+                                    pic.uri = Frescoer.uri(images.get(i).getPath(), ImageSource.SOURCE_FILE);
+                                    pics.add(pic);
+                                }
+                                return pics;
+                            });
                 };
 
             }
@@ -155,34 +152,13 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
                         .sort("date", Sort.DESCENDING)
                         .findAllAsync()
                         .asFlowable()
-                        .filter(new Predicate<RealmResults<Essay>>() {
-                            @Override
-                            public boolean test(RealmResults<Essay> essays) throws Exception {
-                                return essays.isLoaded();
-                            }
-                        })
-                        .map(new Function<RealmResults<Essay>, List>() {
-                            @Override
-                            public List apply(RealmResults<Essay> essays) throws Exception {
-                                mEssays = essays;
-                                return mFactoty.processArray(essays);
-                            }
-                        });
-//                mEssays = mRealm.where(Essay.class)
-//                        .sort("date", Sort.DESCENDING)
-//                        .findAllAsync();
-////                        .findAllSorted("date", Sort.DESCENDING);
-//                return Flowable.just(mEssays)
-//                        .map(new Function<RealmResults<Essay>, List>() {
-//                            @Override
-//                            public List apply(@io.reactivex.annotations.NonNull RealmResults<Essay> essays) throws Exception {
-//                                return mFactoty.processArray(essays);
-//                            }
-//                        });
+                        .filter(RealmResults::isLoaded)
+                        .map((Function<RealmResults<Essay>, List>) mFactoty::processArray);
             }
 
         });
 
+        mRefreshWaiter.setCount(Integer.MAX_VALUE);
         mRefreshWaiter.autoRefresh();
 
 
@@ -202,6 +178,82 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
             mRealm.close();
         RxTaxi.get().unregist(PreviewPicWaiter.TAG);
         RxBus.get().unregist(EssayActivity.TAG);
+    }
+
+    @Override
+    protected int optionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_fix) {
+            fixGalleryImages();
+            return State.STATE_PREVENT;
+        }
+        return super.optionsItemSelected(item);
+    }
+
+    /**
+     * 修复之前在相册中读取的照片丢失问题
+     * 改为从'收藏'中获取
+     */
+    private void fixGalleryImages() {
+        Disposable disposable = mRealm.where(Essay.class)
+                .findAllAsync()
+                .asFlowable()
+                .filter(RealmResults::isLoaded)
+                .map(essays -> {
+                    List<Essay> filters = new ArrayList<>();
+                    for (Essay essay : essays) {
+                        EFile eFile = essay.geteFile();
+                        if (Objects.isNull(eFile)) continue;
+                        List<Image> images = eFile.getImages();
+                        if (Lists.empty(images)) continue;
+
+                        for (Image image : images) {
+                            if (!new File(image.getPath()).exists()) {
+                                filters.add(essay);
+                                break;
+                            }
+                        }
+                    }
+                    return filters;
+                })
+                .map(essays -> {
+                    if (Lists.empty(essays)) return 0;
+
+                    Realm realm = Realm.getDefaultInstance();
+
+                    int num = 0;
+                    for (Essay essay : essays) {
+                        List<Image> images = essay.getDefaultImages();
+                        int i = 0;
+                        for (Image image : images) {
+                            if (!new File(image.getPath()).exists()) {
+                                Collection result = realm.where(Collection.class)
+                                        .equalTo("originalPath", image.getPath())
+                                        .findFirst();
+                                if (result != null) {
+                                    i++;
+                                    mRealm.beginTransaction();
+                                    image.setPath(result.getImage().getPath());
+                                    mRealm.commitTransaction();
+                                }
+                            }
+                        }
+                        num += i;
+                    }
+                    realm.close();
+                    return num;
+                })
+                .subscribe(integer -> {
+                    if (integer == 0) {
+                        T.t("修复失败!");
+                    } else {
+                        T.t("一共修复了%s张图片", integer);
+                        mRefreshWaiter.autoRefresh();
+                    }
+
+                }, throwable -> T.t(throwable.toString()));
+
+        context.addDispose(disposable);
     }
 
     @Override
@@ -243,29 +295,18 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         final Essay essay = new Essay();
         essay.setTitle(title.toString());
         essay.setContent(content.toString());
-        mRealm.executeTransactionAsync(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                realm.copyToRealm(essay);
-            }
-        }, new Realm.Transaction.OnSuccess() {
-            @Override
-            public void onSuccess() {
-                recyclerView.scrollToPosition(0);
-                mAdapter.addFirst(mFactoty.process(essay));
-            }
+        mRealm.executeTransactionAsync(realm -> realm.copyToRealm(essay), () -> {
+            recyclerView.scrollToPosition(0);
+            mAdapter.addFirst(mFactoty.process(essay));
         });
     }
 
     @Override
     public void receive(Flowable<Boolean> flowable) {
-        flowable.observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Boolean>() {
-                    @Override
-                    public void accept(Boolean aBoolean) throws Exception {
-                        if(aBoolean) mRefreshWaiter.autoRefresh();
-                    }
-                });
+        context.addDispose(flowable.observeOn(AndroidSchedulers.mainThread())
+                .subscribe(aBoolean -> {
+                    if (aBoolean) mRefreshWaiter.autoRefresh();
+                }));
     }
 
 
@@ -334,13 +375,14 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
             super(context);
         }
 
+        @NonNull
         @Override
-        public EssayHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public EssayHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             return new EssayHolder(inflateItemView(R.layout.item_essay_style_02, parent));
         }
 
         @Override
-        public void onBindViewHolder(EssayHolder holder, int position) {
+        public void onBindViewHolder(@NonNull EssayHolder holder, int position) {
             EssayModel model = getItem(position);
             holder.dateTv.setText(model.date);
             if (Strings.empty(model.title)) {

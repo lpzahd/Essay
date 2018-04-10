@@ -18,8 +18,15 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_fix"
         android:orderInCategory="3"
+        android:title="修复"
+        android:icon="@drawable/ic_image_fixed_white_24dp"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="4"
         android:title="设置"
         app:showAsAction="never" />
 

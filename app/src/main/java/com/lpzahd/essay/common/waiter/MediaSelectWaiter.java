@@ -33,22 +33,17 @@ import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.jakewharton.rxbinding2.view.RxView;
-import com.lpzahd.Lists;
+import com.lpzahd.atool.action.Check;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
-import com.lpzahd.common.bus.Receiver;
 import com.lpzahd.common.bus.RxBus;
 import com.lpzahd.common.taxi.RxTaxi;
-import com.lpzahd.common.taxi.Transmitter;
 import com.lpzahd.common.tone.adapter.OnItemChildTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.preview.TranstionPicActivity;
-import com.lpzahd.gallery.Gallery;
-import com.lpzahd.gallery.tool.MediaTool;
-import com.lpzahd.gallery.waiter.PreviewWaiter;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -112,8 +107,6 @@ public class MediaSelectWaiter extends ToneActivityWaiter<AppCompatActivity> {
 
     private SwipeRefreshWaiter mRefreshWaiter;
 
-    private List<MediaTool.ImageBean> mSelected;
-
     private SwipeRefreshWaiter.DataFlowable mDataFlowable;
 
     public MediaSelectWaiter(int maxSize, SwipeRefreshWaiter.DataFlowable flowable) {
@@ -124,7 +117,6 @@ public class MediaSelectWaiter extends ToneActivityWaiter<AppCompatActivity> {
         }
 
         this.maxSize = maxSize;
-        mSelected = new ArrayList<>(maxSize);
 
         if (maxSize == 1)
             mode = MODE_SINGLE;
@@ -167,10 +159,7 @@ public class MediaSelectWaiter extends ToneActivityWaiter<AppCompatActivity> {
         RxView.clicks(rightTv)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(o -> {
-                    if (Lists.empty(slects)) {
-                        T.t("没有选择一张图片");
-                        return;
-                    }
+                    if(Check.Empty.check(slects, () -> T.t("没有选择一张图片"))) return;
 
                     final List<MediaBean> source = mAdapter.getData();
                     List<MediaBean> results = new ArrayList<>();
