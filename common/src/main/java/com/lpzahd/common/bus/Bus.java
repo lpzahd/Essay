@@ -16,12 +16,12 @@ public final class Bus {
 
     private ConcurrentMap<Object, Receiver> buses = new ConcurrentHashMap<>();
 
-    public void regist(Object tag, Receiver receiver) {
+    public <T> void regist(Object tag, Receiver<T> receiver) {
         throwIfNull(tag, "tag");
         buses.put(tag, receiver);
     }
 
-    public void registIfAbsent(Object tag, Receiver receiver) {
+    public <T> void registIfAbsent(Object tag, Receiver<T> receiver) {
         throwIfNull(tag, "tag");
         buses.putIfAbsent(tag, receiver);
     }

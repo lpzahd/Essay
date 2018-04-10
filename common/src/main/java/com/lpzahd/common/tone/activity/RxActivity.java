@@ -51,14 +51,14 @@ public class RxActivity extends ToneActivity {
     }
 
     public void delayBackpress(long delayTime) {
-        Observable.timer(delayTime, TimeUnit.MILLISECONDS)
+        addDispose(Observable.timer(delayTime, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Long>() {
                     @Override
                     public void accept(Long aLong) throws Exception {
                         finish();
                     }
-                });
+                }));
     }
 
     /**

@@ -6,7 +6,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.MotionEvent;
 
-import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
@@ -80,6 +79,7 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
 
     private Realm mRealm;
 
+    private int mCollectionNum;
 
     public CollectionEditWaiter(CollectionEditActivity collectionEditActivity) {
         super(collectionEditActivity);
@@ -138,30 +138,24 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                         .cancelable(false)
                         .negativeText(R.string.tip_negative)
                         .positiveText(R.string.tip_positive)
-                        .onPositive(new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                                mDeleteTimes++;
-                                if(mDisplayPosition == position) {
-                                    if(position < getItemCount()) {
-                                        displayPhoto(position);
-                                    } else {
-                                        int index = getItemCount() - 1;
-                                        displayPhoto(index < 0 ? 0 : index);
-                                    }
+                        .onPositive((dialog, which) -> {
+                            mDeleteTimes++;
+                            if(mDisplayPosition == position) {
+                                if(position < getItemCount()) {
+                                    displayPhoto(position);
+                                } else {
+                                    int index = getItemCount() - 1;
+                                    displayPhoto(index < 0 ? 0 : index);
                                 }
-
-                                Files.delete(imageBean.getOriginalPath());
-                                Ui.scanSingleMedia(context, new File(imageBean.getOriginalPath()));
-
                             }
+
+                            Files.delete(imageBean.getOriginalPath());
+                            Ui.scanSingleMedia(context, new File(imageBean.getOriginalPath()));
+
                         })
-                        .onNegative(new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                                mImageBeans.add(position, imageBean);
-                                add(position, picBean);
-                            }
+                        .onNegative((dialog, which) -> {
+                            mImageBeans.add(position, imageBean);
+                            add(position, picBean);
                         })
                         .show();
             }
@@ -242,16 +236,14 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
                 .content("图片" + name + "将被收藏，原图会被移除，确定？")
                 .negativeText(R.string.tip_negative)
                 .positiveText(R.string.tip_positive)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+                .onPositive((dialog, which) -> {
 
-                        boolean collect = collectPhoto(mImageBeans.get(mDisplayPosition));
-                        if(collect) {
-                            mImageBeans.remove(mDisplayPosition);
-                            mAdapter.remove(mDisplayPosition);
-                            displayPhoto(mDisplayPosition);
-                        }
+                    boolean collect = collectPhoto(mImageBeans.get(mDisplayPosition));
+                    if(collect) {
+                        mImageBeans.remove(mDisplayPosition);
+                        mAdapter.remove(mDisplayPosition);
+                        displayPhoto(mDisplayPosition);
+                        mCollectionNum++;
                     }
                 })
         .show();
@@ -305,40 +297,26 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
      * 获取媒体数据 并加载
      */
     private void queryMedias() {
-        Disposable mMediaDisposable = Flowable.create(new FlowableOnSubscribe<List<MediaTool.ImageBean>>() {
-            @Override
-            public void subscribe(@NonNull FlowableEmitter<List<MediaTool.ImageBean>> e) throws Exception {
-                List<MediaTool.ImageBean> imageBeanList = MediaTool.getImageFromContext(context, MediaTool.MEDIA_NO_BUCKET);
-                e.onNext(imageBeanList);
-            }
+        Disposable mMediaDisposable = Flowable.create((FlowableOnSubscribe<List<MediaTool.ImageBean>>) e -> {
+            List<MediaTool.ImageBean> imageBeanList = MediaTool.getImageFromContext(context, MediaTool.MEDIA_NO_BUCKET);
+            e.onNext(imageBeanList);
         }, BackpressureStrategy.BUFFER)
-                .filter(new Predicate<List<MediaTool.ImageBean>>() {
-                    @Override
-                    public boolean test(@NonNull List<MediaTool.ImageBean> mediaBeen) throws Exception {
-                        return !Lists.empty(mediaBeen);
-                    }
-                })
+                .filter(mediaBeen -> !Lists.empty(mediaBeen))
                 .subscribeOn(Schedulers.io())
-                .map(new Function<List<MediaTool.ImageBean>, List<SinglePicWaiter.PicBean>>() {
-                    @Override
-                    public List<SinglePicWaiter.PicBean> apply(List<MediaTool.ImageBean> mediaBeans) throws Exception {
-                        mImageBeans = mediaBeans;
-                        List<SinglePicWaiter.PicBean> pics = new ArrayList<>(mediaBeans.size());
-                        for (MediaTool.ImageBean media : mediaBeans) {
-                            SinglePicWaiter.PicBean pic = new SinglePicWaiter.PicBean();
-                            pic.uri = Frescoer.uri(media.getOriginalPath(), ImageSource.SOURCE_FILE);
-                            pics.add(pic);
-                        }
-                        return pics;
+                .map(mediaBeans -> {
+                    mImageBeans = mediaBeans;
+                    List<SinglePicWaiter.PicBean> pics = new ArrayList<>(mediaBeans.size());
+                    for (MediaTool.ImageBean media : mediaBeans) {
+                        SinglePicWaiter.PicBean pic = new SinglePicWaiter.PicBean();
+                        pic.uri = Frescoer.uri(media.getOriginalPath(), ImageSource.SOURCE_FILE);
+                        pics.add(pic);
                     }
+                    return pics;
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<SinglePicWaiter.PicBean>>() {
-                    @Override
-                    public void accept(List<SinglePicWaiter.PicBean> picBeans) throws Exception {
-                        mAdapter.setData(picBeans);
-                        displayPhoto(0);
-                    }
+                .subscribe(picBeans -> {
+                    mAdapter.setData(picBeans);
+                    displayPhoto(0);
                 });
         context.addDispose(mMediaDisposable);
     }
@@ -352,7 +330,9 @@ public class CollectionEditWaiter extends ToneActivityWaiter<CollectionEditActiv
 
     @Override
     protected int backPressed() {
-        RxBus.get().post(CollectionActivity.TAG, true);
+        if(mCollectionNum > 0)
+            RxBus.get().post(CollectionActivity.TAG, true);
+
         return super.backPressed();
     }
 

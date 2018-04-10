@@ -52,6 +52,7 @@ import java.util.Random;
 import butterknife.BindView;
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
@@ -187,18 +188,12 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
                     }
                 });
 
-        mBusService = new RxBus.BusService(CollectionActivity.TAG, new Receiver<Boolean>() {
-            @Override
-            public void receive(Flowable<Boolean> flowable) {
-                flowable.observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new Consumer<Boolean>() {
-                            @Override
-                            public void accept(Boolean aBoolean) throws Exception {
-                                if(aBoolean)
-                                    mRefreshWaiter.autoRefresh();
-                            }
-                        });
-            }
+        mBusService = new RxBus.BusService(CollectionActivity.TAG, (Receiver<Boolean>) flowable -> {
+            Disposable disposable = flowable.observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(aBoolean -> {
+                        if(aBoolean) mRefreshWaiter.autoRefresh();
+                    });
+            context.addDispose(disposable);
         });
         mBusService.regist();
     }
@@ -211,15 +206,9 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
                 .content("图片" + name + "将被还原，收藏图会被移除，确定？")
                 .negativeText(R.string.tip_negative)
                 .positiveText(R.string.tip_positive)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-
-                        boolean restore = restorePhoto(collection);
-                        if(restore) {
-                            mAdapter.remove(position);
-                        }
-                    }
+                .onPositive((dialog, which) -> {
+                    boolean restore = restorePhoto(collection);
+                    if(restore) mAdapter.remove(position);
                 })
                 .show();
     }
@@ -286,19 +275,16 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
                 .title("指定位置滚动")
                 .inputRange(0, String.valueOf(size).length())
                 .autoDismiss(false)
-                .input("滚动位置", "", new MaterialDialog.InputCallback() {
-                    @Override
-                    public void onInput(@android.support.annotation.NonNull MaterialDialog dialog, CharSequence input) {
-                        try {
-                            int position = Integer.parseInt(input.toString());
-                            if (position < 0) {
-                                position = 0;
-                            }
-                            recyclerView.getLayoutManager().scrollToPosition(position);
-                            dialog.dismiss();
-                        } catch (NumberFormatException ex) {
-                            T.t("请输入正确的数字");
+                .input("滚动位置", "", (dialog, input) -> {
+                    try {
+                        int position = Integer.parseInt(input.toString());
+                        if (position < 0) {
+                            position = 0;
                         }
+                        recyclerView.getLayoutManager().scrollToPosition(position);
+                        dialog.dismiss();
+                    } catch (NumberFormatException ex) {
+                        T.t("请输入正确的数字");
                     }
                 })
                 .show();
@@ -335,6 +321,7 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
 
         CollectionRefreshWaiter(SwipeRefreshLayout swipeRefreshLayout, RecyclerView recyclerView) {
             super(swipeRefreshLayout, recyclerView);
+            swipeRefreshLayout.setEnabled(false);
             setCount(Integer.MAX_VALUE);
             realm = Realm.getDefaultInstance();
         }
@@ -345,34 +332,8 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
                     .sort("date", Sort.DESCENDING)
                     .findAllAsync()
                     .asFlowable()
-                    .filter(new Predicate<RealmResults<Collection>>() {
-                        @Override
-                        public boolean test(RealmResults<Collection> collections) throws Exception {
-                            return collections.isLoaded();
-                        }
-                    })
-                    .map(new Function<RealmResults<Collection>, List<Collection>>() {
-                        @Override
-                        public List<Collection> apply(RealmResults<Collection> collections) throws Exception {
-                            return new ArrayList<>(collections);
-                        }
-                    });
-//            return Flowable.just(page)
-////                    .subscribeOn(Schedulers.computation())
-//                    .map(new Function<Integer, List<Collection>>() {
-//                        @Override
-//                        @Log
-//                        public List<Collection> apply(Integer integer) throws Exception {
-//                            List<Collection> collections = realm.where(Collection.class)
-//                                    .findAllSorted("date", Sort.DESCENDING);
-////                                    .findAll();
-//
-//                            if(Lists.empty(collections))
-//                                collections = Collections.emptyList();
-//
-//                            return collections;
-//                        }
-//                    });
+                    .filter(RealmResults::isLoaded)
+                    .map(ArrayList::new);
         }
 
         @Override
@@ -393,5 +354,6 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
                 realm = null;
             }
         }
+
     }
 }

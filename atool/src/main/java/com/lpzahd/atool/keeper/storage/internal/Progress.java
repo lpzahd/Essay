@@ -25,7 +25,7 @@ public class Progress {
     public long totalSize = 1L;                     //总字节长度, byte
     public long currentSize;                        //本次下载的大小, byte
     public transient long speed;                    //网速，byte/s
-    public int status = Status.NONE;    //当前状态
+    public int status = Status.NONE;                //当前状态
     public int priority;                            //任务优先级
     public long date;                               //创建时间
 //    public Request<?, ? extends Request> request;   //网络请求

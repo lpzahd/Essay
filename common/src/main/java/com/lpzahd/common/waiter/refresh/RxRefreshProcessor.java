@@ -113,6 +113,7 @@ public class RxRefreshProcessor extends RefreshProcessor {
                             }
                             onLoadComplete();
                         }
+                        dispose();
                     }
                 }, new Consumer<Throwable>() {
                     @Override
@@ -125,6 +126,7 @@ public class RxRefreshProcessor extends RefreshProcessor {
                             onLoadError(error.getCode(), error.getMessage());
                             onLoadComplete();
                         }
+                        dispose();
                     }
                 });
 

@@ -9,6 +9,7 @@ import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
@@ -130,10 +131,12 @@ public abstract class DspRefreshProcessor<E, D> extends RefreshProcessor impleme
                             }
                             onLoadComplete();
                         }
+                        dispose();
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
+                        dispose();
                         FixedError error = FixedError.FixedErrorHandler.handleError(throwable);
                         if (ptr) {
                             onPtrError(error.getCode(), error.getMessage());

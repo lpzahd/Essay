@@ -2,6 +2,7 @@ package com.lpzahd.common.tone.adapter;
 
 import android.content.Context;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +38,7 @@ public abstract class ToneAdapter<T, VH extends ToneAdapter.ToneHolder> extends 
     /**
      * 默认填充view 的方式
      */
-    protected View inflateItemView(@LayoutRes int layoutId, ViewGroup root) {
+    protected View inflateItemView(@LayoutRes int layoutId, @NonNull ViewGroup root) {
         return mInflater.inflate(layoutId, root, false);
     }
 
