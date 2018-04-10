@@ -190,12 +190,14 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         return super.optionsItemSelected(item);
     }
 
+    private Disposable mFixDispose;
+
     /**
      * 修复之前在相册中读取的照片丢失问题
      * 改为从'收藏'中获取
      */
     private void fixGalleryImages() {
-        Disposable disposable = mRealm.where(Essay.class)
+        mFixDispose = mRealm.where(Essay.class)
                 .findAllAsync()
                 .asFlowable()
                 .filter(RealmResults::isLoaded)
@@ -250,10 +252,12 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
                         T.t("一共修复了%s张图片", integer);
                         mRefreshWaiter.autoRefresh();
                     }
+                   context.disposeSafely(mFixDispose);
 
-                }, throwable -> T.t(throwable.toString()));
-
-        context.addDispose(disposable);
+                }, throwable -> {
+                    T.t(throwable.toString());
+                    context.disposeSafely(mFixDispose);
+                });
     }
 
     @Override
