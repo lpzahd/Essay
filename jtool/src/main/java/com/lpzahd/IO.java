@@ -1,6 +1,5 @@
-package com.lpzahd.atool.io;
+package com.lpzahd;
 
-import com.lpzahd.atool.ui.L;
 import com.lpzahd.base.NoInstance;
 
 import java.io.Closeable;
@@ -17,8 +16,7 @@ public class IO extends NoInstance {
         if (closeable == null) return;
         try {
             closeable.close();
-        } catch (Exception e) {
-            L.e(e);
+        } catch (Exception ignore) {
         }
     }
 
@@ -26,8 +24,7 @@ public class IO extends NoInstance {
         if (flushable == null) return;
         try {
             flushable.flush();
-        } catch (Exception e) {
-            L.e(e);
+        } catch (Exception ignore) {
         }
     }
 

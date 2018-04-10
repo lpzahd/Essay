@@ -1,6 +1,6 @@
 package com.lpzahd.atool.keeper.storage.task;
 
-import com.lpzahd.atool.io.IO;
+import com.lpzahd.IO;
 import com.lpzahd.atool.keeper.storage.internal.CallBack;
 import com.lpzahd.atool.keeper.storage.internal.Progress;
 import com.lpzahd.atool.keeper.storage.internal.ProgressDao;

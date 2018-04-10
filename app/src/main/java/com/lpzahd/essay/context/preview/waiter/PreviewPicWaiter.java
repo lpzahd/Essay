@@ -174,24 +174,18 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
 
         mTransmitter.transmit()
                 .subscribeOn(AndroidSchedulers.mainThread())
-                .flatMap(new Function<List<PreviewBean>, Publisher<Integer>>() {
-                    @Override
-                    public Publisher<Integer> apply(List<PreviewBean> previewBeans) throws Exception {
-                        mAdapter.setData(previewBeans);
-                        showBatchIv(previewBeans.size());
+                .flatMap((Function<List<PreviewBean>, Publisher<Integer>>) previewBeans -> {
+                    mAdapter.setData(previewBeans);
+                    showBatchIv(previewBeans.size());
 
-                        Transmitter<Integer> transmitter = RxTaxi.get().pull(TAG_INDEX);
-                        return transmitter == null ? Flowable.just(0) : transmitter.transmit();
-                    }
+                    Transmitter<Integer> transmitter = RxTaxi.get().pull(TAG_INDEX);
+                    return transmitter == null ? Flowable.just(0) : transmitter.transmit();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Integer>()  {
-                    @Override
-                    public void accept(Integer integer) throws Exception {
-                        recyclerView.scrollToPosition(integer);
-                        if(!Lists.empty(mAdapter.getData())) {
-                            hTextView.animateText("第" + integer +"张");
-                        }
+                .subscribe(integer -> {
+                    recyclerView.scrollToPosition(integer);
+                    if(!Lists.empty(mAdapter.getData())) {
+                        hTextView.animateText("第" + integer +"张");
                     }
                 });
 

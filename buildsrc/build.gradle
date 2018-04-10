@@ -2,13 +2,13 @@ apply plugin: 'groovy'
 
 dependencies {
 
-    compile gradleApi()
+    implementation gradleApi()
 
-    compile localGroovy()
+    implementation localGroovy()
 
-    compile 'com.android.tools.build:gradle:3.0.1'
-    compile 'org.aspectj:aspectjtools:1.8.6'
-    compile 'org.aspectj:aspectjrt:1.8.6'
+    implementation 'com.android.tools.build:gradle:3.1.0'
+    implementation 'org.aspectj:aspectjtools:1.8.6'
+    implementation 'org.aspectj:aspectjrt:1.8.6'
 }
 
 repositories {

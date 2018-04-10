@@ -1,5 +1,6 @@
 package com.lpzahd.essay.context.essay_.waiter;
 
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatImageView;
@@ -12,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
@@ -22,6 +24,7 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.ui.L;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.bus.Receiver;
@@ -32,12 +35,17 @@ import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.common.tone.adapter.ToneItemTouchHelperCallback;
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
+import com.lpzahd.common.tone.waiter.WaiterManager;
 import com.lpzahd.common.util.fresco.Frescoer;
+import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
+import com.lpzahd.essay.common.context.MediaSelectActivity;
+import com.lpzahd.essay.common.waiter.MediaSelectWaiter;
 import com.lpzahd.essay.context.essay.EssayActivity;
 import com.lpzahd.essay.context.essay_.EssayAddActivity;
 import com.lpzahd.essay.context.preview.PreviewPicActivity;
 import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
+import com.lpzahd.essay.db.collection.Collection;
 import com.lpzahd.essay.db.essay.Essay;
 import com.lpzahd.essay.db.file.Image;
 import com.lpzahd.gallery.Gallery;
@@ -47,7 +55,9 @@ import io.reactivex.Flowable;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.ButterKnife;
@@ -55,11 +65,16 @@ import butterknife.ButterKnife;
 import com.lpzahd.aop.api.ThrottleFirst;
 import com.lpzahd.waiter.consumer.State;
 
+import org.reactivestreams.Subscriber;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.realm.Realm;
 import io.realm.RealmList;
+import io.realm.RealmResults;
+import io.realm.Sort;
 
 
 /**
@@ -67,7 +82,7 @@ import io.realm.RealmList;
  * Date : 九月
  * Desction : (•ิ_•ิ)
  */
-public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> implements Transmitter {
+public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> implements Transmitter, Receiver {
 
     @BindView(R.id.tool_bar)
     Toolbar toolBar;
@@ -104,6 +119,7 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> i
         super.init();
         mRealm = Realm.getDefaultInstance();
         RxTaxi.get().regist(PreviewPicWaiter.TAG, this);
+        RxBus.get().regist(MediaSelectWaiter.TAG, this);
     }
 
     @Override
@@ -111,6 +127,7 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> i
         super.destroy();
         if(mRealm != null && !mRealm.isClosed()) mRealm.close();
         RxTaxi.get().unregist(PreviewPicWaiter.TAG);
+        RxBus.get().unregist(MediaSelectWaiter.TAG);
     }
 
     @Override
@@ -118,12 +135,7 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> i
         toolBar.setTitle("随笔");
         toolBar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
         context.setSupportActionBar(toolBar);
-        toolBar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        toolBar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
     @Override
@@ -163,18 +175,10 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> i
                     essay.setImages(images);
                 }
 
-                realm.executeTransactionAsync(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        realm.copyToRealm(essay);
-                    }
-                }, new Realm.Transaction.OnSuccess() {
-                    @Override
-                    public void onSuccess() {
-                        T.t("新增成功");
-                        RxBus.get().post(EssayActivity.TAG, true);
-                        context.delayBackpress();
-                    }
+                realm.executeTransactionAsync(realm1 -> realm1.copyToRealm(essay), () -> {
+                    T.t("新增成功");
+                    RxBus.get().post(EssayActivity.TAG, true);
+                    context.delayBackpress();
                 });
 
             }
@@ -207,47 +211,81 @@ public class EssayAddStyleIWaiter extends ToneActivityWaiter<EssayAddActivity> i
     @ThrottleFirst
     @OnClick(R.id.image_iv)
     public void openGallery(View view) {
-        Gallery.with(context)
-                .image()
-                .maxSize(6)
-                .subscribe(new Receiver<List<MediaTool.ImageBean>>() {
-                    @Override
-                    public void receive(Flowable<List<MediaTool.ImageBean>> flowable) {
-                        flowable.subscribe(new Consumer<List<MediaTool.ImageBean>>() {
-                            @Override
-                            public void accept(List<MediaTool.ImageBean> mediaBeen) throws Exception {
-                                List<PicBean> pics = new ArrayList<>();
-                                for (int i = 0, size = mediaBeen.size(); i < size; i++) {
-                                    PicBean pic = new PicBean();
-                                    pic.uri = Frescoer.uri(mediaBeen.get(i).getOriginalPath(), ImageSource.SOURCE_FILE);
-                                    pics.add(pic);
-                                }
-                                mAdapter.setData(pics);
+        WaiterManager.single().put(MediaSelectActivity.class, new MediaSelectWaiter(6, new SwipeRefreshWaiter.DataFlowable() {
 
-                                mPicSource = mediaBeen;
+            @Override
+            public int getPage() {
+                return Integer.MAX_VALUE;
+            }
+
+            @Override
+            public Flowable<? extends List> doRefresh(int page) {
+                return mRealm.where(Collection.class)
+                        .sort("date", Sort.DESCENDING)
+                        .findAllAsync()
+                        .asFlowable()
+                        .filter(RealmResults::isLoaded)
+                        .map((Function<RealmResults<Collection>, List>) collections -> {
+                            if(Lists.empty(collections)) return Collections.emptyList();
+
+                            List<MediaSelectWaiter.MediaBean> medias = new ArrayList<>(collections.size());
+                            for(Collection result : collections) {
+                                MediaSelectWaiter.MediaBean bean = new MediaSelectWaiter.MediaBean();
+                                Image image = result.getImage();
+                                bean.uri = Frescoer.uri(image.getPath(), image.getSource());
+                                medias.add(bean);
                             }
+                            return medias;
                         });
-                    }
-                })
-                .openGallery();
+            }
+        }));
+        MediaSelectActivity.startActivity(context);
     }
 
     @Override
     public Flowable<List<PreviewPicWaiter.PreviewBean>> transmit() {
         if(Lists.empty(mPicSource)) return null;
         return Flowable.just(mPicSource)
-                .map(new Function<List<MediaTool.ImageBean>, List<PreviewPicWaiter.PreviewBean>>() {
-                    @Override
-                    public List<PreviewPicWaiter.PreviewBean> apply(@NonNull List<MediaTool.ImageBean> mediaBeen) throws Exception {
-                        List<PreviewPicWaiter.PreviewBean> pics = new ArrayList<>();
-                        for (int i = 0, size = mediaBeen.size(); i < size; i++) {
-                            PreviewPicWaiter.PreviewBean pic = new PreviewPicWaiter.PreviewBean();
-                            pic.uri = Frescoer.uri(mediaBeen.get(i).getOriginalPath(), ImageSource.SOURCE_FILE);
-                            pics.add(pic);
-                        }
-                        return pics;
+                .map(mediaBeen -> {
+                    List<PreviewPicWaiter.PreviewBean> pics = new ArrayList<>();
+                    for (int i = 0, size = mediaBeen.size(); i < size; i++) {
+                        PreviewPicWaiter.PreviewBean pic = new PreviewPicWaiter.PreviewBean();
+                        pic.uri = Frescoer.uri(mediaBeen.get(i).getOriginalPath(), ImageSource.SOURCE_FILE);
+                        pics.add(pic);
                     }
+                    return pics;
                 });
+    }
+
+    @Override
+    public void receive(Flowable flowable) {
+        flowable.subscribe((Consumer<List<MediaSelectWaiter.MediaBean>>) mediaBeen -> {
+            List<PicBean> pics = new ArrayList<>(mediaBeen.size());
+            for (int i = 0, size = mediaBeen.size(); i < size; i++) {
+                PicBean pic = new PicBean();
+                pic.uri = mediaBeen.get(i).uri;
+                pics.add(pic);
+            }
+            mAdapter.setData(pics);
+
+            mPicSource = new ArrayList<>(mediaBeen.size());
+            for (int i = 0, size = mediaBeen.size(); i < size; i++) {
+                MediaTool.ImageBean bean = new MediaTool.ImageBean();
+                final String path = Frescoer.parseUri(mediaBeen.get(i).uri);
+                try {
+                    ExifInterface exifInterface = new ExifInterface(path);
+                    int width = exifInterface.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH, 0);
+                    int height = exifInterface.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH, 0);
+                    bean.setWidth(width);
+                    bean.setHeight(height);
+                    bean.setMimeType(MimeTypeMap.getFileExtensionFromUrl(path));
+                    bean.setOriginalPath(path);
+                } catch (IOException e) {
+                    L.e(e.getMessage());
+                }
+                mPicSource.add(bean);
+            }
+        });
     }
 
     public static class PicBean {

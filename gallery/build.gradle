@@ -3,12 +3,11 @@ apply plugin: 'com.jakewharton.butterknife'
 apply plugin: com.lpzahd.plugin.AopPlugin
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 26
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
@@ -24,32 +23,41 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    // For animated GIF support
-    // For WebP support, including animated WebP
-    // For WebP support, without animations
-    // Provide the Android support library (you might already have this or a similar dependency)
-    // compile 'com.android.support:support-core-utils:24.2.1'
-    compile project(':atool')
-    compile project(':jtool')
-    compile project(':config')
-    compile project(':common')
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:design:25.3.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.facebook.fresco:fresco:1.5.0'
-    compile 'com.facebook.fresco:animated-gif:1.5.0'
-    compile 'com.facebook.fresco:animated-webp:1.5.0'
-    compile 'com.facebook.fresco:webpsupport:1.5.0'
-    compile 'com.squareup.okhttp3:okhttp:3.8.0'
-    testCompile 'junit:junit:4.12'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
-    provided 'com.facebook.fresco:imagepipeline-okhttp3:1.5.0'
-    compile project(':view')
-    compile project(path: ':aop')
+    testImplementation 'junit:junit:4.12'
+
+    implementation rootProject.ext.dependencies["constraint-layout"]
+    implementation rootProject.ext.dependencies["appcompat-v7"]
+    implementation rootProject.ext.dependencies["design"]
+
+    implementation rootProject.ext.dependencies["fresco"]
+    implementation rootProject.ext.dependencies["fresco-gif"]
+    implementation rootProject.ext.dependencies["fresco-webp"]
+    implementation rootProject.ext.dependencies["fresco-webpsupport"]
+    implementation rootProject.ext.dependencies["fresco-okhttp3"]
+
+    implementation rootProject.ext.dependencies["photodraweeview"]
+    implementation rootProject.ext.dependencies["fresco-processors"]
+
+    implementation rootProject.ext.dependencies["okhttp"]
+
+    implementation rootProject.ext.dependencies["butterknife"]
+    annotationProcessor rootProject.ext.dependencies["butterknife-compiler"]
+
+    implementation rootProject.ext.dependencies["rxjava"]
+    implementation rootProject.ext.dependencies["rxandroid"]
+    implementation rootProject.ext.dependencies["rxbinding"]
+
+    implementation project(':waiter')
+    implementation project(':atool')
+    implementation project(':jtool')
+    implementation project(':config')
+    implementation project(':common')
+    implementation project(':view')
+    implementation project(':aop')
 }
 repositories {
     mavenCentral()

@@ -5,7 +5,7 @@ import android.os.Environment;
 
 import com.lpzahd.Objects;
 import com.lpzahd.atool.constant.Constance;
-import com.lpzahd.atool.io.IO;
+import com.lpzahd.IO;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,0 +1,44 @@
+ext {
+
+    android = [
+            compileSdkVersion: 27,
+            applicationId    : "com.lpzahd.essay",
+            minSdkVersion    : 16,
+            targetSdkVersion : 27,
+            versionCode      : 1,
+            versionName      : "1.0.0"
+    ]
+
+    dependencies = [
+            "appcompat-v7"     : 'com.android.support:appcompat-v7:27.1.0',
+            "cardview"         : 'com.android.support:cardview-v7:27.1.0',
+            "design"           : 'com.android.support:design:27.1.0',
+            "annotations"      : 'com.android.support:support-annotations:27.1.0',
+            "vector"           : 'com.android.support:support-vector-drawable:27.1.0',
+
+            "guava"            : 'com.google.guava:guava:22.0',
+
+            "rxandroid"        : 'io.reactivex.rxjava2:rxandroid:2.0.1',
+            "rxjava"           : 'io.reactivex.rxjava2:rxjava:2.1.3',
+            "rxbinding"        : 'com.jakewharton.rxbinding2:rxbinding:2.0.0',
+
+            "okhttp"           : 'com.squareup.okhttp3:okhttp:3.8.1',
+            "retrofit"         : 'com.squareup.retrofit2:retrofit:2.3.0',
+            "retrofit-converter-gson"    : 'com.squareup.retrofit2:converter-gson:2.3.0',
+            "retrofit-adapter-rxjava"    : 'com.squareup.retrofit2:adapter-rxjava2:2.3.0',
+
+            "constraint-layout"         : 'com.android.support.constraint:constraint-layout:1.0.2',
+            "fresco"                    : 'com.facebook.fresco:fresco:1.5.0',
+            "fresco-gif"                : 'com.facebook.fresco:animated-gif:1.5.0',
+            "fresco-webp"               : 'com.facebook.fresco:animated-webp:1.5.0',
+            "fresco-webpsupport"        : 'com.facebook.fresco:webpsupport:1.5.0',
+            "fresco-okhttp3"            : 'com.facebook.fresco:imagepipeline-okhttp3:1.5.0',
+
+            "photodraweeview"           : 'me.relex:photodraweeview:1.1.3',
+            "fresco-processors"         : 'jp.wasabeef:fresco-processors:2.0.0',
+
+            "butterknife"               : 'com.jakewharton:butterknife:8.8.1',
+            "butterknife-compiler"      : 'com.jakewharton:butterknife-compiler:8.8.1',
+            "material-dialogs"          : 'com.afollestad.material-dialogs:commons:0.9.4.2',
+    ]
+}

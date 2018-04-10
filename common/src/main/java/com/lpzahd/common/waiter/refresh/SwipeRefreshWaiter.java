@@ -105,6 +105,14 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
             processor.dispose();
     }
 
+    public abstract static class DataFlowable {
+        public abstract Flowable<? extends List> doRefresh(int page);
+
+        public int getPage() {
+            return RxRefreshProcessor.QUERY_EACH_MAX_COUNT;
+        }
+    }
+
     private abstract static class SwipeRefreshProcessor extends RxRefreshProcessor implements SwipeRefreshLayout.OnRefreshListener, LoadMoreCallBack {
 
         private SwipeRefreshLayout swipeRefreshLayout;

@@ -176,14 +176,6 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
 
                         final int position = leisureHolder.getAdapterPosition();
 
-//                        Intent intent = ImageDetailsActivity.getStartIntent(getContext(), mAdapter.getItem(position).uri);
-//                        final String transitionName = "transition_name";
-//                        final ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(
-//                                context,
-//                                leisureHolder.simpleDraweeView,
-//                                transitionName);
-//                        context.startActivity(intent, options.toBundle());
-
                         TranstionPicActivity.startActivity(context, leisureHolder.simpleDraweeView);
 
                         RxTaxi.get().regist(TranstionPicActivity.TAG, new Transmitter() {

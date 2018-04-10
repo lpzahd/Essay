@@ -65,6 +65,9 @@
         <activity android:name=".context.video.VideoActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"/>
 
+        <!-- common 组件 -->
+        <activity android:name=".common.context.MediaSelectActivity" />
+
         <service
             android:name=".context.music.service.MusicService"
             android:enabled="true"

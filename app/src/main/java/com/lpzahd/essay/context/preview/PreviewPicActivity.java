@@ -42,12 +42,7 @@ public class PreviewPicActivity extends RxActivity {
         toolBar.setTitle("预览");
         toolBar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
         context.setSupportActionBar(toolBar);
-        toolBar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        toolBar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
 }

@@ -1,5 +1,8 @@
 package com.lpzahd.derive.charset;
 
+import com.lpzahd.IO;
+import com.lpzahd.base.NoInstance;
+
 import org.mozilla.universalchardet.UniversalDetector;
 
 import java.io.BufferedInputStream;
@@ -14,11 +17,7 @@ import java.io.InputStream;
  * Date : 二月
  * Desction : (•ิ_•ิ)
  */
-public class CharDet {
-
-    private CharDet() {
-        throw new AssertionError("No CharDet instances for you!");
-    }
+public class CharDet extends NoInstance {
 
     /**
      * 获取字符串编码格式
@@ -43,21 +42,8 @@ public class CharDet {
         } catch (IOException e) {
             return null;
         } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            IO.closeQuietly(fis);
+            IO.closeQuietly(in);
         }
 
         return getCharset(content);

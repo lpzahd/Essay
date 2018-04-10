@@ -7,8 +7,9 @@ import com.lpzahd.waiter.agency.WindowWaiter;
 /**
  * Author : Lpzahd
  * Date : 五月
- * Desction : (•ิ_•ิ)
+ * Desction : (•ิ_•ิ) RxBus无效
  */
+@Deprecated
 public class RefreshBusWaiter extends WindowWaiter<RefreshBusWaiter> {
 
     public static final String TAG = "RefreshBusWaiter";
