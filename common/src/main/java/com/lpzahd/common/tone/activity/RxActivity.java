@@ -109,6 +109,10 @@ public class RxActivity extends ToneActivity {
         };
     }
 
+    public void disposeSafely(Disposable disposable) {
+        if(disposable != null && !disposable.isDisposed()) disposable.dispose();
+    }
+
     public void addDispose(Disposable disposable) {
         compositeDisposable.add(disposable);
     }
