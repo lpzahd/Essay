@@ -18,6 +18,8 @@ import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.collection.CollectionActivity;
 import com.lpzahd.essay.context.essay.EssayActivity;
+import com.lpzahd.essay.context.fun.FunctionsActivity;
+import com.lpzahd.essay.context.guide.waiter.GuideStyleIWaiter;
 import com.lpzahd.essay.context.instinct.InstinctActivity;
 import com.lpzahd.essay.context.leisure.LeisureActivity;
 import com.lpzahd.essay.context.main.MainActivity;
@@ -113,6 +115,9 @@ public class GuideRecyclerWaiter extends ToneActivityWaiter<MainActivity> {
                     case 8:
                         CollectionActivity.startActivity(context);
                         break;
+                    case 9:
+                        FunctionsActivity.Companion.startActivity(context);
+                        break;
                 }
             }
         });
@@ -130,6 +135,7 @@ public class GuideRecyclerWaiter extends ToneActivityWaiter<MainActivity> {
                 new GuideModel(6, "清纯唯美", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
                 new GuideModel(7, "Cos", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
                 new GuideModel(8, "Photo", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
+                new GuideModel(9, "Fun", "解落三秋叶,能开二月花", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
 
         };
         mAdapter.setData(Arrays.asList(models));

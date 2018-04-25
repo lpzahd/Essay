@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="100dp"
+    android:layout_height="120dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:gravity="center"
+    tools:context="com.lpzahd.essay.context.guide.GuideActivity">
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/pic_drawee_view"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_centerHorizontal="true"
+        app:placeholderImage="@android:color/holo_blue_bright"
+        app:actualImageScaleType="fitXY"/>
+
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/title_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/pic_drawee_view"
+        android:layout_marginTop="4dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textSize="@dimen/s16"
+        android:textColor="#444244"
+        android:gravity="center"
+        tools:text="随笔"/>
+
+</RelativeLayout>
+

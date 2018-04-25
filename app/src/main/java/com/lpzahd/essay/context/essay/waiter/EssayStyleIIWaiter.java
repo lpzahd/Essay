@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;

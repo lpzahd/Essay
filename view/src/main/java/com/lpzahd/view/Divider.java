@@ -93,9 +93,6 @@ public class Divider extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-//        setMeasuredDimension(
-//                getDefaultSize2(getSuggestedMinimumWidth(), widthMeasureSpec),
-//                getDefaultSize2(getSuggestedMinimumHeight(), heightMeasureSpec));
     }
 
 }

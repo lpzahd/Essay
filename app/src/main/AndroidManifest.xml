@@ -65,6 +65,9 @@
         <activity android:name=".context.video.VideoActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"/>
 
+        <activity android:name=".context.fun.FunctionsActivity" />
+        <activity android:name=".context.fun.FunctionsFrameActivity" />
+
         <!-- common 组件 -->
         <activity android:name=".common.context.MediaSelectActivity" />
 

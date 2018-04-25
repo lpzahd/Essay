@@ -1,6 +1,8 @@
+import com.lpzahd.plugin.AopPlugin
+
 apply plugin: 'com.android.library'
 apply plugin: 'com.jakewharton.butterknife'
-apply plugin: com.lpzahd.plugin.AopPlugin
+apply plugin: AopPlugin
 
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion

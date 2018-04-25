@@ -16,6 +16,7 @@ import com.lpzahd.common.tone.waiter.ToneActivityWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.collection.CollectionActivity;
 import com.lpzahd.essay.context.essay.EssayActivity;
+import com.lpzahd.essay.context.fun.FunctionsActivity;
 import com.lpzahd.essay.context.guide.GuideActivity;
 import com.lpzahd.essay.context.instinct.InstinctActivity;
 import com.lpzahd.essay.context.leisure.LeisureActivity;
@@ -95,6 +96,9 @@ public class GuideStyleIWaiter extends ToneActivityWaiter<GuideActivity> {
                     case 8:
                         CollectionActivity.startActivity(context);
                         break;
+                    case 9:
+                        FunctionsActivity.Companion.startActivity(context);
+                        break;
                 }
             }
         });
@@ -112,7 +116,7 @@ public class GuideStyleIWaiter extends ToneActivityWaiter<GuideActivity> {
                 new GuideModel(6, "清纯唯美", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
                 new GuideModel(7, "Cos", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
                 new GuideModel(8, "Photo", "即将加密,考虑日程目标完成开启", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
-
+                new GuideModel(9, "Fun", "解落三秋叶,能开二月花", Color.parseColor("#888AF2"), Color.parseColor("#62FAD7")),
         };
         mAdapter.setData(Arrays.asList(models));
     }
@@ -124,7 +128,7 @@ public class GuideStyleIWaiter extends ToneActivityWaiter<GuideActivity> {
         private int startColor;
         private int endColor;
 
-        public GuideModel(int id, String title, String desc, int startColor, int endColor) {
+        GuideModel(int id, String title, String desc, int startColor, int endColor) {
             this.id = id;
             this.title = title;
             this.desc = desc;

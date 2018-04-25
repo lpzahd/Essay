@@ -1,7 +1,10 @@
+import com.lpzahd.plugin.AopPlugin
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: com.lpzahd.plugin.AopPlugin
+//apply plugin: 'kotlin-android-extensions'
+apply plugin:  AopPlugin
 apply plugin: 'realm-android'
 
 android {
@@ -49,6 +52,7 @@ android {
 //            shrinkResources true
         }
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -61,19 +65,17 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation rootProject.ext.dependencies["design"]
     implementation rootProject.ext.dependencies["cardview"]
     implementation rootProject.ext.dependencies["vector"]
     implementation rootProject.ext.dependencies["appcompat-v7"]
     implementation rootProject.ext.dependencies["annotations"]
-
     implementation rootProject.ext.dependencies["guava"]
-
 
     implementation project(':waiter')
     implementation project(':atool')
@@ -113,15 +115,14 @@ dependencies {
         exclude group: 'com.android.support'
     })
 
-    implementation rootProject.ext.dependencies["butterknife"]
-
     implementation 'com.jakewharton.threetenabp:threetenabp:1.0.5'
     // 处理方法数溢出
     implementation 'com.android.support:multidex:1.0.3'
     //    compile 'cn.finalteam.rxgalleryfinal:library:1.0.2'
 
     //    compile 'com.hwangjr.rxbus:rxbus:1.0.5'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation rootProject.ext.dependencies["butterknife"]
     kapt rootProject.ext.dependencies["butterknife-compiler"]
 
     // 沉浸式状态栏
@@ -142,6 +143,11 @@ dependencies {
 
     // crash 处理
     implementation 'cat.ereza:customactivityoncrash:1.5.0'
+
+//    implementation ('io.socket:socket.io-client:0.8.3') {
+//        // excluding org.json which is provided by Android
+//        exclude group: 'org.json', module: 'json'
+//    }
 }
 repositories {
     mavenCentral()

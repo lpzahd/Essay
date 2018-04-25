@@ -1,7 +1,15 @@
 package com.lpzahd.atool.keeper;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.support.annotation.ColorInt;
+import android.support.annotation.NonNull;
+import android.util.Base64;
 
+import com.lpzahd.IO;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -54,14 +62,7 @@ public class Bitmaps {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if(fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
+            IO.closeQuietly(fos);
         }
 
     }
@@ -83,5 +84,34 @@ public class Bitmaps {
                 break;
         }
         return suffix;
+    }
+
+    /**
+     * 纯色bitmap
+     */
+    public static Bitmap colorBitmap(@ColorInt int color, int width, int height) {
+        Bitmap bitmap = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_4444);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(color);
+        return bitmap;
+    }
+
+    /**
+     * base64编码 (png格式 )
+     */
+    public static String toBase64(@NonNull Bitmap bitmap) {
+        ByteArrayOutputStream baos = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            baos.flush();
+            byte[] byteArray = baos.toByteArray();
+            return Base64.encodeToString(byteArray, Base64.DEFAULT);
+        } catch (IOException ignored) {
+        } finally {
+            IO.closeQuietly(baos);
+        }
+        return null;
+
     }
 }

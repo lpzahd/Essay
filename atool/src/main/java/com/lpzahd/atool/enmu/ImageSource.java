@@ -24,6 +24,9 @@ public class ImageSource {
     // asset目录下的图片
     public static final int SOURCE_ASSET = 4;
 
+    // 内存
+//    public static final int SOURCE_MEMORY = 5;
+
     @IntDef({SOURCE_NET, SOURCE_FILE, SOURCE_RES, SOURCE_ASSET})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SOURCE {

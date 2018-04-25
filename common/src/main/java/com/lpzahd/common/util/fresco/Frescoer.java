@@ -7,17 +7,22 @@ import android.support.annotation.NonNull;
 import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.constant.Constance;
+import com.lpzahd.base.NoInstance;
 
 /**
  * Author : Lpzahd
  * Date : 三月
- * Desction : (•ิ_•ิ)
+ * Desction : SOURCE_MEMORY 仅支持base64编码的图片
  */
-public class Frescoer {
+public class Frescoer extends NoInstance {
 
-    private Frescoer() {
-        throw new AssertionError("No Frescoer instances for you!");
-    }
+    public static final String SCHEME_HTTP = "http";
+    public static final String SCHEME_HTTPS = "https";
+
+    public static final String SCHEME_FILE = "file";
+    public static final String SCHEME_RES = "res";
+    public static final String SCHEME_ASSET = "asset";
+
 
     public static Uri res(@DrawableRes int resId) {
         return uri(String.valueOf(resId), ImageSource.SOURCE_RES);
@@ -44,11 +49,11 @@ public class Frescoer {
 
     public static int parseImageSource(@NonNull Uri uri) {
         switch (uri.getScheme()) {
-            case "file":
+            case SCHEME_FILE:
                 return ImageSource.SOURCE_FILE;
-            case "res":
+            case SCHEME_RES:
                 return ImageSource.SOURCE_RES;
-            case "asset":
+            case SCHEME_ASSET:
                 return ImageSource.SOURCE_ASSET;
              default:
                  return ImageSource.SOURCE_NET;
@@ -70,4 +75,5 @@ public class Frescoer {
         }
         return null;
     }
+
 }

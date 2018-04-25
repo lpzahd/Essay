@@ -138,11 +138,24 @@ public class Ui extends NoInstance {
         context.sendBroadcast(intent);
     }
 
+    /**
+     * 本以为可以扫描一个目录，但发现没啥鸟用
+     */
     @Deprecated
     public static void scanDirMedia(Context context, File dir) {
         Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_STARTED);
         Uri uri = Uri.fromFile(dir);
         intent.setData(uri);
         context.sendBroadcast(intent);
+    }
+
+    /**
+     * 打开文件路径（调用文件管理器）
+     */
+    public static void openFileDir(Context context, File file) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setDataAndType(Uri.fromFile(file.getParentFile()), "*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        context.startActivity(intent);
     }
 }

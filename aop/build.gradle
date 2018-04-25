@@ -1,6 +1,7 @@
+import com.lpzahd.plugin.AopPlugin
+
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: com.lpzahd.plugin.AopPlugin
+apply plugin: AopPlugin
 
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
@@ -31,7 +32,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation project(':jtool')
     implementation project(':config')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 }
 repositories {
     mavenCentral()

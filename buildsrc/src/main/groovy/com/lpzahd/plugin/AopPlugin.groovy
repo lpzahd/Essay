@@ -29,8 +29,8 @@ class AopPlugin implements Plugin<Project> {
         }
 
         project.dependencies {
-            debugCompile 'org.aspectj:aspectjrt:1.8.6'
-            compile 'org.aspectj:aspectjrt:1.8.6'
+            debugImplementation 'org.aspectj:aspectjrt:1.8.6'
+            implementation 'org.aspectj:aspectjrt:1.8.6'
         }
 
         project.extensions.create('aop', AopEnable)

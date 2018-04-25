@@ -7,10 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.lpzahd.essay.R;
-import com.lpzahd.essay.context.essay.waiter.EssayStyleIIWaiter;
-import com.lpzahd.essay.context.essay.waiter.EssayStyleIWaiter;
-import com.lpzahd.essay.context.essay.waiter.RecyclerWaiter;
 import com.lpzahd.common.tone.activity.RxActivity;
+import com.lpzahd.essay.context.essay.waiter.EssayStyleIIWaiter;
 import com.lpzahd.essay.context.essay_.EssayAddActivity;
 
 import butterknife.BindView;

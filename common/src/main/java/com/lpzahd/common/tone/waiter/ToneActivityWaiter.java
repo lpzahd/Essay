@@ -2,6 +2,7 @@ package com.lpzahd.common.tone.waiter;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -103,6 +104,10 @@ public abstract class ToneActivityWaiter<E extends AppCompatActivity> extends Aw
 
     protected boolean checkArgus(Intent intent) {
         return true;
+    }
+
+    protected <T extends View> T find(@IdRes int id) {
+        return rootView.findViewById(id);
     }
 
 }

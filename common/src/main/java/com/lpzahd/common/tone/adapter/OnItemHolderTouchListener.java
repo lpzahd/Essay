@@ -1,5 +1,6 @@
 package com.lpzahd.common.tone.adapter;
 
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -19,7 +20,9 @@ public class OnItemHolderTouchListener<T extends RecyclerView.ViewHolder> implem
 
     private View itemView;
 
+    @SuppressWarnings("unchecked")
     private GestureDetector.OnGestureListener gesListner = new GestureDetector.SimpleOnGestureListener() {
+
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
@@ -38,7 +41,7 @@ public class OnItemHolderTouchListener<T extends RecyclerView.ViewHolder> implem
 
     };
 
-    public OnItemHolderTouchListener(RecyclerView recyclerView) {
+    public OnItemHolderTouchListener(@NonNull RecyclerView recyclerView) {
         rv = recyclerView;
         mGes = new GestureDetector(recyclerView.getContext(), gesListner);
     }
