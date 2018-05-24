@@ -6,7 +6,6 @@ import android.support.v7.widget.Toolbar;
 
 import com.lpzahd.common.tone.activity.RxActivity;
 import com.lpzahd.essay.R;
-import com.lpzahd.essay.context.turing.TuringActivity;
 import com.lpzahd.essay.context.video.waiter.VideoWaiter;
 
 /**

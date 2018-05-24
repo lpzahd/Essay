@@ -1,8 +1,11 @@
 package com.lpzahd.atool.keeper;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.util.Base64;
@@ -36,20 +39,21 @@ public class Bitmaps {
 
     /**
      * 保存图片
-     * @param bitmap    源图片
-     * @param fileName  文件的全路径名(不包括后缀)
-     * @param format    图片格式
+     *
+     * @param bitmap   源图片
+     * @param fileName 文件的全路径名(不包括后缀)
+     * @param format   图片格式
      */
     public void save(Bitmap bitmap, String fileName, Bitmap.CompressFormat format) {
-        if(format == null) {
+        if (format == null) {
             format = Bitmap.CompressFormat.PNG;
         }
 
         String suffix = getSuffix(format);
         File file = new File(fileName + "." + suffix);
-        if(file.exists()) {
+        if (file.exists()) {
             boolean deleteOk = file.delete();
-            if(!deleteOk) return ;
+            if (!deleteOk) return;
         }
 
         FileOutputStream fos = null;
@@ -86,11 +90,25 @@ public class Bitmaps {
         return suffix;
     }
 
+    public static Drawable zoomDrawable(Context context, BitmapDrawable drawable, int w, int h) {
+        int width = drawable.getIntrinsicWidth();
+        int height = drawable.getIntrinsicHeight();
+        Bitmap bitmap = drawable.getBitmap();
+
+        Matrix matrix = new Matrix();
+        float scaleWidth = ((float) w / width);
+        float scaleHeight = ((float) h / height);
+        matrix.postScale(scaleWidth, scaleHeight);
+        Bitmap bmp = Bitmap.createBitmap(bitmap, 0, 0, width, height,
+                matrix, true);
+        return new BitmapDrawable(context.getResources(), bmp);
+    }
+
     /**
      * 纯色bitmap
      */
     public static Bitmap colorBitmap(@ColorInt int color, int width, int height) {
-        Bitmap bitmap = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_4444);
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
         Canvas canvas = new Canvas(bitmap);
         canvas.drawColor(color);
         return bitmap;

@@ -179,12 +179,13 @@ public class CollectionWaiter extends ToneActivityWaiter<CollectionActivity> imp
 
                         TranstionPicActivity.startActivity(context, leisureHolder.simpleDraweeView);
 
-                        RxTaxi.get().regist(TranstionPicActivity.TAG, new Transmitter() {
-                            @Override
-                            public Flowable<Uri> transmit() {
-                                return Flowable.just(mAdapter.getItem(position).uri);
-                            }
-                        });
+                        RxTaxi.get().regist(TranstionPicActivity.TAG,
+                                () -> Flowable.just(mAdapter.getItem(position).uri));
+                    }
+
+                    @Override
+                    public void onDoubleClick(RecyclerView rv, LeisureWaiter.LeisureHolder leisureHolder) {
+                        super.onDoubleClick(rv, leisureHolder);
                     }
                 });
 

@@ -3,11 +3,13 @@ package com.lpzahd.common.waiter.refresh;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 
+import com.google.common.base.Stopwatch;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.tone.adapter.ToneAdapter;
 import com.lpzahd.waiter.agency.WindowWaiter;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Flowable;
 
@@ -26,6 +28,8 @@ public abstract class DspRefreshWaiter<E, D> extends WindowWaiter {
 
         processor = new SwipeRefreshProcessor<E, D>(swipeRefreshLayout, recyclerView) {
 
+            private Stopwatch mStopwatch = Stopwatch.createUnstarted();
+
             @Override
             public D process(E e) {
                 return DspRefreshWaiter.this.process(e);
@@ -33,6 +37,8 @@ public abstract class DspRefreshWaiter<E, D> extends WindowWaiter {
 
             @Override
             public Flowable<List<E>> doRefresh(int page) {
+                mStopwatch.reset();
+                mStopwatch.start();
                 return DspRefreshWaiter.this.doRefresh(page);
             }
 
@@ -40,11 +46,12 @@ public abstract class DspRefreshWaiter<E, D> extends WindowWaiter {
             @Override
             public void onPtrSuccess(@LoadState int state) {
                 super.onPtrSuccess(state);
+                mStopwatch.stop();
                 if (state == RefreshProcessor.STATE_NO_MORE || state == RefreshProcessor.STATE_HAS_MORE) {
                     ToneAdapter adapter = (ToneAdapter) recyclerView.getAdapter();
                     adapter.setData(getData());
                     dataSource = getSource();
-                    T.t("刷新%s条数据", getData().size());
+                    T.t("刷新%s条数据,消耗%s毫秒时间", getData().size(), mStopwatch.elapsed(TimeUnit.MILLISECONDS));
                 }
             }
 
@@ -52,23 +59,26 @@ public abstract class DspRefreshWaiter<E, D> extends WindowWaiter {
             @Override
             public void onLoadingSuccess(@LoadState int state) {
                 super.onLoadingSuccess(state);
+                mStopwatch.stop();
                 if (state == RefreshProcessor.STATE_NO_MORE || state == RefreshProcessor.STATE_HAS_MORE) {
                     ToneAdapter adapter = (ToneAdapter) recyclerView.getAdapter();
                     adapter.addAll(getData());
                     dataSource.addAll(getSource());
-                    T.t("新增%s条数据", getData().size());
+                    T.t("新增%s条数据,消耗%s毫秒时间", getData().size(), mStopwatch.elapsed(TimeUnit.MILLISECONDS));
                 }
             }
 
             @Override
             public void onPtrError(int errorCode, String errorMessage) {
                 super.onPtrError(errorCode, errorMessage);
+                mStopwatch.stop();
                 T.t(errorMessage);
             }
 
             @Override
             public void onLoadError(int errorCode, String errorMessage) {
                 super.onLoadError(errorCode, errorMessage);
+                mStopwatch.stop();
                 T.t(errorMessage);
             }
 

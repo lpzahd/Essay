@@ -4,19 +4,16 @@ import android.content.Context
 import android.content.Intent
 import com.lpzahd.common.taxi.RxTaxi
 import com.lpzahd.common.tone.activity.RxActivity
-import com.lpzahd.essay.context.`fun`.waiter.ApplicationsWaiter
+import com.lpzahd.essay.context.`fun`.waiter.ApplicationDetailWaiter
 
-/**
- * 功能容器Activity
- */
-class FunctionsFrameActivity() : RxActivity() {
+class FunctionDetailActivity : RxActivity() {
 
     companion object {
 
-        const val TAG = "com.lpzahd.essay.context.fun.FunctionsFrameActivity"
+        const val TAG = "com.lpzahd.essay.context.fun.FunctionDetailActivity"
 
         fun startActivity(context: Context) {
-            val intent = Intent(context, FunctionsFrameActivity::class.java)
+            val intent = Intent(context, FunctionDetailActivity::class.java)
             context.startActivity(intent)
         }
     }
@@ -25,12 +22,13 @@ class FunctionsFrameActivity() : RxActivity() {
     override fun init() {
         RxTaxi.get().pull<Int>(TAG).transmit().subscribe({
             when(it) {
-                0 -> addActivityWaiter(ApplicationsWaiter(this))
+                0 -> addActivityWaiter( ApplicationDetailWaiter(this))
 //                1 -> addActivityWaiter(CollectionEditWaiter(null))
 //                2 -> addActivityWaiter(CollectionEditWaiter(null))
-                else -> addActivityWaiter(ApplicationsWaiter(this))
+                else -> addActivityWaiter(ApplicationDetailWaiter(this))
             }
         })
     }
+
 
 }

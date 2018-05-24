@@ -6,6 +6,7 @@ import android.os.Environment;
 import com.lpzahd.Objects;
 import com.lpzahd.atool.constant.Constance;
 import com.lpzahd.IO;
+import com.lpzahd.atool.ui.L;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -94,7 +95,7 @@ public class Files {
 
     @StringDef({Scope.CACHE, Scope.FRESCO, Scope.DATABASE,
             Scope.VIDEO_RAW, Scope.VIDEO_THUMB, Scope.AUDIO_RAW, Scope.AUDIO_THUMB,
-            Scope.PHOTO_RAW, Scope.PHOTO_THUMB, Scope.PHOTO_COLLECTION})
+            Scope.PHOTO_RAW, Scope.PHOTO_THUMB, Scope.PHOTO_COLLECTION, Scope.FILE_APK})
     @Retention(RetentionPolicy.SOURCE)
     public @interface FileScope {
     }
@@ -127,6 +128,10 @@ public class Files {
          */
         public static final String PHOTO_COLLECTION = PHOTO + "/" + "collection";
 
+        /**
+         * apk文件夹
+         */
+        public static final String FILE_APK = FILE + "/" + "apk";
 
         public static final String FILE_RAW = FILE + "/" + "raw";
 
@@ -237,7 +242,7 @@ public class Files {
             outputChannel = new FileOutputStream(dest).getChannel();
             outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
         } catch (IOException ignore) {
-
+            L.e(ignore);
         } finally {
             IO.closeQuietly(inputChannel);
             IO.closeQuietly(outputChannel);

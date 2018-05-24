@@ -8,7 +8,7 @@ import java.io.IOException;
 public class Codec {
 
     public static String md5Hex(String path) {
-        if(Strings.empty(path))
+        if (Strings.empty(path))
             return "";
 
         try {
@@ -17,5 +17,13 @@ public class Codec {
             e.printStackTrace();
         }
         return "";
+    }
+
+    public static String md5Hex(byte[] data) {
+        return Digest.md5Hex(data);
+    }
+
+    public static String shaHex(byte[] data) {
+        return Digest.shaHex(data);
     }
 }

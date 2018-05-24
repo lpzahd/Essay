@@ -32,7 +32,6 @@ class FunctionsWaiter(context: FunctionsActivity) : ToneActivityWaiter<Functions
 
     private val mTaxi: Taxi = RxTaxi.get();
 
-
     override fun initView() {
         super.initView()
         recyclerView = rootView.findViewById(R.id.recycler_view);

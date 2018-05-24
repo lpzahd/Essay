@@ -39,6 +39,13 @@ public class OnItemHolderTouchListener<T extends RecyclerView.ViewHolder> implem
             }
         }
 
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            if (itemView != null) {
+                onDoubleClick(rv, (T) rv.getChildViewHolder(itemView));
+            }
+            return true;
+        }
     };
 
     public OnItemHolderTouchListener(@NonNull RecyclerView recyclerView) {
@@ -80,6 +87,16 @@ public class OnItemHolderTouchListener<T extends RecyclerView.ViewHolder> implem
      * @param t  recyclerView.holder
      */
     public void onLongClick(RecyclerView rv, T t) {
+
+    }
+
+    /**
+     * 双击
+     *
+     * @param rv recyclerView
+     * @param t  recyclerView.holder
+     */
+    public void onDoubleClick(RecyclerView rv, T t) {
 
     }
 }

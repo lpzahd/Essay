@@ -150,12 +150,25 @@ public class Ui extends NoInstance {
     }
 
     /**
-     * 打开文件路径（调用文件管理器）
+     * 打开文件路径（调用文件管理器） 打开的地方惨不忍睹
      */
+    @Deprecated
     public static void openFileDir(Context context, File file) {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setDataAndType(Uri.fromFile(file.getParentFile()), "*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         context.startActivity(intent);
+    }
+
+    /**
+     * 分享应用
+     */
+    public static void shareApk(Context context, File file, CharSequence title) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.addCategory("android.intent.category.DEFAULT");
+        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+        intent.setType("application/vnd.android.package-archive");
+        context.startActivity(Intent.createChooser(intent, title));
     }
 }

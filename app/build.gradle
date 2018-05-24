@@ -3,7 +3,6 @@ import com.lpzahd.plugin.AopPlugin
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-//apply plugin: 'kotlin-android-extensions'
 apply plugin:  AopPlugin
 apply plugin: 'realm-android'
 

@@ -17,22 +17,28 @@ import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.view.SimpleDraweeView
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
+import com.lpzahd.aop.api.Log
 import com.lpzahd.atool.keeper.Bitmaps
 import com.lpzahd.atool.ui.Ui
+import com.lpzahd.common.taxi.RxTaxi
+import com.lpzahd.common.taxi.Taxi
 import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener
 import com.lpzahd.common.tone.adapter.ToneAdapter
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter
 import com.lpzahd.common.waiter.refresh.DspRefreshWaiter
 import com.lpzahd.essay.R
+import com.lpzahd.essay.context.`fun`.FunctionDetailActivity
 import com.lpzahd.essay.context.`fun`.FunctionsFrameActivity
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
 
-class ApplicationInfoWaiter(activity: FunctionsFrameActivity) : ToneActivityWaiter<FunctionsFrameActivity>(activity) {
+class ApplicationsWaiter(activity: FunctionsFrameActivity) : ToneActivityWaiter<FunctionsFrameActivity>(activity) {
 
     private lateinit var mAdapter: ApplicationAdapter
     private lateinit var mDspRefreshWaiter: DspRefreshWaiter<AppInfo, AppInfo>
+    private val mTaxi: Taxi = RxTaxi.get();
 
+    @Log
     override fun setContentView() {
         context.setContentView(R.layout.layout_common_refresh_activity)
     }
@@ -46,13 +52,14 @@ class ApplicationInfoWaiter(activity: FunctionsFrameActivity) : ToneActivityWait
 
     override fun initView() {
         val swipeRefreshLayout: SwipeRefreshLayout = find(R.id.swipe_refresh_layout)
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark, R.color.colorAccent)
         val recyclerView: RecyclerView = find(R.id.recycler_view)
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager =
                 with(GridLayoutManager(context, 4, RecyclerView.VERTICAL, false)) {
                     spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                         override fun getSpanSize(position: Int): Int {
-                            return if(mAdapter.getItemViewType(position) == ApplicationAdapter.LINE) spanCount else 1;
+                            return if (mAdapter.getItemViewType(position) == ApplicationAdapter.LINE) spanCount else 1;
                         }
 
                     }
@@ -63,7 +70,14 @@ class ApplicationInfoWaiter(activity: FunctionsFrameActivity) : ToneActivityWait
         recyclerView.adapter = mAdapter;
 
         recyclerView.addOnItemTouchListener(object : OnItemHolderTouchListener<ToneAdapter.ToneHolder>(recyclerView) {
-            override fun onClick(rv: RecyclerView?, t: ToneAdapter.ToneHolder?) {
+            override fun onClick(rv: RecyclerView?, holder: ToneAdapter.ToneHolder?) {
+                val position = holder!!.adapterPosition
+
+                if (mAdapter.getItemViewType(position) == ApplicationAdapter.VIEW) {
+                    mTaxi.regist(ApplicationDetailWaiter.TAG, { Flowable.just(mAdapter.getItem(position).pkg) })
+                    mTaxi.regist(FunctionDetailActivity.TAG, { Flowable.just(0) })
+                    FunctionDetailActivity.startActivity(context)
+                }
 
             }
         })
@@ -99,7 +113,8 @@ class ApplicationInfoWaiter(activity: FunctionsFrameActivity) : ToneActivityWait
                         }
             }
 
-            fun convert(packageInfo: PackageInfo?): AppInfo {
+            @Log
+            open fun convert(packageInfo: PackageInfo?): AppInfo {
                 val appInfo = packageInfo!!.applicationInfo
 
                 var iconUri: Uri = Uri.EMPTY;
@@ -116,7 +131,11 @@ class ApplicationInfoWaiter(activity: FunctionsFrameActivity) : ToneActivityWait
                     // 系统应用
                     type = AppType.SYSTEM;
                 }
-                return AppInfo(ApplicationAdapter.VIEW, appInfo.loadLabel(packageManager).toString(), type, iconUri)
+                return AppInfo(ApplicationAdapter.VIEW,
+                        appInfo.loadLabel(packageManager).toString(),
+                        appInfo.packageName,
+                        type,
+                        iconUri)
             }
 
             override fun process(appInfo: AppInfo): AppInfo {
@@ -130,13 +149,18 @@ class ApplicationInfoWaiter(activity: FunctionsFrameActivity) : ToneActivityWait
         addWindowWaiter(mDspRefreshWaiter)
     }
 
+    override fun destroy() {
+        super.destroy()
+        mTaxi.unregist(FunctionDetailActivity.TAG)
+        mTaxi.unregist(ApplicationDetailWaiter.TAG)
+    }
 }
 
 enum class AppType {
     PERSON, SYSTEM
 }
 
-data class AppInfo(val itemType: Int, val title: String, var type: AppType? = null, var uri: Uri? = null)
+data class AppInfo(val itemType: Int, val title: String, var pkg: String? = null, var type: AppType? = null, var uri: Uri? = null)
 
 class TitleHolder(itemView: View) : ToneAdapter.ToneHolder(itemView) {
     val titleTv: AppCompatTextView = itemView.findViewById(R.id.title_tv)
@@ -165,17 +189,17 @@ class ApplicationAdapter(context: Context) : ToneAdapter<AppInfo, ToneAdapter.To
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ToneAdapter.ToneHolder {
-        when(viewType) {
-            LINE -> return TitleHolder(inflateItemView(R.layout.item_application_line, parent))
-            VIEW -> return ApplicationHolder(inflateItemView(R.layout.item_application_info, parent))
-            else -> throw AssertionError()
+        return when (viewType) {
+            LINE -> TitleHolder(inflateItemView(R.layout.item_application_line, parent))
+            VIEW -> ApplicationHolder(inflateItemView(R.layout.item_application_info, parent))
+            else -> throw AssertionError("无法解析的类型！")
         }
     }
 
     override fun onBindViewHolder(holder: ToneAdapter.ToneHolder, position: Int) {
         val bean = data.get(position);
 
-        when(getItemViewType(position)) {
+        when (getItemViewType(position)) {
             LINE -> {
                 holder as TitleHolder;
                 holder.titleTv.text = bean.title
