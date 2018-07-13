@@ -7,11 +7,13 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.support.design.widget.FloatingActionButton
+import android.support.v4.content.res.ResourcesCompat
 import android.support.v7.widget.AppCompatTextView
 import android.support.v7.widget.LinearLayoutCompat
 import android.support.v7.widget.Toolbar
 import android.view.ViewGroup
 import com.afollestad.materialdialogs.MaterialDialog
+import com.flipboard.bottomsheet.BottomSheetLayout
 import com.jakewharton.rxbinding2.view.RxView
 import com.lpzahd.Codec
 import com.lpzahd.Strings
@@ -24,11 +26,12 @@ import com.lpzahd.common.taxi.Transmitter
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter
 import com.lpzahd.essay.R
 import com.lpzahd.essay.context.`fun`.FunctionDetailActivity
+import com.lpzahd.essay.context.main.MainActivity
 import com.lpzahd.essay.tool.DateTime
+import com.lpzahd.essay.view.IntentPickerSheetView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
@@ -41,6 +44,7 @@ class ApplicationDetailWaiter(activity: FunctionDetailActivity) : ToneActivityWa
     private lateinit var toolbar: Toolbar
     private lateinit var fab: FloatingActionButton
     private lateinit var contentLayout: LinearLayoutCompat
+    private lateinit var bottomSheetLayout: BottomSheetLayout
 
     private lateinit var mPkg: String
 
@@ -50,7 +54,9 @@ class ApplicationDetailWaiter(activity: FunctionDetailActivity) : ToneActivityWa
     companion object {
         const val TAG = "com.lpzahd.essay.context.fun.waiter.ApplicationDetailWaiter"
 
-        const val MIN_LINES = 5;
+        const val MIN_LINES = 5
+
+        const val TEXT_COLOR = "#242424"
     }
 
     /**
@@ -76,6 +82,7 @@ class ApplicationDetailWaiter(activity: FunctionDetailActivity) : ToneActivityWa
         toolbar = find(R.id.tool_bar)
         fab = find(R.id.fab)
         contentLayout = find(R.id.content_layout)
+        bottomSheetLayout = find(R.id.bottom_sheet_layout)
 
         RxView.clicks(fab)
                 .throttleFirst(1000, TimeUnit.MILLISECONDS)
@@ -130,8 +137,18 @@ class ApplicationDetailWaiter(activity: FunctionDetailActivity) : ToneActivityWa
                     }
 
                     pkgFile.absolutePath
-                },
-                { Ui.shareApk(context, File(it), "分享：" + toolbar.title) })
+                }
+        ) {
+            val apkName = toolbar.title
+            val intentPickerSheet = IntentPickerSheetView.share(context, "分享应用《$apkName》 ", IntentPickerSheetView.OnIntentPickedListener { view, activityInfo ->
+                bottomSheetLayout.dismissSheet()
+                IntentPickerSheetView.startActivity(view, activityInfo)
+            })
+            intentPickerSheet.setFilter { info -> info.componentName.packageName.startsWith("com.android") }
+            intentPickerSheet.setSortMethod { lhs, rhs -> rhs.label.compareTo(lhs.label) }
+
+            bottomSheetLayout.showWithSheetView(intentPickerSheet)
+        }
 
     }
 
@@ -222,7 +239,7 @@ class ApplicationDetailWaiter(activity: FunctionDetailActivity) : ToneActivityWa
             addView(AppCompatTextView(context).apply {
                 layoutParams = LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                 minWidth = Ui.dip2px(context, 64)
-                setTextColor(Color.parseColor("#242424"))
+                setTextColor(Color.parseColor(TEXT_COLOR))
                 textSize = 14f
                 text = title.plus("  ")
             })
@@ -235,7 +252,7 @@ class ApplicationDetailWaiter(activity: FunctionDetailActivity) : ToneActivityWa
                     val dp4 = Ui.dip2px(context, 4)
                     setPadding(dp4, dp2, dp4, dp2)
                     setBackgroundResource(R.drawable.shape_rect_round_can_select)
-                    setTextColor(Color.parseColor("#242424"))
+                    setTextColor(Color.parseColor(TEXT_COLOR))
                     setTextIsSelectable(true)
                     textSize = 14f
                     text = content
@@ -264,7 +281,7 @@ class ApplicationDetailWaiter(activity: FunctionDetailActivity) : ToneActivityWa
                 layoutParams = LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT)
                 minWidth = Ui.dip2px(context, 64)
-                setTextColor(Color.parseColor("#242424"))
+                setTextColor(Color.parseColor(TEXT_COLOR))
                 textSize = 14f
                 text = if (list == null) title else title + "(" + list.size.toString() + ")"
             })
@@ -284,7 +301,7 @@ class ApplicationDetailWaiter(activity: FunctionDetailActivity) : ToneActivityWa
                     val dp4 = Ui.dip2px(context, 4)
                     setPadding(dp4, dp2, dp4, dp2)
                     setBackgroundResource(R.drawable.shape_rect_round_can_select)
-                    setTextColor(Color.parseColor("#242424"))
+                    setTextColor(Color.parseColor(TEXT_COLOR))
                     textSize = 14f
                     text = with(list) {
                         var str = ""

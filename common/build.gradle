@@ -50,5 +50,5 @@ dependencies {
 
     implementation 'jp.wasabeef:fresco-processors:2.0.0'
 
-    provided rootProject.ext.dependencies["guava"]
+    compileOnly rootProject.ext.dependencies["guava"]
 }

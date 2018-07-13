@@ -68,7 +68,7 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     implementation rootProject.ext.dependencies["design"]
     implementation rootProject.ext.dependencies["cardview"]
     implementation rootProject.ext.dependencies["vector"]
@@ -147,6 +147,10 @@ dependencies {
 //        // excluding org.json which is provided by Android
 //        exclude group: 'org.json', module: 'json'
 //    }
+
+    implementation 'com.flipboard:bottomsheet-core:1.5.3'
+    implementation 'com.flipboard:bottomsheet-commons:1.5.3'
+
 }
 repositories {
     mavenCentral()

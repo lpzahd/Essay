@@ -17,7 +17,6 @@ import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.view.SimpleDraweeView
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
-import com.lpzahd.aop.api.Log
 import com.lpzahd.atool.keeper.Bitmaps
 import com.lpzahd.atool.ui.Ui
 import com.lpzahd.common.taxi.RxTaxi
@@ -38,7 +37,6 @@ class ApplicationsWaiter(activity: FunctionsFrameActivity) : ToneActivityWaiter<
     private lateinit var mDspRefreshWaiter: DspRefreshWaiter<AppInfo, AppInfo>
     private val mTaxi: Taxi = RxTaxi.get();
 
-    @Log
     override fun setContentView() {
         context.setContentView(R.layout.layout_common_refresh_activity)
     }
@@ -113,8 +111,7 @@ class ApplicationsWaiter(activity: FunctionsFrameActivity) : ToneActivityWaiter<
                         }
             }
 
-            @Log
-            open fun convert(packageInfo: PackageInfo?): AppInfo {
+            fun convert(packageInfo: PackageInfo?): AppInfo {
                 val appInfo = packageInfo!!.applicationInfo
 
                 var iconUri: Uri = Uri.EMPTY;
