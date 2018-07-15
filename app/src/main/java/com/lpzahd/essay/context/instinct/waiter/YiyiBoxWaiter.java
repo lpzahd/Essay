@@ -52,7 +52,7 @@ import io.reactivex.schedulers.Schedulers;
  */
 public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implements View.OnClickListener {
 
-    private static final int QUERY_COUNT = 366;
+    private static int QUERY_COUNT = 366;
 
     @BindView(R.id.tool_bar)
     Toolbar toolBar;
@@ -299,6 +299,8 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
                                     || yiyiBox.getData() == null
                                     || Lists.empty(yiyiBox.getData().getItems()))
                                 return Collections.emptyList();
+
+                            QUERY_COUNT = yiyiBox.getData().getPages();
                             return yiyiBox.getData().getItems();
                         }
                     });

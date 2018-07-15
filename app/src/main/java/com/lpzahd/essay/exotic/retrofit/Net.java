@@ -104,39 +104,41 @@ public class Net {
         Observable<Turing123> sendMessage(@Body RequestBody message);
     }
 
+    public static final String BOX_HOST = "http://www.hezi2018.com";
+
     public Observable<YiyiBox> yiyiBoxHomeImg(int page) {
-        return it("http:/www.jilehezi.com")
+        return it(BOX_HOST)
                 .create(YiyiBoxApi.class)
                 .searchImage(page);
     }
 
     public Observable<YiyiBox> yiyiBoxHomeVideo(int page) {
-        return it("http:/www.jilehezi.com")
+        return it(BOX_HOST)
                 .create(YiyiBoxApi2.class)
                 .searchVideo(page)
                 .subscribeOn(Schedulers.io());
     }
 
     public Observable<YiyiBox> yiyiBoxImg(int page) {
-        return it("http:/www.jilehezi.com")
+        return it(BOX_HOST)
                 .create(YiyiBoxImgApi.class)
                 .searchImage(page);
     }
 
     public Observable<YiyiBox> yiyiBoxVideo(int page) {
-        return it("http:/www.jilehezi.com")
+        return it(BOX_HOST)
                 .create(YiyiBoxVideoApi.class)
                 .searchVideo(page);
     }
 
     public Observable<YiyiBox> yiyiBoxTopImg(int page) {
-        return it("http:/www.jilehezi.com")
+        return it(BOX_HOST)
                 .create(YiyiBoxImgTopApi.class)
                 .searchImage(page);
     }
 
     public Observable<YiyiBox> yiyiBoxTopVideo(int page) {
-        return it("http:/www.jilehezi.com")
+        return it(BOX_HOST)
                 .create(YiyiBoxVideoTopApi.class)
                 .searchVideo(page);
     }
