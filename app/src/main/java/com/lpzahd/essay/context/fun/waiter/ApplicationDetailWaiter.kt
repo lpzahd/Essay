@@ -140,10 +140,10 @@ class ApplicationDetailWaiter(activity: FunctionDetailActivity) : ToneActivityWa
                 }
         ) {
             val apkName = toolbar.title
-            val intentPickerSheet = IntentPickerSheetView.share(context, "分享应用《$apkName》 ", IntentPickerSheetView.OnIntentPickedListener { view, activityInfo ->
+            val intentPickerSheet = IntentPickerSheetView.share(context, "分享应用《$apkName》 ") { view, activityInfo ->
                 bottomSheetLayout.dismissSheet()
                 IntentPickerSheetView.startActivity(view, activityInfo)
-            })
+            }
             intentPickerSheet.setFilter { info -> info.componentName.packageName.startsWith("com.android") }
             intentPickerSheet.setSortMethod { lhs, rhs -> rhs.label.compareTo(lhs.label) }
 

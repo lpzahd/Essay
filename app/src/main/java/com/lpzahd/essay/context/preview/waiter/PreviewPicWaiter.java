@@ -1,5 +1,6 @@
 package com.lpzahd.essay.context.preview.waiter;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -191,6 +192,7 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
 
     }
 
+    @SuppressLint("CheckResult")
     private void showBatchIv(int size) {
         if(size < 1) {
             batchIv.setVisibility(View.GONE);
@@ -198,23 +200,21 @@ public class PreviewPicWaiter extends ToneActivityWaiter<PreviewPicActivity> {
         }
 
         batchIv.setVisibility(View.VISIBLE);
+
         RxView.clicks(batchIv)
                 .throttleFirst(1, TimeUnit.SECONDS)
-                .subscribe(new Consumer<Object>() {
-                    @Override
-                    public void accept(Object o) throws Exception {
-                        if(mAdapter == null || Lists.empty(mAdapter.getData())) {
-                            T.t("暂无图片哦！");
-                        } else {
-                            List<PreviewBean> pics = mAdapter.getData();
+                .subscribe(o -> {
+                    if(mAdapter == null || Lists.empty(mAdapter.getData())) {
+                        T.t("暂无图片哦！");
+                    } else {
+                        List<PreviewBean> pics = mAdapter.getData();
 
-                            String[] urls = new String[pics.size()];
+                        String[] urls = new String[pics.size()];
 
-                            for(int i = 0, size = pics.size(); i < size; i++) {
-                                urls[i] = pics.get(i).uri.toString();
-                            }
-                            mFileDownloadWaiter.downloadWithCheckFiles(urls);
+                        for(int i = 0, size1 = pics.size(); i < size1; i++) {
+                            urls[i] = pics.get(i).uri.toString();
                         }
+                        mFileDownloadWaiter.downloadWithCheckFiles(urls);
                     }
                 });
 

@@ -4,8 +4,10 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.SystemClock
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.AppCompatTextView
 import android.support.v7.widget.GridLayoutManager
@@ -15,9 +17,15 @@ import android.view.View
 import android.view.ViewGroup
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.view.SimpleDraweeView
+import com.facebook.imagepipeline.backends.okhttp3.OkHttpNetworkFetcher
 import com.facebook.imagepipeline.common.ResizeOptions
+import com.facebook.imagepipeline.image.EncodedImage
+import com.facebook.imagepipeline.producers.Consumer
+import com.facebook.imagepipeline.producers.NetworkFetcher
+import com.facebook.imagepipeline.producers.ProducerContext
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.lpzahd.atool.keeper.Bitmaps
+import com.lpzahd.atool.ui.L
 import com.lpzahd.atool.ui.Ui
 import com.lpzahd.common.taxi.RxTaxi
 import com.lpzahd.common.taxi.Taxi
@@ -28,8 +36,14 @@ import com.lpzahd.common.waiter.refresh.DspRefreshWaiter
 import com.lpzahd.essay.R
 import com.lpzahd.essay.context.`fun`.FunctionDetailActivity
 import com.lpzahd.essay.context.`fun`.FunctionsFrameActivity
+import com.lpzahd.essay.exotic.fresco.FrescoInit
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
+import okhttp3.CacheControl
+import okhttp3.Request
+import java.io.ByteArrayOutputStream
+import java.util.HashMap
+import java.util.concurrent.Executor
 
 class ApplicationsWaiter(activity: FunctionsFrameActivity) : ToneActivityWaiter<FunctionsFrameActivity>(activity) {
 
@@ -113,13 +127,13 @@ class ApplicationsWaiter(activity: FunctionsFrameActivity) : ToneActivityWaiter<
 
             fun convert(packageInfo: PackageInfo?): AppInfo {
                 val appInfo = packageInfo!!.applicationInfo
-
-                var iconUri: Uri = Uri.EMPTY;
-                val icon = appInfo.loadIcon(packageManager)
-                if (icon is BitmapDrawable) {
-                    val iconBase64 = Bitmaps.toBase64(icon.bitmap)
-                    iconUri = Uri.parse("data:image/png;base64,".plus(iconBase64))
-                }
+                var iconUri: Uri = Uri.parse("http://" + appInfo.packageName)
+//                var iconUri: Uri = Uri.EMPTY
+//                val icon = appInfo.loadIcon(packageManager)
+//                if (icon is BitmapDrawable) {
+//                    val iconBase64 = Bitmaps.toBase64(icon.bitmap)
+//                    iconUri = Uri.parse("data:image/png;base64,".plus(iconBase64))
+//                }
                 val type: AppType
                 if ((appInfo.flags and ApplicationInfo.FLAG_SYSTEM) <= 0) {
                     // 用户应用
@@ -150,6 +164,69 @@ class ApplicationsWaiter(activity: FunctionsFrameActivity) : ToneActivityWaiter<
         super.destroy()
         mTaxi.unregist(FunctionDetailActivity.TAG)
         mTaxi.unregist(ApplicationDetailWaiter.TAG)
+    }
+
+    override fun start() {
+        super.start()
+        FrescoInit.get().setFetcher(IconFetcher(context.packageManager, FrescoInit.get().okHttpClient.dispatcher().executorService()))
+    }
+
+    override fun stop() {
+        super.stop()
+        FrescoInit.get().resetOkHttpNetworkFetcher()
+    }
+}
+
+private class IconFetcher(private val manager: PackageManager, private val mCancellationExecutor: Executor) : NetworkFetcher<OkHttpNetworkFetcher.OkHttpNetworkFetchState> {
+
+    override fun createFetchState(consumer: Consumer<EncodedImage>, context: ProducerContext): OkHttpNetworkFetcher.OkHttpNetworkFetchState {
+        return OkHttpNetworkFetcher.OkHttpNetworkFetchState(consumer, context)
+    }
+
+    override fun fetch(fetchState: OkHttpNetworkFetcher.OkHttpNetworkFetchState, callback: NetworkFetcher.Callback) {
+        fetchState.submitTime = SystemClock.elapsedRealtime()
+        val uri = fetchState.uri
+
+        try {
+            val packageName = uri.host
+            L.e("uri $uri packageName $packageName")
+            val applicationInfo = manager.getApplicationInfo(packageName, 0)
+
+            mCancellationExecutor.execute {
+                fetchState.responseTime = SystemClock.elapsedRealtime()
+                val drawable = applicationInfo.loadIcon(manager)
+                val bitmap = Bitmaps.drawable2Bitmap(drawable)
+                callback.onResponse(Bitmaps.bitmap2InputStream(bitmap),  bitmap.byteCount)
+            }
+        } catch ( e: PackageManager.NameNotFoundException) {
+            callback.onFailure(e)
+        }
+
+    }
+
+    override fun shouldPropagate(fetchState: OkHttpNetworkFetcher.OkHttpNetworkFetchState): Boolean {
+        return true
+    }
+
+    override fun onFetchCompletion(fetchState: OkHttpNetworkFetcher.OkHttpNetworkFetchState, byteSize: Int) {
+        fetchState.fetchCompleteTime = SystemClock.elapsedRealtime()
+    }
+
+    override fun getExtraMap(fetchState: OkHttpNetworkFetcher.OkHttpNetworkFetchState, byteSize: Int): Map<String, String>? {
+        val extraMap = HashMap<String, String>(4)
+        extraMap[QUEUE_TIME] = java.lang.Long.toString(fetchState.responseTime - fetchState.submitTime)
+        extraMap[FETCH_TIME] = java.lang.Long.toString(fetchState.fetchCompleteTime - fetchState.responseTime)
+        extraMap[TOTAL_TIME] = java.lang.Long.toString(fetchState.fetchCompleteTime - fetchState.submitTime)
+        extraMap[IMAGE_SIZE] = Integer.toString(byteSize)
+        return extraMap
+    }
+
+    companion object {
+
+        private val QUEUE_TIME = "queue_time"
+        private val FETCH_TIME = "fetch_time"
+        private val TOTAL_TIME = "total_time"
+        private val IMAGE_SIZE = "image_size"
     }
 }
 

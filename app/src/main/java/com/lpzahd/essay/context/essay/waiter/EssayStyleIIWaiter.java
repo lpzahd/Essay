@@ -6,7 +6,11 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -14,14 +18,18 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Interpolator;
 import android.widget.RelativeLayout;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.flipboard.bottomsheet.BottomSheetLayout;
 import com.lpzahd.Lists;
 import com.lpzahd.Objects;
 import com.lpzahd.Strings;
@@ -40,6 +48,7 @@ import com.lpzahd.common.waiter.refresh.SwipeRefreshWaiter;
 import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.essay.EssayActivity;
 import com.lpzahd.essay.context.essay.EssayStyleIIAddDialog;
+import com.lpzahd.essay.context.essay_.waiter.EssayAddComponent;
 import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
 import com.lpzahd.essay.db.collection.Collection;
 import com.lpzahd.essay.db.essay.EFile;
@@ -62,6 +71,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.realm.Realm;
+import io.realm.RealmList;
 import io.realm.RealmResults;
 import io.realm.Sort;
 
@@ -72,11 +82,21 @@ import io.realm.Sort;
  */
 public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implements DataFactory.DataProcess<Essay, EssayStyleIIWaiter.EssayModel>, EssayStyleIIAddDialog.InputCallback, Receiver<Boolean> {
 
+    private static final Interpolator INTERPOLATOR = new FastOutSlowInInterpolator();
+
+    @BindView(R.id.bottom_sheet_layout)
+    BottomSheetLayout bottomSheetLayout;
+
     @BindView(R.id.swipe_refresh_layout)
     SwipeRefreshLayout swipeRefreshLayout;
 
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
+
+
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
+
 
     private Realm mRealm;
 
@@ -85,6 +105,9 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
     private EssayAdapter mAdapter;
 
     private SwipeRefreshWaiter mRefreshWaiter;
+
+    private EssayAddComponent essayAddComponent;
+    private boolean isShowComponent = false;
 
     public EssayStyleIIWaiter(EssayActivity essayActivity) {
         super(essayActivity);
@@ -102,6 +125,28 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
     protected void initView() {
         super.initView();
 
+        essayAddComponent = new EssayAddComponent(context);
+        essayAddComponent.init();
+
+        bottomSheetLayout.addOnSheetStateChangeListener(state -> {
+            if(state == BottomSheetLayout.State.HIDDEN) {
+                fab.setImageResource(R.drawable.ic_add_white_24dp);
+                isShowComponent = false;
+            } else {
+                isShowComponent = true;
+                fab.setImageResource(R.drawable.ic_save_white_24dp);
+
+                if(fab.getVisibility() != View.VISIBLE) {
+                    fab.setVisibility(View.VISIBLE);
+
+                    ViewCompat.animate(fab).translationY(0)
+                            .setInterpolator(INTERPOLATOR).withLayer().setListener(null)
+                            .start();
+                }
+
+            }
+        });
+
         swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark, R.color.colorAccent);
         recyclerView.setPadding(16, 0, 16, 0);
 
@@ -117,6 +162,14 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
                     PreviewPicWaiter.startActivity(context, child);
                     RxTaxi.get().regist(PreviewPicWaiter.TAG,
                             transmit(mAdapter.getItem(essayHolder.getAdapterPosition()).id));
+                }
+
+                else if(child == essayHolder.moreIv) {
+                    View layout = essayAddComponent.inflate(bottomSheetLayout);
+                    bottomSheetLayout.showWithSheetView(layout);
+
+                    EssayModel model = mAdapter.getItem(essayHolder.getAdapterPosition());
+                    essayAddComponent.update(model.id);
                 }
             }
 
@@ -141,6 +194,42 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
 
             }
 
+            @Override
+            public void onLongClick(RecyclerView rv, EssayHolder essayHolder, View child) {
+                super.onLongClick(rv, essayHolder, child);
+
+                final int position = essayHolder.getAdapterPosition();
+                EssayModel model = mAdapter.getItem(position);
+
+                final String id = model.id;
+                String content = "你确定要删除 " + (!Strings.empty(model.title) ? model.title : model.content) + " 嘛？";
+                new MaterialDialog.Builder(context)
+                        .title("删除")
+                        .content(content)
+                        .positiveText(R.string.tip_positive)
+                        .negativeText(R.string.tip_negative)
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                Realm realm = Realm.getDefaultInstance();
+                                Essay essay = realm.where(Essay.class)
+                                        .equalTo("id", id)
+                                        .findFirst();
+
+                                if(essay != null) {
+                                    realm.beginTransaction();
+                                    essay.deleteFromRealm();
+                                    realm.commitTransaction();
+                                    mAdapter.remove(position);
+                                    T.t("删除成功");
+                                }
+
+                                realm.close();
+
+                            }
+                        })
+                        .show();
+            }
         });
 
         addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefreshLayout, recyclerView) {
@@ -165,9 +254,14 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
 
     @OnClick(R.id.fab)
     void showEssayAddDialog() {
-        EssayStyleIIAddDialog dialog = new EssayStyleIIAddDialog();
-        dialog.setInputCallback(this);
-        dialog.show(context);
+        if(isShowComponent) {
+            if(essayAddComponent.save()) bottomSheetLayout.dismissSheet();
+        } else {
+            EssayStyleIIAddDialog dialog = new EssayStyleIIAddDialog();
+            dialog.setInputCallback(this);
+            dialog.show(context);
+        }
+
     }
 
     @Override
@@ -351,6 +445,9 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
 
         @BindView(R.id.content_tv)
         AppCompatTextView contentTv;
+
+        @BindView(R.id.more_iv)
+        AppCompatImageView moreIv;
 
         EssayHolder(View itemView) {
             super(itemView);
