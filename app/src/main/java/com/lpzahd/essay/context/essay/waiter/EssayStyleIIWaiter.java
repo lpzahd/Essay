@@ -208,25 +208,22 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
                         .content(content)
                         .positiveText(R.string.tip_positive)
                         .negativeText(R.string.tip_negative)
-                        .onPositive(new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                Realm realm = Realm.getDefaultInstance();
-                                Essay essay = realm.where(Essay.class)
-                                        .equalTo("id", id)
-                                        .findFirst();
+                        .onPositive((dialog, which) -> {
+                            Realm realm = Realm.getDefaultInstance();
+                            Essay essay = realm.where(Essay.class)
+                                    .equalTo("id", id)
+                                    .findFirst();
 
-                                if(essay != null) {
-                                    realm.beginTransaction();
-                                    essay.deleteFromRealm();
-                                    realm.commitTransaction();
-                                    mAdapter.remove(position);
-                                    T.t("删除成功");
-                                }
-
-                                realm.close();
-
+                            if(essay != null) {
+                                realm.beginTransaction();
+                                essay.deleteFromRealm();
+                                realm.commitTransaction();
+                                mAdapter.remove(position);
+                                T.t("删除成功");
                             }
+
+                            realm.close();
+
                         })
                         .show();
             }
@@ -255,7 +252,7 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
     @OnClick(R.id.fab)
     void showEssayAddDialog() {
         if(isShowComponent) {
-            if(essayAddComponent.save()) bottomSheetLayout.dismissSheet();
+            if(essayAddComponent.update()) bottomSheetLayout.dismissSheet();
         } else {
             EssayStyleIIAddDialog dialog = new EssayStyleIIAddDialog();
             dialog.setInputCallback(this);

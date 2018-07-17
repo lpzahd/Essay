@@ -50,6 +50,7 @@ import com.lpzahd.essay.db.essay.Essay;
 import com.lpzahd.essay.db.file.Image;
 import com.lpzahd.gallery.tool.MediaTool;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -172,13 +173,12 @@ public class EssayAddComponent  implements Transmitter, Receiver<List<MediaSelec
     }
 
     public void update(String title, String content, List<PicBean> pics) {
-        if(!Strings.empty(title)) titleEdt.setText(title);
+        Ui.setText(titleEdt, title);
+        Ui.setText(contentEdt, content);
 
-        if(!Strings.empty(content)) contentEdt.setText(content);
+        mAdapter.setData(pics);
 
         if(!Lists.empty(pics)) {
-            mAdapter.setData(pics);
-
             mPicSource = new ArrayList<>(pics.size());
             for (int i = 0, size = pics.size(); i < size; i++) {
                 MediaTool.ImageBean bean = new MediaTool.ImageBean();
@@ -201,7 +201,7 @@ public class EssayAddComponent  implements Transmitter, Receiver<List<MediaSelec
 
     @ThrottleFirst
     @OnClick(R.id.image_iv)
-    public void openGallery(View view) {
+    public void openGallery() {
         WaiterManager.single().put(MediaSelectActivity.class, new MediaSelectWaiter(6, new SwipeRefreshWaiter.DataFlowable() {
 
             @Override
@@ -233,6 +233,50 @@ public class EssayAddComponent  implements Transmitter, Receiver<List<MediaSelec
         MediaSelectActivity.startActivity(context);
     }
 
+    public boolean update() {
+        final String title = titleEdt.getText().toString();
+        final String content = contentEdt.getText().toString();
+        if(Strings.empty(title) && Strings.empty(content) && Lists.empty(mPicSource)) {
+            T.t("...");
+            return false;
+        } else {
+            try (Realm realm = Realm.getDefaultInstance()) {
+                final Essay essay = realm.where(Essay.class)
+                            .equalTo("id", id)
+                            .findFirst();
+
+                if (essay != null) {
+                    realm.beginTransaction();
+                    essay.setTitle(title);
+                    essay.setContent(content);
+
+                    if(!Lists.empty(mPicSource)) {
+                        RealmList<Image> images = new RealmList<>();
+                        for(int i = 0, size = mPicSource.size(); i < size; i++) {
+                            MediaTool.ImageBean bean = mPicSource.get(i);
+                            Image image = new Image.Builder()
+                                    .path(bean.getOriginalPath())
+                                    .width(bean.getWidth())
+                                    .height(bean.getHeight())
+                                    .source(ImageSource.SOURCE_FILE)
+                                    .suffix(bean.getMimeType())
+                                    .build();
+                            images.add(realm.copyToRealm(image));
+                        }
+                        essay.setImages(images);
+                    }
+                    realm.commitTransaction();
+                    T.t("修改成功");
+                    RxBus.get().post(EssayActivity.TAG, true);
+                    return true;
+                } else {
+                    return false;
+                }
+
+            }
+        }
+    }
+
 
     public boolean save() {
         final String title = titleEdt.getText().toString();
@@ -241,48 +285,34 @@ public class EssayAddComponent  implements Transmitter, Receiver<List<MediaSelec
             T.t("...");
             return false;
         } else {
-            Realm realm = Realm.getDefaultInstance();
+            try (Realm realm = Realm.getDefaultInstance()) {
+                final Essay essay = new Essay();
 
-            final Essay essay;
-            if(!Strings.empty(id)) {
-                essay = realm.where(Essay.class)
-                        .equalTo("id", id)
-                        .findFirst();
-            }  else {
-                essay = new Essay();
-            }
+                essay.setTitle(title);
+                essay.setContent(content);
 
-            if(essay == null) {
-                realm.close();
-                return false;
-            }
-
-            essay.setTitle(title);
-            essay.setContent(content);
-
-            if(!Lists.empty(mPicSource)) {
-                RealmList<Image> images = new RealmList<>();
-                for(int i = 0, size = mPicSource.size(); i < size; i++) {
-                    MediaTool.ImageBean bean = mPicSource.get(i);
-                    images.add(new Image.Builder()
-                            .path(bean.getOriginalPath())
-                            .width(bean.getWidth())
-                            .height(bean.getHeight())
-                            .source(ImageSource.SOURCE_FILE)
-                            .suffix(bean.getMimeType())
-                            .build());
+                if(!Lists.empty(mPicSource)) {
+                    RealmList<Image> images = new RealmList<>();
+                    for(int i = 0, size = mPicSource.size(); i < size; i++) {
+                        MediaTool.ImageBean bean = mPicSource.get(i);
+                        images.add(new Image.Builder()
+                                .path(bean.getOriginalPath())
+                                .width(bean.getWidth())
+                                .height(bean.getHeight())
+                                .source(ImageSource.SOURCE_FILE)
+                                .suffix(bean.getMimeType())
+                                .build());
+                    }
+                    essay.setImages(images);
                 }
-                essay.setImages(images);
-            }
 
-            realm.executeTransactionAsync(realm1 -> realm1.copyToRealmOrUpdate(essay), () -> {
-                T.t("新增/修改成功");
+                realm.beginTransaction();
+                realm.copyToRealm(essay);
+                realm.commitTransaction();
+                T.t("新增成功");
                 RxBus.get().post(EssayActivity.TAG, true);
-            });
-
-            realm.close();
-            return true;
-
+                return true;
+            }
         }
     }
 

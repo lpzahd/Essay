@@ -13,7 +13,9 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
 
+import com.lpzahd.Strings;
 import com.lpzahd.base.NoInstance;
 
 import java.io.File;
@@ -170,5 +172,13 @@ public class Ui extends NoInstance {
         intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
         intent.setType("application/vnd.android.package-archive");
         context.startActivity(Intent.createChooser(intent, title));
+    }
+
+    /**
+     *  设置字体内容，自动判空
+     */
+    public static void setText(TextView tv, String text) {
+        if(Strings.empty(text)) tv.setText("");
+        else  tv.setText(text);
     }
 }
