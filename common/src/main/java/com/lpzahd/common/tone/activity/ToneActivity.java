@@ -99,7 +99,7 @@ public class ToneActivity extends WaiterActivity {
     private MaterialDialog dialog() {
         if (dialog == null)
             dialog = new MaterialDialog.Builder(context)
-                    .title("之乎者也")
+                    .title("处理中")
                     .content("waiting...")
                     .canceledOnTouchOutside(false)
                     .progress(true, 0)

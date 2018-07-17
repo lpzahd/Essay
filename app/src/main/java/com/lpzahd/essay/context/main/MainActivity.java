@@ -26,7 +26,7 @@ public class MainActivity extends RxActivity {
         permissionsWaiter.setAccept(new PermissionsWaiter.Accept() {
             @Override
             public void accept() {
-                Realmer.init();
+                Realmer.init(context.getApplication());
             }
         });
         addActivityWaiter(permissionsWaiter);

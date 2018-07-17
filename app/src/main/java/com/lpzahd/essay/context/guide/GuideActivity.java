@@ -38,7 +38,7 @@ public class GuideActivity extends RxActivity {
         mPermissionsWaiter.setAccept(new PermissionsWaiter.Accept() {
             @Override
             public void accept() {
-                Realmer.init();
+                Realmer.init(context.getApplication());
             }
         });
 

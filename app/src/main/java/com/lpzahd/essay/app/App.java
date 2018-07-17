@@ -8,9 +8,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.multidex.MultiDex;
 
-import com.facebook.drawee.backends.pipeline.Fresco;
-import com.facebook.imagepipeline.backends.okhttp3.OkHttpImagePipelineConfigFactory;
-import com.facebook.imagepipeline.core.ImagePipelineConfig;
 import com.jakewharton.threetenabp.AndroidThreeTen;
 import com.lpzahd.atool.constant.Constance;
 import com.lpzahd.atool.keeper.Keeper;
@@ -18,13 +15,7 @@ import com.lpzahd.atool.ui.T;
 import com.lpzahd.derive.container.MiniCup;
 import com.lpzahd.essay.exotic.fresco.FrescoInit;
 
-import java.io.IOException;
-
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * Author : Lpzahd
@@ -40,7 +31,7 @@ public class App extends Application implements Application.ActivityLifecycleCal
     }
 
     private Handler mHandler;
-    private MiniCup<Activity> activityMiniCup;
+    private MiniCup<Activity> activityMiniCup = new MiniCup<>();
 
     public Handler getHandler() {
         return mHandler;
@@ -57,20 +48,19 @@ public class App extends Application implements Application.ActivityLifecycleCal
         super.onCreate();
 
         app = this;
-
         mHandler = new Handler(Looper.getMainLooper());
 
+        registerActivityLifecycleCallbacks(this);
+        init(app);
+    }
+
+    private void init(Application app) {
         Constance.initApp(app);
+
         T.init(app);
         Keeper.init(app);
-
-        activityMiniCup = new MiniCup<>();
-        registerActivityLifecycleCallbacks(this);
-
         FrescoInit.get().init(app);
-
         AndroidThreeTen.init(this);
-
         CustomActivityOnCrash.install(app);
     }
 

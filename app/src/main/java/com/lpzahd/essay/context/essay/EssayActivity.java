@@ -11,9 +11,6 @@ import com.lpzahd.common.tone.activity.RxActivity;
 import com.lpzahd.essay.context.essay.waiter.EssayStyleIIWaiter;
 import com.lpzahd.essay.context.essay_.EssayAddActivity;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
  * Author : Lpzahd
  * Date : 四月
@@ -23,8 +20,7 @@ public class EssayActivity extends RxActivity {
 
     public static final String TAG = "com.lpzahd.essay.context.essay.EssayActivity";
 
-    @BindView(R.id.tool_bar)
-    Toolbar toolBar;
+    private static final String TITLE_ESSAY = "随笔";
 
     public static void startActivity(Context context) {
         Intent intent = new Intent(context, EssayActivity.class);
@@ -43,11 +39,14 @@ public class EssayActivity extends RxActivity {
     public void onCreate() {
         super.onCreate();
         setContentView(R.layout.activity_essay);
-        ButterKnife.bind(this);
-        toolBar.setTitle("随笔");
-        setSupportActionBar(toolBar);
     }
 
+    @Override
+    protected void initView() {
+        Toolbar toolBar = findViewById(R.id.tool_bar);
+        toolBar.setTitle(TITLE_ESSAY);
+        setSupportActionBar(toolBar);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -57,18 +56,8 @@ public class EssayActivity extends RxActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if(id == R.id.action_add) {
+        if(item.getItemId() == R.id.action_add) {
             EssayAddActivity.startActivity(context);
-            return true;
-        }
-
-        if (id == R.id.action_edit) {
-            return true;
-        }
-
-        if (id == R.id.action_settings) {
             return true;
         }
 

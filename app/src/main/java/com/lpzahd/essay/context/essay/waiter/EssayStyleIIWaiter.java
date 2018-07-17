@@ -1,5 +1,6 @@
 package com.lpzahd.essay.context.essay.waiter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -21,7 +22,6 @@ import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 import android.widget.RelativeLayout;
 
-import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
@@ -49,11 +49,12 @@ import com.lpzahd.essay.R;
 import com.lpzahd.essay.context.essay.EssayActivity;
 import com.lpzahd.essay.context.essay.EssayStyleIIAddDialog;
 import com.lpzahd.essay.context.essay_.waiter.EssayAddComponent;
+import com.lpzahd.essay.context.preview.PreviewPicActivity;
 import com.lpzahd.essay.context.preview.waiter.PreviewPicWaiter;
 import com.lpzahd.essay.db.collection.Collection;
-import com.lpzahd.essay.db.essay.EFile;
 import com.lpzahd.essay.db.essay.Essay;
 import com.lpzahd.essay.db.file.Image;
+import com.lpzahd.essay.exotic.realm.Realmer;
 import com.lpzahd.essay.tool.DateTime;
 import com.lpzahd.waiter.consumer.State;
 
@@ -68,10 +69,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.realm.Realm;
-import io.realm.RealmList;
 import io.realm.RealmResults;
 import io.realm.Sort;
 
@@ -93,10 +92,8 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
 
-
     @BindView(R.id.fab)
     FloatingActionButton fab;
-
 
     private Realm mRealm;
 
@@ -115,119 +112,76 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
 
     @Override
     protected void init() {
-        super.init();
         mFactoty = DataFactory.of(this);
         mRealm = Realm.getDefaultInstance();
         RxBus.get().registIfAbsent(EssayActivity.TAG, this);
     }
 
+
+    @Override
+    protected void destroy() {
+        Realmer.close(mRealm);
+        RxTaxi.get().unregist(PreviewPicWaiter.TAG);
+        RxBus.get().unregist(EssayActivity.TAG);
+    }
+
     @Override
     protected void initView() {
-        super.initView();
 
         essayAddComponent = new EssayAddComponent(context);
         essayAddComponent.init();
 
         bottomSheetLayout.addOnSheetStateChangeListener(state -> {
-            if(state == BottomSheetLayout.State.HIDDEN) {
-                fab.setImageResource(R.drawable.ic_add_white_24dp);
-                isShowComponent = false;
-            } else {
-                isShowComponent = true;
-                fab.setImageResource(R.drawable.ic_save_white_24dp);
+            setFabImageResource(state);
 
-                if(fab.getVisibility() != View.VISIBLE) {
-                    fab.setVisibility(View.VISIBLE);
+            if (state != BottomSheetLayout.State.HIDDEN)
+                showSaveFabWithAniIfHide(fab);
 
-                    ViewCompat.animate(fab).translationY(0)
-                            .setInterpolator(INTERPOLATOR).withLayer().setListener(null)
-                            .start();
-                }
-
-            }
+            isShowComponent = state != BottomSheetLayout.State.HIDDEN;
         });
 
-        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark, R.color.colorAccent);
-        recyclerView.setPadding(16, 0, 16, 0);
+
+        setUpRecyclerView();
+    }
+
+    /**
+     * 根据状态设置fab的图片资源
+     */
+    private void setFabImageResource(BottomSheetLayout.State state) {
+        if (state == BottomSheetLayout.State.HIDDEN) {
+            fab.setImageResource(R.drawable.ic_add_white_24dp);
+        } else {
+            fab.setImageResource(R.drawable.ic_save_white_24dp);
+        }
+    }
+
+    /**
+     * 用动画显示保存样式的fab（如果它此时隐藏中）
+     */
+    private void showSaveFabWithAniIfHide(FloatingActionButton fab) {
+        if (fab.getVisibility() == View.VISIBLE) return;
+
+        fab.setVisibility(View.VISIBLE);
+
+        ViewCompat.animate(fab)
+                .translationY(0)
+                .setInterpolator(INTERPOLATOR)
+                .withLayer()
+                .setListener(null)
+                .start();
+    }
+
+    /**
+     * 设置recyclerview
+     */
+    private void setUpRecyclerView() {
+        setRecyclverViewStyle();
 
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         mAdapter = new EssayAdapter(context);
         recyclerView.setAdapter(mAdapter);
 
-        recyclerView.addOnItemTouchListener(new OnItemChildTouchListener<EssayHolder>(recyclerView) {
-            @Override
-            public void onClick(RecyclerView rv, EssayHolder essayHolder, View child) {
-                if (child == essayHolder.simpleDraweeView) {
-//                    PreviewPicActivity.startActivity(context);
-                    PreviewPicWaiter.startActivity(context, child);
-                    RxTaxi.get().regist(PreviewPicWaiter.TAG,
-                            transmit(mAdapter.getItem(essayHolder.getAdapterPosition()).id));
-                }
-
-                else if(child == essayHolder.moreIv) {
-                    View layout = essayAddComponent.inflate(bottomSheetLayout);
-                    bottomSheetLayout.showWithSheetView(layout);
-
-                    EssayModel model = mAdapter.getItem(essayHolder.getAdapterPosition());
-                    essayAddComponent.update(model.id);
-                }
-            }
-
-            private Transmitter<List<PreviewPicWaiter.PreviewBean>> transmit(final String id) {
-                return () -> {
-                    Essay target = mRealm.where(Essay.class)
-                            .equalTo("id", id)
-                            .findFirst();
-                    if (Objects.isNull(target) || Lists.empty(target.getDefaultImages()))
-                        return null;
-                    return Flowable.just(target.getDefaultImages())
-                            .map(images -> {
-                                List<PreviewPicWaiter.PreviewBean> pics = new ArrayList<>();
-                                for (int i = 0, size = images.size(); i < size; i++) {
-                                    PreviewPicWaiter.PreviewBean pic = new PreviewPicWaiter.PreviewBean();
-                                    pic.uri = Frescoer.uri(images.get(i).getPath(), ImageSource.SOURCE_FILE);
-                                    pics.add(pic);
-                                }
-                                return pics;
-                            });
-                };
-
-            }
-
-            @Override
-            public void onLongClick(RecyclerView rv, EssayHolder essayHolder, View child) {
-                super.onLongClick(rv, essayHolder, child);
-
-                final int position = essayHolder.getAdapterPosition();
-                EssayModel model = mAdapter.getItem(position);
-
-                final String id = model.id;
-                String content = "你确定要删除 " + (!Strings.empty(model.title) ? model.title : model.content) + " 嘛？";
-                new MaterialDialog.Builder(context)
-                        .title("删除")
-                        .content(content)
-                        .positiveText(R.string.tip_positive)
-                        .negativeText(R.string.tip_negative)
-                        .onPositive((dialog, which) -> {
-                            Realm realm = Realm.getDefaultInstance();
-                            Essay essay = realm.where(Essay.class)
-                                    .equalTo("id", id)
-                                    .findFirst();
-
-                            if(essay != null) {
-                                realm.beginTransaction();
-                                essay.deleteFromRealm();
-                                realm.commitTransaction();
-                                mAdapter.remove(position);
-                                T.t("删除成功");
-                            }
-
-                            realm.close();
-
-                        })
-                        .show();
-            }
-        });
+        recyclerView.addOnItemTouchListener(getEssayItemTouchListener());
 
         addWindowWaiter(mRefreshWaiter = new SwipeRefreshWaiter(swipeRefreshLayout, recyclerView) {
 
@@ -245,109 +199,172 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
 
         mRefreshWaiter.setCount(Integer.MAX_VALUE);
         mRefreshWaiter.autoRefresh();
+    }
+
+    @NonNull
+    private OnItemChildTouchListener<EssayHolder> getEssayItemTouchListener() {
+        return new OnItemChildTouchListener<EssayHolder>(recyclerView) {
+            @Override
+            public void onClick(RecyclerView rv, EssayHolder essayHolder, View child) {
+                if (child == essayHolder.simpleDraweeView) {
+                    go2PreviewAcitivity(essayHolder);
+                } else if (child == essayHolder.moreIv) {
+                    showUpdateSheetView(mAdapter.getItem(essayHolder.getAdapterPosition()).id);
+                }
+            }
+
+            private void go2PreviewAcitivity(EssayHolder essayHolder) {
+                PreviewPicActivity.startActivity(context);
+                RxTaxi.get().regist(PreviewPicWaiter.TAG,
+                        transmit(mAdapter.getItem(essayHolder.getAdapterPosition()).id));
+            }
+
+            private DataFactory<Image, PreviewPicWaiter.PreviewBean> getDataFactory() {
+                return DataFactory.of(image -> {
+                    PreviewPicWaiter.PreviewBean pic = new PreviewPicWaiter.PreviewBean();
+                    pic.uri = Frescoer.uri(image.getPath(), ImageSource.SOURCE_FILE);
+                    return pic;
+                });
+            }
+
+            private Transmitter<List<PreviewPicWaiter.PreviewBean>> transmit(String id) {
+                return () -> mRealm.where(Essay.class)
+                        .equalTo("id", id)
+                        .findFirstAsync()
+                        .<Essay>asFlowable()
+                        .filter(essay -> essay.isLoaded())
+                        .filter(essay -> !Lists.empty(essay.getDefaultImages()))
+                        .map(Essay::getDefaultImages)
+                        .map(images -> getDataFactory().processArray(images));
+            }
+
+            @Override
+            public void onLongClick(RecyclerView rv, EssayHolder essayHolder, View child) {
+                final int position = essayHolder.getAdapterPosition();
+                EssayModel model = mAdapter.getItem(position);
+                String content = "你确定要删除 \'" + (!Strings.empty(model.title) ? model.title : model.content) + "\' 嘛？";
+                showTipDialog(position, content);
+            }
+
+            private void showTipDialog(int position, String content) {
+                new MaterialDialog.Builder(context)
+                        .title("⚠️警告")
+                        .content(content)
+                        .positiveText(R.string.tip_positive)
+                        .negativeText(R.string.tip_negative)
+                        .onPositive((dialog, which) -> deleteItem(position))
+                        .show();
+            }
+        };
+    }
 
 
+    @SuppressLint("CheckResult")
+    private void deleteItem(int position) {
+        try (Realm realm = Realm.getDefaultInstance()) {
+            EssayModel model = mAdapter.getItem(position);
+            realm.where(Essay.class)
+                    .equalTo("id", model.id)
+                    .findFirstAsync()
+                    .<Essay>asFlowable()
+                    .filter(essay -> essay.isLoaded())
+                    .subscribe(essay -> {
+                        realm.executeTransaction(realm1 -> essay.deleteFromRealm());
+                        mAdapter.remove(position);
+                        T.t("删除成功");
+                    });
+        }
+    }
+
+    private void showUpdateSheetView(String modelId) {
+        View layout = essayAddComponent.inflate(bottomSheetLayout);
+        essayAddComponent.update(modelId);
+        bottomSheetLayout.showWithSheetView(layout);
+    }
+
+    private void setRecyclverViewStyle() {
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark, R.color.colorAccent);
+        recyclerView.setPadding(16, 0, 16, 0);
     }
 
     @OnClick(R.id.fab)
     void showEssayAddDialog() {
-        if(isShowComponent) {
-            if(essayAddComponent.update()) bottomSheetLayout.dismissSheet();
-        } else {
+        if (!isShowComponent) {
             EssayStyleIIAddDialog dialog = new EssayStyleIIAddDialog();
             dialog.setInputCallback(this);
             dialog.show(context);
+        } else {
+            if (essayAddComponent.update())
+                bottomSheetLayout.dismissSheet();
         }
 
     }
 
-    @Override
-    protected void destroy() {
-        super.destroy();
-        if (mRealm != null && !mRealm.isClosed())
-            mRealm.close();
-        RxTaxi.get().unregist(PreviewPicWaiter.TAG);
-        RxBus.get().unregist(EssayActivity.TAG);
-    }
 
     @Override
     protected int optionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_fix) {
-            fixGalleryImages();
+        if (item.getItemId() == R.id.action_fix) {
+            context.rxAction(fixGalleryImagesFlowable(), num -> {
+                T.t("一共修复了%s张图片", num);
+                mRefreshWaiter.autoRefresh();
+            });
             return State.STATE_PREVENT;
         }
         return super.optionsItemSelected(item);
     }
 
-    private Disposable mFixDispose;
-
     /**
      * 修复之前在相册中读取的照片丢失问题
      * 改为从'收藏'中获取
      */
-    private void fixGalleryImages() {
-        mFixDispose = mRealm.where(Essay.class)
+    private Flowable<Integer> fixGalleryImagesFlowable() {
+        return mRealm.where(Essay.class)
                 .findAllAsync()
                 .asFlowable()
                 .filter(RealmResults::isLoaded)
-                .map(essays -> {
-                    List<Essay> filters = new ArrayList<>();
-                    for (Essay essay : essays) {
-                        EFile eFile = essay.geteFile();
-                        if (Objects.isNull(eFile)) continue;
-                        List<Image> images = eFile.getImages();
-                        if (Lists.empty(images)) continue;
+                .map(this::filterImages)
+                .map(this::extractImages)
+                .map(this::motifyImagePath);
+    }
 
-                        for (Image image : images) {
-                            if (!new File(image.getPath()).exists()) {
-                                filters.add(essay);
-                                break;
-                            }
-                        }
-                    }
-                    return filters;
-                })
-                .map(essays -> {
-                    if (Lists.empty(essays)) return 0;
+    /**
+     * 修改图片路径
+     */
+    private int motifyImagePath(List<Image> images) {
+        int num = 0;
+        try (Realm realm = Realm.getDefaultInstance()) {
+            for (Image image : images) {
+                Collection result = realm.where(Collection.class)
+                        .equalTo("originalPath", image.getPath())
+                        .findFirst();
+                if(result != null) {
+                    mRealm.beginTransaction();
+                    image.setPath(result.getImage().getPath());
+                    mRealm.commitTransaction();
+                    num++;
+                }
+            }
+        }
+        return num;
+    }
 
-                    Realm realm = Realm.getDefaultInstance();
+    @NonNull
+    private List<Image> extractImages(List<Essay> essays) {
+        List<Image> list = new ArrayList<>();
+        for (Essay essay : essays) {
+            for (Image image : essay.geteFile().getImages()) {
+                if (!new File(image.getPath()).exists())
+                    list.add(image);
+            }
+        }
+        return list;
+    }
 
-                    int num = 0;
-                    for (Essay essay : essays) {
-                        List<Image> images = essay.getDefaultImages();
-                        int i = 0;
-                        for (Image image : images) {
-                            if (!new File(image.getPath()).exists()) {
-                                Collection result = realm.where(Collection.class)
-                                        .equalTo("originalPath", image.getPath())
-                                        .findFirst();
-                                if (result != null) {
-                                    i++;
-                                    mRealm.beginTransaction();
-                                    image.setPath(result.getImage().getPath());
-                                    mRealm.commitTransaction();
-                                }
-                            }
-                        }
-                        num += i;
-                    }
-                    realm.close();
-                    return num;
-                })
-                .subscribe(integer -> {
-                    if (integer == 0) {
-                        T.t("修复失败!");
-                    } else {
-                        T.t("一共修复了%s张图片", integer);
-                        mRefreshWaiter.autoRefresh();
-                    }
-                   context.disposeSafely(mFixDispose);
-
-                }, throwable -> {
-                    T.t(throwable.toString());
-                    context.disposeSafely(mFixDispose);
-                });
+    @NonNull
+    private List<Essay> filterImages(RealmResults<Essay> essays) {
+        List<Essay> list = new ArrayList<>(essays);
+        Lists.removeIf(list, var1 -> Objects.isNull(var1.geteFile()) || Lists.empty(var1.geteFile().getImages()));
+        return list;
     }
 
     @Override
@@ -360,7 +377,8 @@ public class EssayStyleIIWaiter extends ToneActivityWaiter<EssayActivity> implem
         model.gravity = parseContent(model.content);
 
         if (!Objects.isNull(essay.geteFile()) && !Lists.empty(essay.geteFile().getImages())) {
-            model.uri = Frescoer.uri(essay.geteFile().getImages().get(0).getPath(), ImageSource.SOURCE_FILE);
+            Image image = essay.geteFile().getImages().get(0);
+            model.uri = Frescoer.uri(Objects.requireNonNull(image).getPath(), ImageSource.SOURCE_FILE);
         }
         return model;
     }

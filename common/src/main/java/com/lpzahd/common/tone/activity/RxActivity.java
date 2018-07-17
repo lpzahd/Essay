@@ -13,11 +13,14 @@ import com.lpzahd.common.R;
 import com.lpzahd.common.kangna.KangNaOnCompleteObservable;
 import com.lpzahd.view.KangNaView;
 
+import org.reactivestreams.Subscription;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -71,13 +74,20 @@ public class RxActivity extends ToneActivity {
                 .subscribe(consumer, simpleExcConsumer(), simpleCompAction()));
     }
 
+    public <D> void rxAction(Flowable<D> flowable, Consumer<D> consumer) {
+        addDispose(flowable
+                .doOnSubscribe(showDialogConsumer())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(consumer, simpleExcConsumer(), simpleCompAction()));
+    }
+
     /**
      * 默认展示弹窗操作
      */
-    protected Consumer<Disposable> showDialogConsumer() {
-        return new Consumer<Disposable>() {
+    protected <D> Consumer<D> showDialogConsumer() {
+        return new Consumer<D>() {
             @Override
-            public void accept(Disposable disposable) throws Exception {
+            public void accept(D d) throws Exception {
                 showDialog();
             }
         };
