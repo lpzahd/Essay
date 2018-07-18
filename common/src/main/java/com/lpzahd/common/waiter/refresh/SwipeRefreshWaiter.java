@@ -250,6 +250,9 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
 
         int firstVisibleItem = 0;
 
+        @RecyclerView.Orientation
+        int orientation;
+
         long loadmoreTime;
 
         public RecyclerViewOnScroll(RecyclerView recyclerView, LoadMoreCallBack loadMoreCallBack) {
@@ -267,15 +270,16 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
                 LinearLayoutManager manager = ((LinearLayoutManager) layoutManager);
                 lastVisibleItem = manager.findLastVisibleItemPosition();
                 firstVisibleItem = manager.findFirstCompletelyVisibleItemPosition();
-                return;
+                orientation = manager.getOrientation();
             }
 
-            if (layoutManager instanceof StaggeredGridLayoutManager) {
+            else if (layoutManager instanceof StaggeredGridLayoutManager) {
                 StaggeredGridLayoutManager manager = ((StaggeredGridLayoutManager) layoutManager);
                 int[] pos = new int[manager.getSpanCount()];
                 manager.findLastVisibleItemPositions(pos);
                 lastVisibleItem = findMax(pos);
                 firstVisibleItem = manager.findFirstVisibleItemPositions(pos)[0];
+                orientation = manager.getOrientation();
             }
 
         }
@@ -296,11 +300,22 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
                 }
 
                 // 验证是否能铺满屏幕
-
-                // 区域高度
-                final int scrollExtent = recyclerView.computeVerticalScrollExtent();
+                int scrollExtent = 0;
                 // recyclerView 的高度
-                final int scrollRange = recyclerView.computeVerticalScrollRange();
+                int scrollRange = 0;
+                if(orientation == RecyclerView.VERTICAL) {
+                    // 区域高度
+                    scrollExtent = recyclerView.computeVerticalScrollExtent();
+                    // recyclerView 的高度
+                    scrollRange = recyclerView.computeVerticalScrollRange();
+
+                } else if(orientation == RecyclerView.HORIZONTAL) {
+                    // 区域宽度
+                    scrollExtent = recyclerView.computeHorizontalScrollExtent();
+                    // recyclerView 的宽度
+                    scrollRange = recyclerView.computeHorizontalScrollRange();
+                }
+
                 if (scrollRange > scrollExtent) {
 
                     // 延时加载
@@ -311,6 +326,8 @@ public abstract class SwipeRefreshWaiter extends WindowWaiter {
                         loadmoreTime = System.currentTimeMillis();
                     }
                 }
+
+
             }
         }
 

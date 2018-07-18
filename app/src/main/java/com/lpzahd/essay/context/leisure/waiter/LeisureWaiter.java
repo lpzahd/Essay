@@ -7,9 +7,9 @@ import android.graphics.Path;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.AppCompatTextView;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -34,7 +34,6 @@ import com.lpzahd.Lists;
 import com.lpzahd.Strings;
 import com.lpzahd.atool.enmu.ImageSource;
 import com.lpzahd.atool.ui.T;
-import com.lpzahd.atool.ui.Ui;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
 import com.lpzahd.common.tone.adapter.OnItemHolderTouchListener;
@@ -65,7 +64,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Function;
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -495,84 +493,46 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
         // 垂直排列, 定宽
         private int orientation = OrientationHelper.VERTICAL;
 
-        int IMG_SIZE_WIDTH;
-        int IMG_SIZE_HEIGH;
-
         boolean STYLE_OPEN_RESIZE = true;
 
         public LeisureAdapter(Context context) {
             super(context);
-            IMG_SIZE_HEIGH = Ui.dip2px(context, 160);
         }
 
         public LeisureAdapter(Context context, int orientation) {
             super(context);
             this.orientation = orientation;
-            if(orientation == OrientationHelper.VERTICAL) {
-                IMG_SIZE_HEIGH = Ui.dip2px(context, 160);
-            } else if(orientation == OrientationHelper.HORIZONTAL) {
-                IMG_SIZE_WIDTH = Ui.dip2px(context, 160);
-            }
         }
 
-        public void reloadTag() {
-            if(orientation == OrientationHelper.VERTICAL) {
-                IMG_SIZE_WIDTH = -1;
-            } else if(orientation == OrientationHelper.HORIZONTAL) {
-                IMG_SIZE_HEIGH = -1;
-            }
-        }
-
-        // 瀑布流 与 普通方式 切换
         public void toggle(RecyclerView recyclerView) {
-            RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
+            StaggeredGridLayoutManager manager = (StaggeredGridLayoutManager) recyclerView.getLayoutManager();
             if (manager == null) return;
 
-            final Context context = getContext();
-            if (manager instanceof StaggeredGridLayoutManager) {
-                this.reloadTag();
-                int[] lastPositions = new int[((StaggeredGridLayoutManager) manager).getSpanCount()];
-                int firstVisibleItem = ((StaggeredGridLayoutManager) manager).findFirstVisibleItemPositions(lastPositions)[0];
-                manager = new LinearLayoutManager(context, orientation, false);
-                recyclerView.setLayoutManager(manager);
-                manager.scrollToPosition(firstVisibleItem);
-            } else if (manager instanceof LinearLayoutManager) {
-                this.reloadTag();
-                int firstVisibleItem = ((LinearLayoutManager) manager).findFirstVisibleItemPosition();
-                manager = new StaggeredGridLayoutManager(2, orientation);
-                recyclerView.setLayoutManager(manager);
-                manager.scrollToPosition(firstVisibleItem);
+            resetSize();
+            if(orientation == OrientationHelper.VERTICAL) {
+                orientation = OrientationHelper.HORIZONTAL;
+                manager.setOrientation(OrientationHelper.HORIZONTAL);
+                notifyDataSetChanged();
+            } else if (orientation == OrientationHelper.HORIZONTAL) {
+                orientation = OrientationHelper.VERTICAL;
+                manager.setOrientation(OrientationHelper.VERTICAL);
+                notifyDataSetChanged();
+            } else {
+                throw new AssertionError("当前方向不识别！");
             }
         }
 
-//        private RecyclerView mRecyclerView;
-//
-//        @Override
-//        public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-//            super.onAttachedToRecyclerView(recyclerView);
-//            this.mRecyclerView = recyclerView;
-//        }
-
+        @NonNull
         @Override
-        public LeisureHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            LeisureHolder holder = new LeisureHolder(inflateItemView(R.layout.item_leisure, parent));
-            ViewGroup.LayoutParams params = holder.itemView.getLayoutParams();
-            if(orientation == OrientationHelper.VERTICAL) {
-                params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-            } else {
-                params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-                params.height = ViewGroup.LayoutParams.MATCH_PARENT;
-            }
-            holder.itemView.setLayoutParams(params);
-            return holder;
+        public LeisureHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new LeisureHolder(inflateItemView(R.layout.item_leisure, parent));
         }
 
         @Override
         public void onBindViewHolder(final LeisureHolder holder, int position) {
 
             final LeisureModel model = getItem(position);
-            displayDraweeView(holder.simpleDraweeView, model);
+            displayDraweeView(holder, model);
 
             if(Strings.empty(model.tag)) {
                 holder.textView.setVisibility(View.INVISIBLE);
@@ -582,67 +542,70 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
             }
         }
 
-        private void displayDraweeView(final SimpleDraweeView v, final LeisureModel model) {
-            if(orientation == OrientationHelper.VERTICAL) {
-                if (IMG_SIZE_WIDTH == 0)
-                    IMG_SIZE_WIDTH = v.getWidth();
+        // 默认size
+        private int size = -1;
 
-                if (IMG_SIZE_WIDTH <= 0) {
-                    v.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            IMG_SIZE_WIDTH = v.getWidth();
-                            setLayout(v, model, orientation);
-                        }
-                    });
-                    return;
-                }
-
-                setLayout(v, model, orientation);
-
-            } else if(orientation == OrientationHelper.HORIZONTAL) {
-                if (IMG_SIZE_HEIGH == 0)
-                    IMG_SIZE_HEIGH = v.getHeight();
-
-                if (IMG_SIZE_HEIGH <= 0) {
-                    v.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            IMG_SIZE_HEIGH = v.getHeight();
-                            setLayout(v, model, orientation);
-                        }
-                    });
-                    return;
-                }
-
-                setLayout(v, model, orientation);
-            }
-
+        private void resetSize() {
+            size = -1;
         }
 
-        private void setLayout(SimpleDraweeView v, LeisureModel model, int orientation) {
-            ViewGroup.LayoutParams pamras = v.getLayoutParams();
+        private boolean noSize() {
+            return size == -1;
+        }
 
-            final int w = model.width;
-            final int h = model.height;
-
+        private void displayDraweeView(final LeisureHolder holder, final LeisureModel model) {
             if(orientation == OrientationHelper.VERTICAL) {
-                pamras.width = IMG_SIZE_WIDTH;
-                if (w <= 0 || h <= 0) {
-                    pamras.height = IMG_SIZE_HEIGH;
+                if(noSize()) {
+                    //获取尺寸（width）
+                    ViewGroup.LayoutParams params = holder.simpleDraweeView.getLayoutParams();
+                    params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                    params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                    holder.simpleDraweeView.setLayoutParams(params);
+                    holder.simpleDraweeView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            size = holder.simpleDraweeView.getWidth();
+                            setLayout(holder.simpleDraweeView, model, orientation, size);
+                        }
+                    });
                 } else {
-                    pamras.height = (int) ((float) IMG_SIZE_WIDTH * (float) h / (float) w);
+                    setLayout(holder.simpleDraweeView, model, orientation, size);
                 }
 
             } else if(orientation == OrientationHelper.HORIZONTAL) {
-                pamras.height = IMG_SIZE_HEIGH;
-                if (w <= 0 || h <= 0) {
-                    pamras.width = IMG_SIZE_WIDTH;
+                if(noSize()) {
+                    //获取尺寸（height）
+                    ViewGroup.LayoutParams params = holder.simpleDraweeView.getLayoutParams();
+                    params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                    params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                    holder.simpleDraweeView.setLayoutParams(params);
+                    holder.simpleDraweeView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            size = holder.simpleDraweeView.getHeight();
+                            setLayout(holder.simpleDraweeView, model, orientation, size);
+                        }
+                    });
                 } else {
-                    pamras.width = (int) ((float) IMG_SIZE_HEIGH * (float) w / (float) h);
+                    setLayout(holder.simpleDraweeView, model, orientation, size);
                 }
+            } else {
+                throw new AssertionError("当前方向不识别！");
             }
+        }
 
+        private void setLayout(SimpleDraweeView v, LeisureModel model, int orientation, float size) {
+            final float w = model.width;
+            final float h = model.height;
+
+            ViewGroup.LayoutParams pamras = v.getLayoutParams();
+            if(orientation == OrientationHelper.VERTICAL) {
+                pamras.width = (int) size;
+                pamras.height = (int) (size * h / w);
+            } else if(orientation == OrientationHelper.HORIZONTAL) {
+                pamras.width = (int) (size * w / h);
+                pamras.height = (int) size;
+            }
             v.setLayoutParams(pamras);
 
             if (STYLE_OPEN_RESIZE) {
@@ -669,5 +632,6 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                 v.setController(controller);
             }
         }
+
     }
 }
