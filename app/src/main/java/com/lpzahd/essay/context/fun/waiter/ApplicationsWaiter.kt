@@ -5,9 +5,12 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.VectorDrawable
 import android.net.Uri
 import android.os.SystemClock
+import android.support.v4.graphics.drawable.DrawableCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.AppCompatTextView
 import android.support.v7.widget.GridLayoutManager
@@ -24,6 +27,7 @@ import com.facebook.imagepipeline.producers.Consumer
 import com.facebook.imagepipeline.producers.NetworkFetcher
 import com.facebook.imagepipeline.producers.ProducerContext
 import com.facebook.imagepipeline.request.ImageRequestBuilder
+import com.lpzahd.atool.action.Check
 import com.lpzahd.atool.keeper.Bitmaps
 import com.lpzahd.atool.ui.L
 import com.lpzahd.atool.ui.Ui
@@ -42,7 +46,7 @@ import io.reactivex.schedulers.Schedulers
 import okhttp3.CacheControl
 import okhttp3.Request
 import java.io.ByteArrayOutputStream
-import java.util.HashMap
+import java.util.*
 import java.util.concurrent.Executor
 
 class ApplicationsWaiter(activity: FunctionsFrameActivity) : ToneActivityWaiter<FunctionsFrameActivity>(activity) {
@@ -127,7 +131,7 @@ class ApplicationsWaiter(activity: FunctionsFrameActivity) : ToneActivityWaiter<
 
             fun convert(packageInfo: PackageInfo?): AppInfo {
                 val appInfo = packageInfo!!.applicationInfo
-                var iconUri: Uri = Uri.parse("http://" + appInfo.packageName)
+                val iconUri: Uri = Uri.parse("http://" + appInfo.packageName)
 //                var iconUri: Uri = Uri.EMPTY
 //                val icon = appInfo.loadIcon(packageManager)
 //                if (icon is BitmapDrawable) {
@@ -195,7 +199,16 @@ private class IconFetcher(private val manager: PackageManager, private val mCanc
             mCancellationExecutor.execute {
                 fetchState.responseTime = SystemClock.elapsedRealtime()
                 val drawable = applicationInfo.loadIcon(manager)
-                val bitmap = Bitmaps.drawable2Bitmap(drawable)
+                if(Check.Empty.check(drawable) { callback.onFailure(NullPointerException()) })
+                    return@execute;
+
+                val bitmap: Bitmap
+                if(drawable is BitmapDrawable) {
+                    bitmap = drawable.bitmap
+                } else {
+                    val stateDrawable = DrawableCompat.wrap(drawable)
+                    bitmap = Bitmaps.drawable2Bitmap(stateDrawable)
+                }
                 callback.onResponse(Bitmaps.bitmap2InputStream(bitmap),  bitmap.byteCount)
             }
         } catch ( e: PackageManager.NameNotFoundException) {

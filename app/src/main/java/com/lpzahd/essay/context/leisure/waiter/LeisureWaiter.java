@@ -352,7 +352,7 @@ public class LeisureWaiter extends ToneActivityWaiter<LeisureActivity> implement
                         .map(new Function<BaiduPic, List<BaiduPic.ImgsBean>>() {
                             @Override
                             public List<BaiduPic.ImgsBean> apply(@NonNull BaiduPic baiduPic) throws Exception {
-                                if (baiduPic == null || Lists.empty(baiduPic.getImgs()))
+                                if (Lists.empty(baiduPic.getImgs()))
                                     return Collections.emptyList();
                                 return baiduPic.getImgs();
                             }

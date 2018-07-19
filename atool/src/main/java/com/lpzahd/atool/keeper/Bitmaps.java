@@ -107,6 +107,18 @@ public class Bitmaps {
         return new BitmapDrawable(context.getResources(), bmp);
     }
 
+    public static Drawable zoomBitmap(Context context, Bitmap bitmap, int w, int h) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        Matrix matrix = new Matrix();
+        float scaleWidth = ((float) w / width);
+        float scaleHeight = ((float) h / height);
+        matrix.postScale(scaleWidth, scaleHeight);
+        Bitmap bmp = Bitmap.createBitmap(bitmap, 0, 0, width, height,
+                matrix, true);
+        return new BitmapDrawable(context.getResources(), bmp);
+    }
+
     /**
      * 纯色bitmap
      */

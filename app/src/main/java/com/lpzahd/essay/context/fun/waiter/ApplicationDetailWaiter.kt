@@ -4,10 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.support.design.widget.FloatingActionButton
-import android.support.v4.content.res.ResourcesCompat
+import android.support.v4.graphics.drawable.DrawableCompat
 import android.support.v7.widget.AppCompatTextView
 import android.support.v7.widget.LinearLayoutCompat
 import android.support.v7.widget.Toolbar
@@ -26,7 +27,6 @@ import com.lpzahd.common.taxi.Transmitter
 import com.lpzahd.common.tone.waiter.ToneActivityWaiter
 import com.lpzahd.essay.R
 import com.lpzahd.essay.context.`fun`.FunctionDetailActivity
-import com.lpzahd.essay.context.main.MainActivity
 import com.lpzahd.essay.tool.DateTime
 import com.lpzahd.essay.view.IntentPickerSheetView
 import io.reactivex.Observable
@@ -171,7 +171,15 @@ class ApplicationDetailWaiter(activity: FunctionDetailActivity) : ToneActivityWa
         toolbar.title = applicationInfo.loadLabel(manager)
         toolbar.logo = applicationInfo.loadIcon(manager).let {
             val dp48 = Ui.dip2px(context, 48)
-            Bitmaps.zoomDrawable(context, it as BitmapDrawable?, dp48, dp48)
+
+            val bitmap: Bitmap
+            if(it is BitmapDrawable) {
+                bitmap = it.bitmap
+            } else {
+                val stateDrawable = DrawableCompat.wrap(it)
+                bitmap = Bitmaps.drawable2Bitmap(stateDrawable)
+            }
+            Bitmaps.zoomBitmap(context, bitmap, dp48, dp48)
         }
         context.setSupportActionBar(toolbar)
 
