@@ -311,11 +311,13 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
             LeisureWaiter.LeisureModel model = new LeisureWaiter.LeisureModel();
             model.width = itemsBean.getWidth();
             model.height = itemsBean.getHeight();
-            model.uri = Frescoer.uri("http:" + itemsBean.getImg(), ImageSource.SOURCE_NET);
 
             if (itemsBean.getShorturl().startsWith("v")) {
                 //video
                 model.tag = "视频";
+                model.uri = Frescoer.uri("http:" + itemsBean.getImg(), ImageSource.SOURCE_NET);
+            } else {
+                model.uri = Frescoer.uri(itemsBean.getImg(), ImageSource.SOURCE_NET);
             }
 
             return model;

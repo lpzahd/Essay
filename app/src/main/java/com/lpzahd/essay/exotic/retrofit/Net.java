@@ -1,5 +1,12 @@
 package com.lpzahd.essay.exotic.retrofit;
 
+import android.support.annotation.Nullable;
+
+import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
 import com.lpzahd.essay.context.pure.bilibili.BiliBiliCos;
@@ -8,12 +15,22 @@ import com.lpzahd.essay.context.pure.bx6644.BxPhotos;
 import com.lpzahd.essay.context.turing.turing123.Turing123;
 import com.lpzahd.essay.tool.Convert;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import okio.Buffer;
 import retrofit2.CallAdapter;
+import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -32,7 +49,10 @@ import retrofit2.http.Url;
 public class Net {
 
     private static OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
-    private static GsonConverterFactory gsonConverterFactory = GsonConverterFactory.create();
+
+    private static CustomGsonConverterFactory gsonConverterFactory = CustomGsonConverterFactory.create();
+
+//    private static GsonConverterFactory gsonConverterFactory = GsonConverterFactory.create();
     private static CallAdapter.Factory rxJavaCallAdapterFactory = RxJava2CallAdapterFactory.create();
 
     private static Net sNet;
@@ -104,7 +124,7 @@ public class Net {
         Observable<Turing123> sendMessage(@Body RequestBody message);
     }
 
-    public static final String BOX_HOST = "http://www.hezi2018.com";
+    public static final String BOX_HOST = "http://www.sesehezi.com";
 
     public Observable<YiyiBox> yiyiBoxHomeImg(int page) {
         return it(BOX_HOST)
@@ -234,7 +254,7 @@ public class Net {
      * @param id 图片id
      */
     public Observable<BxPhotos> purePhotos(String id) {
-        return it("http:/www.8888ez.com")
+            return it("http://www.8888ez.com")
                 .create(PurePhotosApi.class)
                 .purePhotos("http://www.8888ez.com/html/artdata/" + id + ".json");
     }
@@ -275,5 +295,81 @@ public class Net {
         @GET("/link_draw/v2/Photo/list?type=hot&category=cos")
         Observable<BiliBiliCos> searchCos(@Query("type") String type, @Query("page_num") int page, @Query("page_size") int size);
 
+    }
+
+    public static class CustomGsonConverterFactory extends Converter.Factory{
+        private final Gson gson;
+
+        public static CustomGsonConverterFactory create(){
+            return create(new Gson());
+        }
+
+
+        private CustomGsonConverterFactory(Gson gson){
+            this.gson = gson;
+        }
+
+        public static CustomGsonConverterFactory create(Gson gson) {
+            if (gson == null) throw new NullPointerException("gson == null");
+            return new CustomGsonConverterFactory(gson);
+        }
+
+
+        @Nullable
+        @Override
+        public Converter<?, RequestBody> requestBodyConverter(Type type, Annotation[] parameterAnnotations, Annotation[] methodAnnotations, Retrofit retrofit) {
+            TypeAdapter<?> adapter = gson.getAdapter(TypeToken.get(type));
+            return new CustomGsonRequestBodyConverter<>(gson, adapter);
+        }
+
+        @Nullable
+        @Override
+        public Converter<ResponseBody, ?> responseBodyConverter(Type type, Annotation[] annotations, Retrofit retrofit) {
+            TypeAdapter<?> adapter = gson.getAdapter(TypeToken.get(type));
+            return new CustomGsonResponseBodyConverter<>(gson, adapter);
+        }
+    }
+
+    final static class CustomGsonRequestBodyConverter<T> implements Converter<T, RequestBody> {
+
+        private static final MediaType MEDIA_TYPE = MediaType.parse("application/json; charset=UTF-8");
+        private static final Charset UTF_8 = Charset.forName("UTF-8");
+
+        private final Gson gson;
+        private final TypeAdapter<T> adapter;
+
+        CustomGsonRequestBodyConverter(Gson gson, TypeAdapter<T> adapter) {
+            this.gson = gson;
+            this.adapter = adapter;
+        }
+
+        @Override public RequestBody convert(T value) throws IOException {
+            Buffer buffer = new Buffer();
+            Writer writer = new OutputStreamWriter(buffer.outputStream(), UTF_8);
+            JsonWriter jsonWriter = gson.newJsonWriter(writer);
+            adapter.write(jsonWriter, value);
+            jsonWriter.close();
+            return RequestBody.create(MEDIA_TYPE, buffer.readByteString());
+        }
+    }
+
+    final static class CustomGsonResponseBodyConverter<T> implements Converter<ResponseBody, T> {
+        private final Gson gson;
+        private final TypeAdapter<T> adapter;
+
+        CustomGsonResponseBodyConverter(Gson gson, TypeAdapter<T> adapter) {
+            this.gson = gson;
+            this.adapter = adapter;
+        }
+
+        @Override public T convert(ResponseBody value) throws IOException {
+            JsonReader jsonReader = gson.newJsonReader(value.charStream());
+            jsonReader.setLenient(true);
+            try {
+                return adapter.read(jsonReader);
+            } finally {
+                value.close();
+            }
+        }
     }
 }
