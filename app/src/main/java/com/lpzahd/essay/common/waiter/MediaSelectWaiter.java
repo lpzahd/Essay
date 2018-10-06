@@ -60,8 +60,8 @@ public class MediaSelectWaiter extends ToneActivityWaiter<AppCompatActivity> {
 
     public static final String TAG = "com.lpzahd.essay.common.waiter.MediaSelectWaiter";
 
-    private static int MODE_SINGLE = 0;
-    private static int MODE_MULTI = 1;
+    private static final int MODE_SINGLE = 0;
+    private static final int MODE_MULTI = 1;
 
     @BindView(R.id.app_bar_layout)
     public AppBarLayout appBarLayout;

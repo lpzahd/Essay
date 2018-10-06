@@ -7,8 +7,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.FrameLayout;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
@@ -29,6 +31,9 @@ import com.lpzahd.essay.context.instinct.InstinctActivity;
 import com.lpzahd.essay.context.instinct.InstinctMediaActivity;
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
 import com.lpzahd.essay.context.leisure.waiter.LeisureWaiter;
+import com.lpzahd.essay.context.preview.TranstionPicActivity;
+import com.lpzahd.essay.context.web.WebActivity;
+import com.lpzahd.essay.context.web.waiter.WebWaiter;
 import com.lpzahd.essay.exotic.retrofit.Net;
 import com.lpzahd.waiter.consumer.State;
 
@@ -143,7 +148,39 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
             return State.STATE_TRUE;
         }
 
+        if (id == R.id.action_settings) {
+            showNetDialog();
+            return State.STATE_TRUE;
+        }
+
         return super.optionsItemSelected(item);
+    }
+
+    /**
+     * 展示网站dialog
+     */
+    public void showNetDialog() {
+        final String url = "http://www.baidu.com";
+        new MaterialDialog.Builder(context)
+                .title("修改Host")
+                .input("http://", url, false, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@android.support.annotation.NonNull MaterialDialog dialog, CharSequence input) {
+
+                    }
+                })
+                .negativeText(R.string.tip_negative)
+                .positiveText(R.string.tip_positive)
+                .negativeText("预览")
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
+                        WebActivity.startActivity(context);
+                        RxTaxi.get().regist(WebWaiter.TAG,
+                                () -> Flowable.just(url));
+                    }
+                })
+                .show();
     }
 
     @Override
@@ -267,6 +304,7 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
     @Override
     protected void destroy() {
         RxTaxi.get().unregist(YiyiBoxMediaWaiter.TAG);
+        RxTaxi.get().unregist(WebWaiter.TAG);
     }
 
     private static class YiyiBoxRefreshWaiter extends DspRefreshWaiter<YiyiBox.DataBean.ItemsBean, LeisureWaiter.LeisureModel> {

@@ -71,6 +71,8 @@
         <activity android:name=".context.fun.FunctionsFrameActivity" />
         <activity android:name=".context.fun.FunctionDetailActivity" />
 
+        <activity android:name=".context.web.WebActivity" />
+
         <!-- common 组件 -->
         <activity android:name=".common.context.MediaSelectActivity" />
 

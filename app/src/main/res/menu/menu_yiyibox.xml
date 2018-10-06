@@ -33,4 +33,10 @@
         android:title="@string/box_video_ranking"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="3"
+        android:title="@string/box_settings"
+        app:showAsAction="never" />
+
 </menu>

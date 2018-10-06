@@ -1,10 +1,5 @@
 package com.lpzahd.common.tone.waiter;
 
-import com.lpzahd.atool.action.Check;
-import com.lpzahd.atool.ui.T;
-import com.lpzahd.waiter.WaiterActivity;
-import com.lpzahd.waiter.agency.ActivityWaiter;
-import com.lpzahd.waiter.agency.WindowWaiter;
 import com.lpzahd.waiter.waiter.Waiter;
 
 import java.util.HashMap;

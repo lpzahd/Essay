@@ -43,8 +43,9 @@ public abstract class ToneAdapter<T, VH extends ToneAdapter.ToneHolder> extends 
     }
 
     public List<T> getData() {
-        if (mData == null)
-            return mData = new ArrayList<>();
+        if (mData == null) {
+            mData = new ArrayList<>();
+        }
         return mData;
     }
 

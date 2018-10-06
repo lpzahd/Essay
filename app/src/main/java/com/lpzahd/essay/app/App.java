@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.support.multidex.MultiDex;
 
 import com.jakewharton.threetenabp.AndroidThreeTen;
+import com.lpzahd.atool.action.Check;
 import com.lpzahd.atool.constant.Constance;
 import com.lpzahd.atool.keeper.Keeper;
 import com.lpzahd.atool.ui.T;
@@ -60,7 +61,7 @@ public class App extends Application implements Application.ActivityLifecycleCal
         T.init(app);
         Keeper.init(app);
         FrescoInit.get().init(app);
-        AndroidThreeTen.init(this);
+        AndroidThreeTen.init(app);
         CustomActivityOnCrash.install(app);
     }
 

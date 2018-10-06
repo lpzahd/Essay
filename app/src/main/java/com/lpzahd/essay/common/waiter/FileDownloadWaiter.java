@@ -52,17 +52,17 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
     /**
      * 不取消下载任务
      */
-    public static final int AUTO_NONE = 0x00;
+    private static final int AUTO_NONE = 0x00;
 
     /**
      * 取消下载任务
      */
-    public static final int AUTO_CANCEL = 0x01;
+    private static final int AUTO_CANCEL = 0x01;
 
     /**
      * 转后台继续执行下载任务（移除回调）
      */
-    public static final int AUTO_REMOVE_CALLBACK = 0x10;
+    private static final int AUTO_REMOVE_CALLBACK = 0x10;
 
     private Map<Task, Integer> taskMap;
 
@@ -74,7 +74,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
         return (taskMap == null) ? (taskMap = new HashMap<>()) : taskMap;
     }
 
-    public void downDefault(String url) {
+    private void downDefault(String url) {
         down(url, defaultAppCallBack(), AUTO_NONE);
     }
 
@@ -87,14 +87,12 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
     }
 
     public void down(String url, CallBack callBack, int auto) {
-        Task task = Storage.newStorage()
-                .newTask(Request.Builder.newBuilder(url).build());
-
+        Task task = Storage.newStorage().newTask(Request.Builder.newBuilder(url).build());
         getTaskMap().put(task, auto);
         task.enqueue(callBack);
     }
 
-    public void downDefault(String... urls) {
+    private void downDefault(String... urls) {
         down(urls, defaultAppCallBack(), AUTO_NONE);
     }
 
@@ -145,7 +143,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
         showDownLoadDialog(null, url);
     }
 
-    public void showDownLoadDialog(String name, final String url) {
+    private void showDownLoadDialog(String name, final String url) {
         if(Strings.empty(name)) name = url.substring(url.lastIndexOf("/") + 1).trim();
         new MaterialDialog.Builder(context)
                 .title("图片下载")
@@ -165,7 +163,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
         showDownLoadDialog(null, urls);
     }
 
-    public void showDownLoadDialog(String name, final String... urls) {
+    private void showDownLoadDialog(String name, final String... urls) {
         if(Strings.empty(name)) name = "你确定要批量下载这些图片么?";
         new MaterialDialog.Builder(context)
                 .title("图片下载")
@@ -260,7 +258,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
         private Handler handler;
 
-        public HandlerCallBack(Handler handler) {
+        private HandlerCallBack(Handler handler) {
             this.handler = handler;
         }
 
@@ -268,7 +266,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
         }
 
-        public void runOnProgress(Task task, Progress progress) {
+        private void runOnProgress(Task task, Progress progress) {
 
         }
 
@@ -349,7 +347,7 @@ public class FileDownloadWaiter extends ActivityWaiter<AppCompatActivity, Activi
 
         private String url;
 
-        public DownLoadDialog(String url) {
+        private DownLoadDialog(String url) {
             this.url = url;
 
             dialog = new MaterialDialog.Builder(context)

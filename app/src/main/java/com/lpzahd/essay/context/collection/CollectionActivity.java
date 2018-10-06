@@ -54,21 +54,10 @@ public class CollectionActivity extends RxActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if(id == R.id.action_add) {
+        if(item.getItemId() == R.id.action_add) {
             CollectionEditActivity.startActivity(context);
             return true;
         }
-
-//        if (id == R.id.action_edit) {
-//            return true;
-//        }
-//
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-
         return super.onOptionsItemSelected(item);
     }
 

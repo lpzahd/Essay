@@ -18,19 +18,15 @@ import com.readystatesoftware.systembartint.SystemBarTintManager;
  */
 public class TintBarWaiter extends ActivityWaiter<AppCompatActivity, ActivityWaiter>{
 
-    public TintBarWaiter(AppCompatActivity appCompatActivity) {
+    protected TintBarWaiter(AppCompatActivity appCompatActivity) {
         super(appCompatActivity);
-    }
-
-    public TintBarWaiter(int gradation, AppCompatActivity context) {
-        super(gradation, context);
     }
 
     @Override
     protected void create(Bundle savedInstanceState) {
         super.create(savedInstanceState);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            setTranslucentStatus(false);
+            setTranslucentStatus();
         }
         // create our manager instance after the content view is set
         SystemBarTintManager tintManager = new SystemBarTintManager(context);
@@ -43,15 +39,11 @@ public class TintBarWaiter extends ActivityWaiter<AppCompatActivity, ActivityWai
     }
 
     @TargetApi(19)
-    private void setTranslucentStatus(boolean on) {
+    private void setTranslucentStatus() {
         Window win = context.getWindow();
         WindowManager.LayoutParams winParams = win.getAttributes();
         final int bits = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
-        if (on) {
-            winParams.flags |= bits;
-        } else {
-            winParams.flags &= ~bits;
-        }
+        winParams.flags &= ~bits;
         win.setAttributes(winParams);
     }
 

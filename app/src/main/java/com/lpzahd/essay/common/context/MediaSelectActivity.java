@@ -2,6 +2,7 @@ package com.lpzahd.essay.common.context;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
 
 import com.lpzahd.atool.action.Check;
 import com.lpzahd.atool.ui.T;
@@ -30,7 +31,7 @@ public class MediaSelectActivity extends RxActivity {
 
         for(Waiter waiter : waiters) {
             if(waiter instanceof ActivityWaiter) {
-                ActivityWaiter activityWaiter = (ActivityWaiter) waiter;
+                ActivityWaiter<MediaSelectActivity, ActivityWaiter> activityWaiter = (ActivityWaiter<MediaSelectActivity, ActivityWaiter>) waiter;
                 activityWaiter.setContext(this);
                 addActivityWaiter(activityWaiter);
             } else if(waiter instanceof WindowWaiter) {
