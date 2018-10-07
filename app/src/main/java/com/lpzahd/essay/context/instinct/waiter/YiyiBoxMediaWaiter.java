@@ -29,6 +29,7 @@ import com.lpzahd.essay.R;
 import com.lpzahd.essay.common.waiter.FileDownloadWaiter;
 import com.lpzahd.essay.context.instinct.InstinctMediaActivity;
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
+import com.lpzahd.essay.context.instinct.yiyibox.YiyiView;
 import com.lpzahd.essay.context.preview.waiter.SinglePicWaiter;
 import com.lpzahd.essay.exotic.retrofit.Net;
 import com.lpzahd.essay.tool.OkHttpRxAdapter;
@@ -38,7 +39,6 @@ import com.lpzahd.fresco.zoomable.ZoomableDraweeView;
 import com.lpzahd.waiter.consumer.State;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.utils.OrientationUtils;
-import com.shuyu.gsyvideoplayer.video.base.GSYVideoPlayer;
 
 import java.io.File;
 import java.net.URL;
@@ -52,6 +52,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import butterknife.BindView;
+import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
@@ -82,6 +83,9 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
     private static final String REGEX_TAG_SRC = "src\\s*=\\s*\"?(.*?)(\"|>|\\s+)";
     private static final String REGEX_TAG_POSTER = "poster\\s*=\\s*\"?(.*?)(\"|>|\\s+)";
 
+    private static final String REGEX_TAG_FILM = "<a href=\"/film/view/*\\b[^>]*>";
+    private static final String REGEX_TAG_FILM_ID = "/(\\d+)\"";
+
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
 
@@ -101,6 +105,7 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
 
     private static final int TYPE_PHOTO = 0;
     private static final int TYPE_VIDEO = 1;
+    private static final int TYPE_FILM = 2;
 
     private int type = TYPE_PHOTO;
 
@@ -219,7 +224,103 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
                             //photo
                             loadPhoto(itemsBean);
                             type = TYPE_PHOTO;
+                        } else if(itemsBean.getShorturl().startsWith("f")) {
+                            loadFilm(itemsBean);
+                            type = TYPE_FILM;
                         }
+                    }
+                });
+    }
+
+    private void loadFilm(YiyiBox.DataBean.ItemsBean source) {
+        simpleVideo.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+
+        String url = Net.BOX_HOST + "/film/show/" + source.getId();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("referer", Net.BOX_HOST)
+                .build();
+
+        loadDispose = OkHttpRxAdapter.adapter(client.newCall(request))
+                .subscribeOn(Schedulers.io())
+                .retry()
+                .filter(new Predicate<Response>() {
+                    @Override
+                    public boolean test(@NonNull Response response) throws Exception {
+                        return response.isSuccessful();
+                    }
+                })
+                .map(new Function<Response, String>() {
+
+                    @Override
+                    public String apply(@NonNull Response response) throws Exception {
+                        ResponseBody body = response.body();
+
+                        if (body == null)
+                            return null;
+
+                        String htmlStr = body.string();
+                        body.close();
+
+                        String id = null;
+
+                        Pattern videoPattern = Pattern.compile(YiyiBoxMediaWaiter.REGEX_TAG_FILM, Pattern.CASE_INSENSITIVE);
+                        Matcher videoMatcher = videoPattern.matcher(htmlStr);
+
+                        Pattern idPattern = Pattern.compile(REGEX_TAG_FILM_ID, Pattern.CASE_INSENSITIVE);
+
+                        while (videoMatcher.find()) {
+                            String videoStr = videoMatcher.group(0);
+
+                            VideoBean bean = new VideoBean();
+                            Matcher srcMatcher = idPattern.matcher(videoStr);
+                            while (srcMatcher.find()) {
+                                id = srcMatcher.group(1);
+                            }
+                            System.out.println(videoStr);
+
+                        }
+                        return id;
+                    }
+                })
+                .flatMap(new Function<String, ObservableSource<YiyiView>>() {
+                    @Override
+                    public ObservableSource<YiyiView> apply(String id) throws Exception {
+                        return Net.get().yiyiBoxView(id);
+                    }
+                })
+                .map(new Function<YiyiView, VideoBean>() {
+                    @Override
+                    public VideoBean apply(YiyiView yiyiView) throws Exception {
+                        VideoBean bean = new VideoBean();
+                        bean.video = yiyiView.getData().getUri();
+                        bean.img = mSource.getImg();
+                        return bean;
+                    }
+                })
+                .doOnSubscribe(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        T.t("查找视频中...");
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<VideoBean>() {
+                    @Override
+                    public void accept(VideoBean videoBean) throws Exception {
+                        T.t("发现视频 ：" + videoBean.video);
+
+                        YiyiBoxMediaWaiter.this.videos = new ArrayList<>();
+                        YiyiBoxMediaWaiter.this.videos.add(videoBean);
+                        displayPosition = 0;
+                        stepVideo(videos.get(displayPosition));
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        T.t(throwable.getMessage());
                     }
                 });
     }
@@ -516,7 +617,7 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
 
     @Override
     protected int backPressed() {
-        if (type == TYPE_VIDEO) {
+        if (type == TYPE_VIDEO || type == TYPE_FILM) {
             //先返回正常状态
             if (mOriUtils != null && mOriUtils.getScreenType() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
                 simpleVideo.getFullscreenButton().performClick();

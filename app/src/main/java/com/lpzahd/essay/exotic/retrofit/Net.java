@@ -8,6 +8,8 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
+import com.lpzahd.essay.context.instinct.yiyibox.YiyiMedia;
+import com.lpzahd.essay.context.instinct.yiyibox.YiyiView;
 import com.lpzahd.essay.context.leisure.baidu.BaiduPic;
 import com.lpzahd.essay.context.pure.bilibili.BiliBiliCos;
 import com.lpzahd.essay.context.pure.bx6644.Bx6644;
@@ -33,7 +35,6 @@ import retrofit2.CallAdapter;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
@@ -124,7 +125,15 @@ public class Net {
         Observable<Turing123> sendMessage(@Body RequestBody message);
     }
 
-    public static final String BOX_HOST = "http://www.sesehezi.com";
+    public static String BOX_HOST = "http://www.wowhezi.com";
+
+    public static String getBoxHost() {
+        return BOX_HOST;
+    }
+
+    public static void setBoxHost(String boxHost) {
+        BOX_HOST = boxHost;
+    }
 
     public Observable<YiyiBox> yiyiBoxHomeImg(int page) {
         return it(BOX_HOST)
@@ -136,6 +145,13 @@ public class Net {
         return it(BOX_HOST)
                 .create(YiyiBoxApi2.class)
                 .searchVideo(page)
+                .subscribeOn(Schedulers.io());
+    }
+
+    public Observable<YiyiView> yiyiBoxView(String id) {
+        return it(BOX_HOST)
+                .create(YiyiBoxViewApi.class)
+                .searchView(BOX_HOST + "/api/v1.4/view/" + id)
                 .subscribeOn(Schedulers.io());
     }
 
@@ -163,6 +179,12 @@ public class Net {
                 .searchVideo(page);
     }
 
+    public Observable<YiyiMedia> yiyiBoxMedia(int page) {
+        return it(BOX_HOST)
+                .create(YiyiBoxMediaApi.class)
+                .searchMedia(page);
+    }
+
     interface YiyiBoxApi {
 
         /**
@@ -172,6 +194,13 @@ public class Net {
          */
         @GET("/api/v1.1/home")
         Observable<YiyiBox> searchImage(@Query("page") int page);
+    }
+
+
+    interface YiyiBoxViewApi {
+
+        @GET
+        Observable<YiyiView> searchView(@Url String url);
     }
 
     interface YiyiBoxApi2 {
@@ -229,14 +258,24 @@ public class Net {
         Observable<YiyiBox> searchVideo(@Query("page") int page);
     }
 
+    interface YiyiBoxMediaApi {
+
+        /**
+         * yiyibox图片
+         *
+         * @param page  页码(从第一页开始)
+         */
+        @GET("/api/v1.4/")
+        Observable<YiyiMedia> searchMedia(@Query("page") int page);
+    }
 
     /**
      * @param page 页码从第二页开始，第一页的时候不知道返回的是啥
      */
     public Observable<Bx6644> pureList(int page) {
-        return it("http:/www.8888ez.com")
+        return it("http:/www.2222zm.com")
                 .create(PureListApi.class)
-                .pureList("http://www.8888ez.com/html/artlist/qingchunweimei/26_" + page + ".json");
+                .pureList("http://www.2222zm.com/html/artlist/qingchunweimei/26_" + page + ".json");
     }
 
     public interface PureListApi {
@@ -254,9 +293,9 @@ public class Net {
      * @param id 图片id
      */
     public Observable<BxPhotos> purePhotos(String id) {
-            return it("http://www.8888ez.com")
+            return it("http://www.2222zm.com")
                 .create(PurePhotosApi.class)
-                .purePhotos("http://www.8888ez.com/html/artdata/" + id + ".json");
+                .purePhotos("http://www.2222zm.com/html/artdata/" + id + ".json");
     }
 
     public interface PurePhotosApi {

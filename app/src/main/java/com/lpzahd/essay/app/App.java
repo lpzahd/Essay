@@ -12,9 +12,11 @@ import com.jakewharton.threetenabp.AndroidThreeTen;
 import com.lpzahd.atool.action.Check;
 import com.lpzahd.atool.constant.Constance;
 import com.lpzahd.atool.keeper.Keeper;
+import com.lpzahd.atool.ui.P;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.derive.container.MiniCup;
 import com.lpzahd.essay.exotic.fresco.FrescoInit;
+import com.tencent.smtt.sdk.QbSdk;
 
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash;
 
@@ -53,12 +55,15 @@ public class App extends Application implements Application.ActivityLifecycleCal
 
         registerActivityLifecycleCallbacks(this);
         init(app);
+
+        QbSdk.initX5Environment(getApplicationContext(), null);
     }
 
     private void init(Application app) {
         Constance.initApp(app);
 
         T.init(app);
+        P.init(app);
         Keeper.init(app);
         FrescoInit.get().init(app);
         AndroidThreeTen.init(app);

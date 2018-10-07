@@ -34,6 +34,12 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_media"
+        android:orderInCategory="3"
+        android:title="@string/box_media"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="3"
         android:title="@string/box_settings"

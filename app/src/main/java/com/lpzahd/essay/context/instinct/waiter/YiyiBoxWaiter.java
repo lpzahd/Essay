@@ -7,15 +7,14 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.FrameLayout;
 
-import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.lpzahd.Lists;
 import com.lpzahd.atool.enmu.ImageSource;
+import com.lpzahd.atool.ui.P;
 import com.lpzahd.atool.ui.T;
 import com.lpzahd.common.taxi.RxTaxi;
 import com.lpzahd.common.taxi.Transmitter;
@@ -30,8 +29,8 @@ import com.lpzahd.essay.common.waiter.FileDownloadWaiter;
 import com.lpzahd.essay.context.instinct.InstinctActivity;
 import com.lpzahd.essay.context.instinct.InstinctMediaActivity;
 import com.lpzahd.essay.context.instinct.yiyibox.YiyiBox;
+import com.lpzahd.essay.context.instinct.yiyibox.YiyiMedia;
 import com.lpzahd.essay.context.leisure.waiter.LeisureWaiter;
-import com.lpzahd.essay.context.preview.TranstionPicActivity;
 import com.lpzahd.essay.context.web.WebActivity;
 import com.lpzahd.essay.context.web.waiter.WebWaiter;
 import com.lpzahd.essay.exotic.retrofit.Net;
@@ -56,6 +55,8 @@ import io.reactivex.schedulers.Schedulers;
  * 描述 ： 命里有时终须有，命里无时莫强求
  */
 public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implements View.OnClickListener {
+
+    private static final String TAG = "com.lpzahd.essay.context.instinct.waiter.YiyiBoxWaiter";
 
     private static int QUERY_COUNT = 366;
 
@@ -96,6 +97,8 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
     protected void init() {
         super.init();
         addWaiter(mFileDownloadWaiter = new FileDownloadWaiter(context));
+        String boxHost = P.get(TAG, Net.getBoxHost());
+        Net.setBoxHost(boxHost);
     }
 
     @Override
@@ -148,6 +151,14 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
             return State.STATE_TRUE;
         }
 
+        if (id == R.id.action_media) {
+            toolBar.setTitle(R.string.box_media);
+            mRefreshWaiter.setType(YiyiBoxRefreshWaiter.TYPE_MEDIA);
+            mRefreshWaiter.autoRefresh();
+            recyclerView.scrollToPosition(0);
+            return State.STATE_TRUE;
+        }
+
         if (id == R.id.action_settings) {
             showNetDialog();
             return State.STATE_TRUE;
@@ -160,25 +171,23 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
      * 展示网站dialog
      */
     public void showNetDialog() {
-        final String url = "http://www.baidu.com";
+        final String url = Net.getBoxHost();
         new MaterialDialog.Builder(context)
                 .title("修改Host")
-                .input("http://", url, false, new MaterialDialog.InputCallback() {
-                    @Override
-                    public void onInput(@android.support.annotation.NonNull MaterialDialog dialog, CharSequence input) {
-
-                    }
+                .input("http://", url, false, (dialog, input) -> {
                 })
                 .negativeText(R.string.tip_negative)
                 .positiveText(R.string.tip_positive)
-                .negativeText("预览")
-                .onNegative(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@android.support.annotation.NonNull MaterialDialog dialog, @android.support.annotation.NonNull DialogAction which) {
-                        WebActivity.startActivity(context);
-                        RxTaxi.get().regist(WebWaiter.TAG,
-                                () -> Flowable.just(url));
-                    }
+                .onPositive((dialog, which) -> {
+                    String urlStr = dialog.getInputEditText().getText().toString();
+                    P.set(TAG, urlStr);
+                    Net.setBoxHost(urlStr);
+                })
+                .neutralText("预览")
+                .onNeutral((dialog, which) -> {
+                    WebActivity.startActivity(context);
+                    RxTaxi.get().regist(WebWaiter.TAG,
+                            () -> Flowable.just(url));
                 })
                 .show();
     }
@@ -314,6 +323,7 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
         static final int TYPE_VIDEO = 2;
         static final int TYPE_PHOTO_RANKING = 3;
         static final int TYPE_VIDEO_RANKING = 4;
+        static final int TYPE_MEDIA = 5;
 
         private int type = TYPE_HOME;
 
@@ -332,14 +342,15 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
                     .toFlowable(BackpressureStrategy.BUFFER)
                     .map(new Function<YiyiBox, List<YiyiBox.DataBean.ItemsBean>>() {
                         @Override
-                        public List<YiyiBox.DataBean.ItemsBean> apply(@NonNull YiyiBox yiyiBox) throws Exception {
-                            if (yiyiBox == null
-                                    || yiyiBox.getData() == null
-                                    || Lists.empty(yiyiBox.getData().getItems()))
+                        public List<YiyiBox.DataBean.ItemsBean> apply(YiyiBox yiyiBox) throws Exception {
+                            final YiyiBox yiyiImage = (YiyiBox) yiyiBox;
+                            if (yiyiImage.getData() == null
+                                    || Lists.empty(yiyiImage.getData().getItems()))
                                 return Collections.emptyList();
 
-                            QUERY_COUNT = yiyiBox.getData().getPages();
-                            return yiyiBox.getData().getItems();
+                            QUERY_COUNT = yiyiImage.getData().getPages();
+                            return yiyiImage.getData().getItems();
+
                         }
                     });
         }
@@ -350,7 +361,7 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
             model.width = itemsBean.getWidth();
             model.height = itemsBean.getHeight();
 
-            if (itemsBean.getShorturl().startsWith("v")) {
+            if (itemsBean.getShorturl().startsWith("v") || itemsBean.getShorturl().startsWith("f")) {
                 //video
                 model.tag = "视频";
                 model.uri = Frescoer.uri("http:" + itemsBean.getImg(), ImageSource.SOURCE_NET);
@@ -384,6 +395,24 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
                     return Net.get().yiyiBoxTopImg(page + 1);
                 case TYPE_VIDEO_RANKING:
                     return Net.get().yiyiBoxTopVideo(page + 1);
+                case TYPE_MEDIA:
+                    return Net.get().yiyiBoxMedia(page + 1)
+                            .map(new Function<YiyiMedia, YiyiBox>() {
+                                @Override
+                                public YiyiBox apply(YiyiMedia yiyiMedia) throws Exception {
+                                    YiyiBox yiyiBox = new YiyiBox();
+                                    yiyiBox.setCode(yiyiBox.getCode());
+                                    YiyiBox.DataBean dataBean = new YiyiBox.DataBean();
+                                    YiyiMedia.DataBean mediaDataBean = yiyiMedia.getData();
+                                    dataBean.setPages(mediaDataBean.getPages());
+                                    dataBean.setItems(mediaDataBean.getItems());
+                                    for(YiyiBox.DataBean.ItemsBean bean : dataBean.getItems()) {
+                                        bean.setShorturl("f");
+                                    }
+                                    yiyiBox.setData(dataBean);
+                                    return yiyiBox;
+                                }
+                            });
             }
             return Observable.empty();
         }

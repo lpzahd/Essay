@@ -32,5 +32,6 @@
 
     <string name="action_settings">Settings</string>
     <string name="box_settings">设置</string>
+    <string name="box_media">影视</string>
 
 </resources>
