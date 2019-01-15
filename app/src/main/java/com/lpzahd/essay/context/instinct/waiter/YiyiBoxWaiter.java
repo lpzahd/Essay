@@ -364,7 +364,7 @@ public class YiyiBoxWaiter extends ToneActivityWaiter<InstinctActivity> implemen
             if (itemsBean.getShorturl().startsWith("v") || itemsBean.getShorturl().startsWith("f")) {
                 //video
                 model.tag = "视频";
-                model.uri = Frescoer.uri("http:" + itemsBean.getImg(), ImageSource.SOURCE_NET);
+                model.uri = Frescoer.uri(itemsBean.getImg(), ImageSource.SOURCE_NET);
             } else {
                 model.uri = Frescoer.uri(itemsBean.getImg(), ImageSource.SOURCE_NET);
             }

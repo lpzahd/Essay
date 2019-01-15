@@ -125,7 +125,7 @@ public class Net {
         Observable<Turing123> sendMessage(@Body RequestBody message);
     }
 
-    public static String BOX_HOST = "http://www.wowhezi.com";
+    public static String BOX_HOST = "http://www.xixibox.com";
 
     public static String getBoxHost() {
         return BOX_HOST;
@@ -273,9 +273,9 @@ public class Net {
      * @param page 页码从第二页开始，第一页的时候不知道返回的是啥
      */
     public Observable<Bx6644> pureList(int page) {
-        return it("http:/www.2222zm.com")
+        return it("http:/www.5555ga.com")
                 .create(PureListApi.class)
-                .pureList("http://www.2222zm.com/html/artlist/qingchunweimei/26_" + page + ".json");
+                .pureList("http://www.5555ga.com/html/artlist/qingchunweimei/26_" + page + ".json");
     }
 
     public interface PureListApi {
@@ -293,9 +293,9 @@ public class Net {
      * @param id 图片id
      */
     public Observable<BxPhotos> purePhotos(String id) {
-            return it("http://www.2222zm.com")
+            return it("http://www.5555ga.com")
                 .create(PurePhotosApi.class)
-                .purePhotos("http://www.2222zm.com/html/artdata/" + id + ".json");
+                .purePhotos("http://www.5555ga.com/html/artdata/" + id + ".json");
     }
 
     public interface PurePhotosApi {

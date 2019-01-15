@@ -205,6 +205,5 @@ public class WebWaiter extends ToneActivityWaiter<WebActivity> {
     protected void destroy() {
         super.destroy();
         webView.clearHistory();
-        webView.destroy();
     }
 }

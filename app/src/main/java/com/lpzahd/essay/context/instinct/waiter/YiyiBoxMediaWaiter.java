@@ -448,7 +448,7 @@ public class YiyiBoxMediaWaiter extends ToneActivityWaiter<InstinctMediaActivity
         videos.add(video);
 
         File videoFilePath = Keeper.getF().getScopeFile(Files.Scope.VIDEO_RAW);
-        simpleVideo.setUp(videos, true, videoFilePath, "荷尔蒙");
+        simpleVideo.setUp(videos, false, videoFilePath, "荷尔蒙");
 
         SimpleDraweeView draweeView = new SimpleDraweeView(context);
         simpleVideo.setThumbImageView(draweeView);
