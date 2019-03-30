@@ -408,17 +408,17 @@ public class RealDownloadTask {
     }
 
     private static String getHost(String uri) {
-        URL url = null;
-        try {
-            url = new URL(uri);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+//        URL url = null;
+//        try {
+//            url = new URL(uri);
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        if (url != null)
+//            return url.getProtocol() + "://" + url.getHost();
 
-        if (url != null)
-            return url.getProtocol() + "://" + url.getHost();
-
-        return "";
+        return "http://image.baidu.com";
     }
 
     private static String getNetFileName(okhttp3.Response response, String url) {

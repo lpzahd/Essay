@@ -180,7 +180,7 @@ public class SinglePicWaiter extends ToneActivityWaiter<SinglePicActivity> {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(fromUrlStr)
-                .addHeader("referer", bean.getFromURLHost())
+                .addHeader("referer", "http://image.baidu.com")
                 .build();
 
         final URL fromUrl;
